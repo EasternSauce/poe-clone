@@ -66,6 +66,7 @@ namespace PoeClone.Skills
             public Vector3[] Points;
             public float Time;
             public bool Finisher;
+            public bool CleaveAccent;
         }
 
         private const int RecentCastCount = 8;
@@ -115,6 +116,7 @@ namespace PoeClone.Skills
                 Skill = skill.Id,
                 Level = level,
                 Finisher = skill.MeleeAttack && !skill.Channelled && meleeFinisher,
+                CleaveAccent = skill.Id == SkillId.Cleave && meleeCleaveAccent,
                 At = at ?? transform.position,
                 Facing = facing ?? transform.forward,
                 Size = size,
@@ -123,8 +125,8 @@ namespace PoeClone.Skills
                 Time = Time.time
             };
             recentCasts[CastCount % RecentCastCount] = cast;
-            if (cast.Finisher)
-                PlayComboFinisherVisual(cast, skill);
+            if (cast.Finisher || cast.CleaveAccent)
+                PlayComboImpactVisual(cast, skill);
         }
 
         public static string KeyLabel(int slot)
@@ -183,6 +185,8 @@ namespace PoeClone.Skills
         {
             ResetMeleeCombo();
             meleeFinisher = false;
+            meleeCleaveAccent = false;
+            meleeComboDamage = 1f;
             CancelPendingCast();
             EndWhirlwind();
             StopAllCoroutines();

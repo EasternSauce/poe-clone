@@ -2037,6 +2037,28 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
+  - id: combat.cleave.second
+    label: Cleave second combo hit
+    group: Combat
+    description: Dedicated impact accent for cleave second combo hit.
+    soundGroupId: sound.combat.cleave.second
+    aliases: []
+    sharedIds: []
+    defaults: []
+    suggestions: []
+    selected: {fileID: 0}
+    muted: 0
+  - id: combat.cleave.finisher
+    label: Cleave fourth combo hit
+    group: Combat
+    description: Dedicated impact accent for cleave fourth combo hit.
+    soundGroupId: sound.combat.cleave.finisher
+    aliases: []
+    sharedIds: []
+    defaults: []
+    suggestions: []
+    selected: {fileID: 0}
+    muted: 0
   soundGroups:
   - id: sound.player.swing
     purpose: Melee swings
@@ -2673,5 +2695,17 @@ MonoBehaviour:
     purpose: Melee combo finisher impact
     clips:
     - {fileID: 8300000, guid: e55b5c1610d44addb031c58c9cee3ebe, type: 3}
+    cooldown: 0
+    topPriority: 1
+  - id: sound.combat.cleave.second
+    purpose: Cleave second combo hit
+    clips:
+    - {fileID: 8300000, guid: 5ac973d005884764850686fb13155cb9, type: 3}
+    cooldown: 0
+    topPriority: 1
+  - id: sound.combat.cleave.finisher
+    purpose: Cleave fourth combo hit
+    clips:
+    - {fileID: 8300000, guid: 9aad72c54e074d5592934c0faebdf726, type: 3}
     cooldown: 0
     topPriority: 1

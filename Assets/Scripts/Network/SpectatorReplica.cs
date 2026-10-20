@@ -554,6 +554,7 @@ namespace PoeClone.Network
                     Size = c.sz,
                     Count = c.c,
                     Finisher = c.cf,
+                    CleaveAccent = c.ca,
                     Points = points
                 }, playerStats.transform);
             }

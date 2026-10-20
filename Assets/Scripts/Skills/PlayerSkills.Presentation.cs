@@ -8,7 +8,7 @@ namespace PoeClone.Skills
     public partial class PlayerSkills
     {
         // Shared by the attacking player and replicated casts, at the actual damage release.
-        private static void PlayComboFinisherVisual(CastRecord cast, SkillDefinition skill)
+        private static void PlayComboImpactVisual(CastRecord cast, SkillDefinition skill)
         {
             Vector3 center = cast.At;
             float radius = cast.Size;
@@ -29,7 +29,20 @@ namespace PoeClone.Skills
                     break;
             }
             // A short visual accent, kept compact so a long fissure doesn't hide the arena.
-            SkillEffects.Explosion(center, Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f), skill.Color);
+            float burstRadius = cast.CleaveAccent ? Mathf.Clamp(radius * 0.3f, 0.8f, 1.5f)
+                : cast.Skill == SkillId.Cleave ? Mathf.Clamp(radius * 0.85f, 1.8f, 4.8f)
+                : Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f);
+            SkillEffects.Explosion(center, burstRadius, skill.Color);
+        }
+
+        private static void PlayComboImpactSound(SkillId skill, bool finisher, bool cleaveAccent, Vector3 at)
+        {
+            if (!finisher && !cleaveAccent) return;
+            var audio = PoeClone.Audio.AudioManager.Instance;
+            if (audio == null) return;
+            string effect = cleaveAccent ? "combat.cleave.second" : skill == SkillId.Cleave ? "combat.cleave.finisher" : "combat.melee.finisher";
+            string clip = cleaveAccent ? "cleave_combo_second" : skill == SkillId.Cleave ? "cleave_combo_finisher" : "melee_combo_finisher";
+            audio.PlayEffect(effect, at, audio.Sfx(clip));
         }
 
         /// <summary>
@@ -46,12 +59,9 @@ namespace PoeClone.Skills
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
             PlaySkillSound(cast.Skill, cast.At);
-            if (cast.Finisher)
-            {
-                PlayComboFinisherVisual(cast, skill);
-                var audio = PoeClone.Audio.AudioManager.Instance;
-                audio?.PlayEffect("combat.melee.finisher", cast.At, audio.Sfx("melee_combo_finisher"));
-            }
+            if (cast.Finisher || cast.CleaveAccent)
+                PlayComboImpactVisual(cast, skill);
+            PlayComboImpactSound(cast.Skill, cast.Finisher, cast.CleaveAccent, cast.At);
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)

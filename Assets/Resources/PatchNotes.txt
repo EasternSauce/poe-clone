@@ -1,3 +1,7 @@
+version: 2026-10-20-cleave-combo-impacts
+- Cleave's second combo hit deals 35% more damage with a sharp impact sound and compact burst. Its fourth hit now deals 125% more damage with a deeper explosive sound, larger blast and stronger camera jolt.
+- Finisher weapon-tree bonuses still apply to Cleave's fourth hit; the second hit does not gain finisher bonuses or knockback. Both impacts replay in co-op and spectator views.
+
 version: 2026-10-20-combo-finisher-bursts
 - Combo finishers now erupt in a bright impact burst and expanding ring, also visible in co-op and spectator views.
 - Pulverize, Fissure, Aftershock and Reaping Arc finish on hit 3; Cleave, Lunging Thrust and Cross Slash on hit 4; Fang Strike and Venom Slash on hit 5. Whirlwind remains excluded.

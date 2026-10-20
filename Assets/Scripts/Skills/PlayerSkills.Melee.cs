@@ -29,7 +29,9 @@ namespace PoeClone.Skills
         private bool meleeComboQueued;
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
-        private float ComboDamage => meleeFinisher ? 1.75f * WeaponBonuses.ComboDamageMultiplier : 1f;
+        private bool meleeCleaveAccent;
+        private float meleeComboDamage = 1f;
+        private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
         private float ComboArea => meleeFinisher ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
 
@@ -61,6 +63,10 @@ namespace PoeClone.Skills
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
             int length = WeaponSkillRules.ComboLength(skill.Grant);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
+            meleeCleaveAccent = skill.Id == SkillId.Cleave && meleeComboSwing % length == 2;
+            meleeComboDamage = skill.Id == SkillId.Cleave
+                ? (meleeFinisher ? 2.25f : meleeCleaveAccent ? 1.35f : 1f)
+                : (meleeFinisher ? 1.75f : 1f);
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
@@ -87,10 +93,12 @@ namespace PoeClone.Skills
         private void PlayMeleeSound(SkillId skill, bool accent = true)
         {
             PlaySkillSound(skill, transform.position);
-            if (!meleeFinisher || !accent) return;
-            var audio = PoeClone.Audio.AudioManager.Instance;
-            audio?.PlayEffect("combat.melee.finisher", transform.position, audio.Sfx("melee_combo_finisher"));
-            PoeClone.CameraSystem.CameraFollow.Shake(0.16f, 0.16f);
+            if (!accent) return;
+            PlayComboImpactSound(skill, meleeFinisher, meleeCleaveAccent, transform.position);
+            if (meleeFinisher)
+                PoeClone.CameraSystem.CameraFollow.Shake(skill == SkillId.Cleave ? 0.22f : 0.16f, 0.16f);
+            else if (meleeCleaveAccent)
+                PoeClone.CameraSystem.CameraFollow.Shake(0.08f, 0.1f);
         }
 
         private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback)
