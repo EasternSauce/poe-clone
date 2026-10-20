@@ -14,6 +14,7 @@ namespace PoeClone.Skills
             float radius = cast.Size;
             switch (cast.Skill)
             {
+                case SkillId.Cleave when cast.Finisher:
                 case SkillId.Pulverize:
                 case SkillId.CrossSlash:
                     break;

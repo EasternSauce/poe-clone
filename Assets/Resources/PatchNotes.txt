@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-circle-impact
+- Cleave's fourth attack now damages a full circle around the character, with a matching violet marker and circular impact visual.
+- Replaced its finisher sound with a new ground-crash impact and rumbling decay.
+
 version: 2026-10-21-cleave-ground-stab
 - Cleave's fourth attack holds the weapon ready to stab the ground during its charge, then plunges downward only on release.
 - Its violet warning marker, damage area and impact visual now cover a 180-degree semicircle in front of the character.

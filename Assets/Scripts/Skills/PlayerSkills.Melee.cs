@@ -213,7 +213,7 @@ namespace PoeClone.Skills
         internal const float CleaveWindup = 0.91f / 3f;
         internal const float CleaveRecovery = 0.18f;
         internal const float CleaveHalfAngle = 60f;
-        internal const float CleaveFinisherHalfAngle = 90f;
+        internal const float CleaveFinisherHalfAngle = 180f;
         private float CleaveAttackHalfAngle => meleeFinisher ? CleaveFinisherHalfAngle : CleaveHalfAngle;
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
