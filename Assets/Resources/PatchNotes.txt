@@ -1,3 +1,7 @@
+version: 2026-10-20-arena-route-pages
+- Arena build pages now fill across minimum-level groups, so specialized builds appear alongside the flexible tree on the first page. Each route retains its minimum-level label and DPS ranking within its group.
+- The route selector now shows how many builds are listed and the current page.
+
 version: 2026-10-19-editor-production-arena
 - Unity's PoeClone menu now opens Balance Test Arena with the same build selector, training doll and fights as the production arena.
 - Arena buttons now use standard Unity buttons, and arena startup preserves and initializes the UI input system.
