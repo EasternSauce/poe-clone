@@ -51,7 +51,11 @@ namespace PoeClone.Skills
             meleeComboQueued = false;
             meleeComboWeapon = null;
             controller?.SetComboBrace(false);
-            if (attackAnimator != null) attackAnimator.ComboBracing = false;
+            if (attackAnimator != null)
+            {
+                attackAnimator.ComboBracing = false;
+                attackAnimator.CleaveComboPose = false;
+            }
             ClearComboPreview();
         }
 
@@ -61,8 +65,8 @@ namespace PoeClone.Skills
             // A finisher cannot buffer another fast follow-up or keep the old facing locked.
             // PlayerCombat retains its normal cooldown before the next opening attack.
             if (meleeComboSwing == 0 || meleeFinisher) return false;
-            if (controller.MovementRevision != meleeComboMovement || (!meleeComboQueued && !freshPress && controller.InputDirection().sqrMagnitude > 0.001f) ||
-                MainWeapon != meleeComboWeapon || Time.time > meleeComboReadyAt + ComboQueueWindow)
+            if (controller.MovementRevision != meleeComboMovement || MainWeapon != meleeComboWeapon ||
+                (!meleeComboQueued && !controller.IsSkillCommitted && Time.time > meleeComboReadyAt + ComboQueueWindow))
             {
                 ResetMeleeCombo();
                 return false;
@@ -210,6 +214,9 @@ namespace PoeClone.Skills
         private void FinishMeleeAction()
         {
             if (meleeFinisher) ResetMeleeCombo();
+            else if (meleeComboSwing > 0)
+                // The input window must survive the actual animation/recovery, including slow frames.
+                meleeComboReadyAt = Mathf.Max(meleeComboReadyAt, Time.time);
             controller.SetSkillCommit(false);
         }
 
@@ -393,7 +400,10 @@ namespace PoeClone.Skills
         private void PlaySkillAnimation(SkillId skill, WeaponType weapon, float rate, bool mirrored = false)
         {
             if (attackAnimator != null)
+            {
                 attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored);
+                attackAnimator.CleaveComboPose = skill == SkillId.Cleave && !meleeFinisher;
+            }
         }
 
         private float MeleeRangeMultiplier => (1f + Mathf.Max(0f, Stat(StatType.MeleeRange) + WeaponBonuses.Get(WeaponSkillEffect.Range)) / 100f);

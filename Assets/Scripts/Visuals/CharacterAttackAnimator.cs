@@ -638,6 +638,12 @@ namespace PoeClone.Visuals
 
         public bool IsAttacking { get; private set; }
         public bool ComboBracing { get; set; }
+        public bool CleaveComboPose { get; set; }
+        private bool cleaveLinkStart;
+        private Pose cleaveStartPose;
+
+        private static bool IsCleave(AttackProfile profile) => profile == CleaveSkillProfile ||
+            profile == CleaveGreatSkillProfile || profile == CleaveBackhandProfile || profile == CleaveGreatBackhandProfile;
 
         /// <summary>True while a channelled skill's pose is held (Whirlwind): the legs brace instead of striding.</summary>
         public bool IsHolding => IsAttacking && holding;
@@ -660,7 +666,8 @@ namespace PoeClone.Visuals
         public float Lunge { get; private set; }
 
         /// <summary>True while a two-handed attack is posing the off arm (the walk cycle leaves it alone).</summary>
-        public bool DrivesOffArm => ComboBracing || IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip || activeProfile.Staff);
+        public bool DrivesOffArm => ComboBracing || CleaveComboPose && activeProfile != null && activeProfile.TwoHandGrip ||
+            IsAttacking && activeProfile != null && (activeProfile.UsesOffArm || activeProfile.TwoHandGrip || activeProfile.Staff);
 
         /// <summary>True while a staff swing or cast plays: <see cref="CurrentStaffPose"/> says where the staff is.</summary>
         public bool PosesStaff => IsAttacking && activeProfile != null && activeProfile.Staff;
@@ -880,6 +887,9 @@ namespace PoeClone.Visuals
 
         private void Play(AttackProfile profile)
         {
+            cleaveLinkStart = CleaveComboPose && IsCleave(activeProfile) && IsCleave(profile);
+            if (cleaveLinkStart)
+                cleaveStartPose = activeProfile.TwoHandGrip ? activeProfile.StrikeOffset : Rest + activeProfile.StrikeOffset;
             speedMultiplier = 1f;
             castingGesture = false;
             AttackCount++;
@@ -913,6 +923,16 @@ namespace PoeClone.Visuals
         {
             if (!IsAttacking)
             {
+                if (CleaveComboPose && IsCleave(activeProfile))
+                {
+                    Pose ready = activeProfile.TwoHandGrip ? activeProfile.StrikeOffset : Rest + activeProfile.StrikeOffset;
+                    Apply(weaponArm, weaponElbow, ready);
+                    if (activeProfile.TwoHandGrip) Apply(offArm, offElbow, GripPose(ready));
+                    TorsoPitch = 8f;
+                    TorsoYaw = ready.ArmYaw * (activeProfile.TwoHandGrip ? 0.45f : 0.35f);
+                    Lunge = 0f;
+                    return;
+                }
                 TorsoPitch = ComboBracing ? 12f : 0f;
                 TorsoYaw = ComboBracing ? -12f : 0f;
                 Lunge = 0f;
@@ -947,6 +967,7 @@ namespace PoeClone.Visuals
             Pose start = walkAnimator != null && walkAnimator.HoldsTwoHanded
                 ? new Pose(CharacterWalkAnimator.GuardPitch, CharacterWalkAnimator.GuardYaw, CharacterWalkAnimator.GuardRoll, CharacterWalkAnimator.GuardElbow)
                 : Rest;
+            if (cleaveLinkStart) start = cleaveStartPose;
 
             // Which leg of the swing this is (0: into the wind-up, 1: wind-up to strike, 2: back
             // from the strike) and how far along it.
@@ -996,7 +1017,8 @@ namespace PoeClone.Visuals
             }
             else
             {
-                pose = Lerp(strike, start, t);
+                // Cleave stops on the far side; returning across the target looked like a second hit.
+                pose = IsCleave(p) ? strike : Lerp(strike, start, t);
                 offPose = Lerp(p.OffStrike, Rest, t);
             }
 
@@ -1065,10 +1087,17 @@ namespace PoeClone.Visuals
                 }
             }
 
+            if (IsCleave(p))
+            {
+                // Keep the torso with the cut instead of adding an overhead heave and rebound.
+                TorsoPitch = 8f;
+                Lunge = 0f;
+            }
+
             if (f >= 1f)
             {
                 IsAttacking = false;
-                TorsoPitch = TorsoYaw = Lunge = 0f;
+                if (!CleaveComboPose) TorsoPitch = TorsoYaw = Lunge = 0f;
             }
         }
 

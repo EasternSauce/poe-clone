@@ -112,7 +112,7 @@ namespace PoeClone.Visuals
         // skipping them here (rather than both scripts writing to the same pivot every frame)
         // avoids fighting over control regardless of script execution order.
         private CharacterAttackAnimator attackAnimator;
-        private bool RightArmSuppressed => attackAnimator != null && (attackAnimator.IsAttacking || attackAnimator.ComboBracing);
+        private bool RightArmSuppressed => attackAnimator != null && (attackAnimator.IsAttacking || attackAnimator.ComboBracing || attackAnimator.CleaveComboPose);
         private bool LeftArmSuppressed => attackAnimator != null && attackAnimator.DrivesOffArm;
 
         // Read for its RecoilFraction only; Stagger itself lives on the root, not this model.

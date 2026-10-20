@@ -1,3 +1,8 @@
+version: 2026-10-21-cleave-combo-readability
+- Cleave now holds its follow-through between alternating cuts instead of sweeping back across the target after every hit, making its four attacks easier to read.
+- Buffered melee follow-ups no longer expire while waiting for recovery. Follow-up windows last through the actual recovery, and movement input that cannot move the character during an attack no longer cancels the combo.
+- Breaking Cleave still requires the full normal attack interval before restarting.
+
 version: 2026-10-20-cleave-combo-pace
 - Halved Cleave's combo speed: swings and follow-ups now run at twice the normal cadence instead of four times.
 - Breaking Cleave before its fourth attack now starts a full normal attack interval before another combo can begin, scaling with attack speed.
