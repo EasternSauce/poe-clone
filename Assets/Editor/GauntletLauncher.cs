@@ -38,8 +38,6 @@ namespace PoeClone.EditorTools
         private static void ManualMenu()
         {
             // Let the native menu close and release input before entering Play mode.
-            // Entering Play inside its callback can leave the Game view ignoring input
-            // until the Editor's pause state changes, even though frames keep running.
             EditorApplication.delayCall -= LaunchManualFromMenu;
             EditorApplication.delayCall += LaunchManualFromMenu;
         }
@@ -130,6 +128,16 @@ namespace PoeClone.EditorTools
 
         private static void OnPlayModeChanged(PlayModeStateChange state)
         {
+            if (state == PlayModeStateChange.EnteredPlayMode && MinimalCombatMode.ArenaEnabled)
+            {
+                // MCP sets isPlaying directly, so Unity can leave keyboard/mouse input
+                // routed to the Editor while the arena keeps simulating. Focus after the
+                // transition, regardless of whether the menu or MCP started this session.
+                EditorApplication.delayCall -= FocusArenaGameView;
+                EditorApplication.delayCall += FocusArenaGameView;
+            }
+            if (state == PlayModeStateChange.ExitingPlayMode)
+                EditorApplication.delayCall -= FocusArenaGameView;
             if (state == PlayModeStateChange.ExitingPlayMode && SessionState.GetBool(ActiveKey, false))
                 CollectRow();
             if (state != PlayModeStateChange.EnteredEditMode || !SessionState.GetBool(ActiveKey, false)) return;
@@ -139,6 +147,12 @@ namespace PoeClone.EditorTools
             else PlayerPrefs.DeleteKey(DevQueryKey);
             PlayerPrefs.Save();
             SessionState.SetBool(ActiveKey, false);
+        }
+
+        private static void FocusArenaGameView()
+        {
+            if (EditorApplication.isPlaying && MinimalCombatMode.ArenaEnabled)
+                EditorApplication.ExecuteMenuItem("Window/General/Game");
         }
 
         // ------------------------------------------------------------------ the automated queue

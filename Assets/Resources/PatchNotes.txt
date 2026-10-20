@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-mcp-input-focus
+- The Editor arena now focuses the Game view after entering Play, including starts through Unity MCP, so keyboard and mouse input reaches the arena without toggling Pause.
+
 version: 2026-10-20-combo-finisher-reset
 - Finishers now end the combo and release its movement/facing lock. The next combo waits the normal attack-speed-scaled interval and aims at the current cursor again, including when holding attack.
 - Only attacks within a combo use the four-times-faster interval. Build picker DPS now includes the normal interval between complete combos.
