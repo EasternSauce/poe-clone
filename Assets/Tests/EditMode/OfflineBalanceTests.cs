@@ -36,6 +36,65 @@ namespace PoeClone.Tests
             return item;
         }
 
+        private static (float hit, float dot, float uses) ComboDps(string skill, ItemData weapon, StatSheet sheet, int step = -1)
+        {
+            var book = Type.GetType("PoeClone.Skills.SkillBook, Assembly-CSharp", true);
+            var ids = Type.GetType("PoeClone.Skills.SkillId, Assembly-CSharp", true);
+            var model = Type.GetType("PoeClone.World.SingleTargetDamage, Assembly-CSharp", true);
+            var definition = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(ids, skill) });
+            object[] args = step < 0
+                ? new object[] { definition, weapon, sheet, new WeaponSkillBonuses(weapon), 0f, 0f, 0f, false }
+                : new object[] { definition, weapon, sheet, new WeaponSkillBonuses(weapon), step, 0f, 0f, 0f, false };
+            var method = step < 0 ? model.GetMethod("Estimate") : model.GetMethod("EstimateStep", BindingFlags.Static | BindingFlags.NonPublic);
+            method.Invoke(null, args);
+            int offset = step < 0 ? 4 : 5;
+            return ((float)args[offset], (float)args[offset + 1], (float)args[offset + 2]);
+        }
+
+        [TestCase("Cleave", 1.4f)]
+        [TestCase("Pulverize", 1.25f)]
+        [TestCase("Fissure", 1.25f)]
+        [TestCase("Aftershock", 1.25f)]
+        [TestCase("ReapingArc", 1.25f)]
+        [TestCase("LungingThrust", 1.1875f)]
+        [TestCase("CrossSlash", 1.1875f)]
+        [TestCase("FangStrike", 1.15f)]
+        [TestCase("VenomSlash", 1.15f)]
+        [TestCase("Whirlwind", 1f)]
+        public void SingleTarget_AssumesCompleteSuccessfulCombos(string skill, float factor)
+        {
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 0);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
+            var baseline = ComboDps(skill, weapon, sheet, step: 0);
+            var combo = ComboDps(skill, weapon, sheet);
+            Assert.AreEqual(baseline.hit * factor, combo.hit, .001f);
+            Assert.AreEqual(baseline.uses, combo.uses, .001f, "A combo does not create extra attack uses");
+            if (skill == "FangStrike") Assert.AreEqual(baseline.dot * factor, combo.dot, .001f);
+            if (skill == "VenomSlash") Assert.AreEqual(baseline.dot, combo.dot, .001f, "Built-in Venom Slash poison does not scale with combo damage");
+        }
+
+        [Test]
+        public void SingleTarget_FinisherNodesBoostOnlyTheFinalComboHit()
+        {
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 4);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
+            var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
+            Assert.AreEqual(plainHit.hit * (1f + 1.35f + 1f + 2.25f * 1.15f * 1.3f) / 4f,
+                ComboDps("Cleave", weapon, sheet).hit, .001f);
+        }
+
+        [Test]
+        public void SingleTarget_MitigatesEachComboHitBeforeAveraging()
+        {
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 0);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float expected = 0;
+            for (int step = 1; step <= 4; step++) expected += ComboDps("Cleave", weapon, sheet, step).hit / 4f;
+            Assert.AreEqual(expected, ComboDps("Cleave", weapon, sheet).hit, .001f);
+            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.4f,
+                "Heavy hits lose a smaller fraction of damage to armour");
+        }
+
         [Test]
         public void SingleTarget_MageRallyIsTwentyPercentMoreAfterRepeatedSummons()
         {

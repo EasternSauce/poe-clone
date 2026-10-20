@@ -1,3 +1,7 @@
+version: 2026-10-20-combo-build-picker-dps
+- Build picker DPS now assumes uninterrupted successful melee combos, including Cleave's second and fourth hits and each skill's finisher damage nodes. Each hit is mitigated separately before averaging the full combo.
+- Combo damage also feeds poison and burning estimates where those effects scale with the hit. Whirlwind remains unchanged.
+
 version: 2026-10-20-cleave-combo-impacts
 - Cleave's second combo hit deals 35% more damage with a sharp impact sound and compact burst. Its fourth hit now deals 125% more damage with a deeper explosive sound, larger blast and stronger camera jolt.
 - Finisher weapon-tree bonuses still apply to Cleave's fourth hit; the second hit does not gain finisher bonuses or knockback. Both impacts replay in co-op and spectator views.

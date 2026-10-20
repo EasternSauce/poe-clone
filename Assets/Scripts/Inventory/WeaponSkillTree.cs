@@ -144,6 +144,16 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
+        /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
+        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f)
+        {
+            int length = ComboLength(grant);
+            if (length == 0 || step <= 0) return 1f;
+            if (step % length == 0)
+                return (grant == StatType.GrantCleave ? 2.25f : 1.75f) * finisherMore;
+            return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
+        }
+
         /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>
         public static int ComboLength(StatType grant)
         {

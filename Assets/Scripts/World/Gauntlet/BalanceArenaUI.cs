@@ -348,7 +348,7 @@ namespace PoeClone.World
             routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
-                "\nDPS: full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
+                "\nDPS: successful full combos, full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
                 "\nWorst 30% ground loot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
             LayoutRoutes();

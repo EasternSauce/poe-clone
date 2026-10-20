@@ -11,7 +11,7 @@ using E = PoeClone.Inventory.WeaponSkillEffect;
 namespace PoeClone.World
 {
     /// <summary>Shared stationary single-target damage approximation for the survey and arena picker.
-    /// Includes damage over time, a full minion army and repeatable on-hit/summon buffs.
+    /// Includes complete successful melee combos, damage over time, a full minion army and repeatable buffs.
     /// Excludes opening hits, low/full-life and on-kill buffs, mana downtime and movement.</summary>
     public static class SingleTargetDamage
     {
@@ -23,12 +23,30 @@ namespace PoeClone.World
             skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
         public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull = false)
         {
+            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant));
+            hitDps = dotDps = uses = 0f;
+            // Mitigate each hit before averaging: armour absorbs a smaller share of heavy blows.
+            // Every step takes the same attack interval; assume uninterrupted successful chains.
+            for (int step = 1; step <= steps; step++)
+            {
+                EstimateStep(skill, weapon, sheet, tree, step, out float hit, out float dot, out uses, includeNonBossCull);
+                hitDps += hit / steps;
+                dotDps += dot / steps;
+            }
+            return Mathf.Max(0, hitDps + dotDps);
+        }
+
+        private static float EstimateStep(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree,
+            int comboStep, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull)
+        {
             float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
             uses = skill.Spell ? 1f / Mathf.Max(.01f, skill.UseInterval(speed, sheet.CooldownRecoveryMultiplier)) :
                 SlotRules.BaseAttacksPerSecond(weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
             if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
+            float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier);
+            baseHit *= combo;
             var element = WeaponSkillHit.Element(tree, BaseElement(skill));
             bool attack = skill.MeleeAttack || skill.Bow;
             if (element == DamageType.Physical && attack)
@@ -93,7 +111,9 @@ namespace PoeClone.World
                 float extraPoison = attack ? sheet.Total(StatType.PoisonOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? SkillBook.VenomArrowPoison / 100 : 0) : 0;
                 float extraCloud = attack ? sheet.Total(StatType.VenomCloudOnHit) / 100 + (skill.Id == SkillId.VenomArrow ? SkillBook.VenomArrowCloud / 100 : 0) : 0;
                 float dotMultiplier = sheet.DamageMultiplier(false, false, false, false, StatType.PoisonDamage, damageOverTime: true, skillIncreased: tree.Get(E.Damage));
-                dotDps += AgainstEnemy(dotBase * (builtPoison + extraPoison) * dotMultiplier * duration, DamageType.Poison, sheet.Level, sheet, tree, false) * rate * hits;
+                // Fang Strike explicitly scales its built-in poison with the combo; Venom Slash does not.
+                float builtPoisonBase = dotBase * (skill.Id == SkillId.FangStrike ? combo : 1f);
+                dotDps += AgainstEnemy((builtPoisonBase * builtPoison + baseHit * extraPoison) * dotMultiplier * duration, DamageType.Poison, sheet.Level, sheet, tree, false) * rate * hits;
                 dotDps += AgainstEnemy(baseHit * extraCloud * dotMultiplier, DamageType.Poison, sheet.Level, sheet, tree, false) * Mathf.Min(1, rate * hits) * 3 * duration;
             }
             if (element == DamageType.Fire)

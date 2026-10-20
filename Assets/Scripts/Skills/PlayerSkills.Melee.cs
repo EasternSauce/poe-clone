@@ -64,9 +64,7 @@ namespace PoeClone.Skills
             int length = WeaponSkillRules.ComboLength(skill.Grant);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
             meleeCleaveAccent = skill.Id == SkillId.Cleave && meleeComboSwing % length == 2;
-            meleeComboDamage = skill.Id == SkillId.Cleave
-                ? (meleeFinisher ? 2.25f : meleeCleaveAccent ? 1.35f : 1f)
-                : (meleeFinisher ? 1.75f : 1f);
+            meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing);
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
