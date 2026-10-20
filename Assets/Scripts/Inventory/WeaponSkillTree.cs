@@ -146,6 +146,13 @@ namespace PoeClone.Inventory
     {
         public const float ComboFollowupSpeed = 4f;
 
+        /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
+        public static float ComboSustainedSpeed(StatType grant)
+        {
+            int length = ComboLength(grant);
+            return length > 0 ? length / (1f + (length - 1f) / ComboFollowupSpeed) : 1f;
+        }
+
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
         public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f)
         {

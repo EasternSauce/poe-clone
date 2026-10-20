@@ -26,7 +26,7 @@ namespace PoeClone.World
             int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant));
             hitDps = dotDps = uses = 0f;
             // Mitigate each hit before averaging: armour absorbs a smaller share of heavy blows.
-            // Assume uninterrupted successful chains, amortizing the single opening attack.
+            // Repeat complete successful combos, including the normal interval after each finisher.
             for (int step = 1; step <= steps; step++)
             {
                 EstimateStep(skill, weapon, sheet, tree, step, out float hit, out float dot, out uses, includeNonBossCull);
@@ -45,7 +45,7 @@ namespace PoeClone.World
             if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
             if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
-                uses *= WeaponSkillRules.ComboFollowupSpeed;
+                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant);
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
             float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier);
             baseHit *= combo;

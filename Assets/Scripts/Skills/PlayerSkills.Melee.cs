@@ -51,7 +51,9 @@ namespace PoeClone.Skills
         /// <summary>Buffer one follow-up near the next swing, including a held attack.</summary>
         public bool QueueMeleeFollowup(bool attackHeld, bool freshPress = false)
         {
-            if (meleeComboSwing == 0) return false;
+            // A finisher cannot buffer another fast follow-up or keep the old facing locked.
+            // PlayerCombat retains its normal cooldown before the next opening attack.
+            if (meleeComboSwing == 0 || meleeFinisher) return false;
             if (controller.MovementRevision != meleeComboMovement || (!meleeComboQueued && !freshPress && controller.InputDirection().sqrMagnitude > 0.001f) ||
                 MainWeapon != meleeComboWeapon || Time.time > meleeComboReadyAt + ComboQueueWindow)
             {
@@ -196,6 +198,12 @@ namespace PoeClone.Skills
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);
+        }
+
+        private void FinishMeleeAction()
+        {
+            if (meleeFinisher) ResetMeleeCombo();
+            controller.SetSkillCommit(false);
         }
 
         /// <summary>Attack speed while this melee skill is on, as a multiplier on the weapon's (the heavy ones are slower).</summary>
@@ -416,7 +424,7 @@ namespace PoeClone.Skills
             PlayMeleeSound(skill);
             release();
             yield return new WaitForSeconds(recovery / rate);
-            controller.SetSkillCommit(false);
+            FinishMeleeAction();
         }
 
         // How far Lunging Thrust carries the player at most, and how close it stops to its target.
@@ -447,7 +455,7 @@ namespace PoeClone.Skills
             PlayMeleeSound(skill.Id);
             LungingThrust(skill, level, reach, target);
             yield return new WaitForSeconds(0.16f / rate);
-            controller.SetSkillCommit(false);
+            FinishMeleeAction();
         }
 
         // Cross Slash: two quick cuts, the second mirroring the first, each along one arm of the X.
@@ -469,7 +477,7 @@ namespace PoeClone.Skills
                 CrossCut(skill, level, Quaternion.Euler(0f, cut == 0 ? 45f : -45f, 0f) * transform.forward);
                 yield return new WaitForSeconds((cut == 0 ? CrossCutGap : CrossCutRecovery) / rate);
             }
-            controller.SetSkillCommit(false);
+            FinishMeleeAction();
         }
 
         // ------------------------------------------------------------------ the blows
