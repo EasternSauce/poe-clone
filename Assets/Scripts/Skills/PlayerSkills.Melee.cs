@@ -58,9 +58,11 @@ namespace PoeClone.Skills
 
         private const float SlamWindup = 0.72f;
         private const float StrikeRecovery = 0.18f;
-        private const float CleaveWindup = 0.91f / 3f;
-        private const float CleaveRecovery = 0.07f / 3f;
-        private const float CleaveHalfAngle = 90f;
+        // Shared with both animation profiles so the visible cut and damage release stay aligned.
+        internal const float CleaveSwingStart = 0.1f;
+        internal const float CleaveWindup = 0.91f / 3f;
+        internal const float CleaveRecovery = 0.18f;
+        internal const float CleaveHalfAngle = 60f;
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
@@ -199,7 +201,7 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ the moves
 
-        // A half-circle sweep in front of the player, without rotating their facing.
+        // A 120-degree sweep in front of the player, without rotating their facing.
         private void Cleave(SkillDefinition skill, int level)
         {
             float reach = MeleeSkillReach();
@@ -212,7 +214,7 @@ namespace PoeClone.Skills
             {
                 Vector3 to = enemy.transform.position - transform.position;
                 to.y = 0f;
-                if (Vector3.Dot(transform.forward, to) >= 0f)
+                if (Vector3.Angle(transform.forward, to) <= CleaveHalfAngle)
                     Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
             }
         }

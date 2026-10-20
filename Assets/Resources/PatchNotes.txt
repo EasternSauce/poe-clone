@@ -1,3 +1,6 @@
+version: 2026-10-20-cleave-swing
+- Cleave now hits a 120-degree arc in front of you. Swords and axes visibly sweep through the strike and recover smoothly instead of snapping out of the windup.
+
 version: 2026-10-20-arena-workaround-rollback
 - Removed the experimental arena loading and Editor input workarounds.
 

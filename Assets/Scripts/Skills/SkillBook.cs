@@ -184,7 +184,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "swords and axes",
                 ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Melee skill (the weapon's attack): quickly sweep a half-circle in front of you, hitting enemies in reach for 110% weapon damage. 15% slower attack rate. Swords and axes only."
+                Description = "Melee skill (the weapon's attack): quickly sweep a 120-degree arc in front of you, hitting enemies in reach for 110% weapon damage. 15% slower attack rate. Swords and axes only."
             },
             new SkillDefinition
             {

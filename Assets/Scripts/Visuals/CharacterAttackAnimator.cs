@@ -327,18 +327,23 @@ namespace PoeClone.Visuals
         // from the ordinary weapon swing. Skill timing below matches PlayerSkills' windups.
         private static readonly AttackProfile CleaveSkillProfile = new AttackProfile
         {
-            Duration = 0.98f / 3f, StrikeTime = 0.91f / 0.98f,
-            WindupOffset = new Pose(55f, -105f, -25f, 65f),
-            StrikeOffset = new Pose(-60f, 100f, 20f, 0f),
-            Range = 3f, ConeHalfAngle = 90f
+            Duration = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery,
+            StrikeTime = PlayerSkills.CleaveWindup / (PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery),
+            SwingStart = PlayerSkills.CleaveSwingStart / (PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery),
+            WindupOffset = new Pose(-55f, -60f, -20f, 35f),
+            StrikeOffset = new Pose(-60f, 60f, 20f, 0f),
+            Range = 3f, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
         };
 
         private static readonly AttackProfile CleaveGreatSkillProfile = new AttackProfile
         {
-            Duration = 0.98f / 3f, StrikeTime = 0.91f / 0.98f, TwoHandGrip = true,
-            WindupOffset = new Pose(-55f, -105f, -25f, 0f),
-            StrikeOffset = new Pose(-28f, 100f, 20f, 0f),
-            Range = 3.3f, ConeHalfAngle = 90f
+            Duration = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery,
+            StrikeTime = PlayerSkills.CleaveWindup / (PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery),
+            SwingStart = PlayerSkills.CleaveSwingStart / (PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery),
+            TwoHandGrip = true,
+            WindupOffset = new Pose(-55f, -60f, -20f, 0f),
+            StrikeOffset = new Pose(-55f, 60f, 20f, 0f),
+            Range = 3.3f, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
         };
 
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
