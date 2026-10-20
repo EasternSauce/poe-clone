@@ -45,7 +45,16 @@ namespace PoeClone.World
             if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
             if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
-                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant);
+            {
+                float finisherInterval = 1f;
+                if (skill.Id == SkillId.Cleave)
+                {
+                    float seconds = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery;
+                    float animationRate = Mathf.Max(1f, seconds * uses) * WeaponSkillRules.ComboFollowupSpeed(skill.Grant);
+                    finisherInterval = Mathf.Max(1f, seconds * PlayerSkills.CleaveFinisherSlowdown / animationRate * uses);
+                }
+                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, finisherInterval);
+            }
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
             float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier);
             baseHit *= combo;

@@ -58,7 +58,7 @@ namespace PoeClone.Skills
             }
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
-            PlaySkillSound(cast.Skill, cast.At);
+            if (cast.Skill != SkillId.Cleave || !cast.Finisher) PlaySkillSound(cast.Skill, cast.At);
             if (cast.Finisher || cast.CleaveAccent)
                 PlayComboImpactVisual(cast, skill);
             PlayComboImpactSound(cast.Skill, cast.Finisher, cast.CleaveAccent, cast.At);

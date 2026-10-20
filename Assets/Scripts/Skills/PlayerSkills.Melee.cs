@@ -40,9 +40,18 @@ namespace PoeClone.Skills
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
+        internal const float CleaveFinisherSlowdown = 3f;
+        private GroundTelegraph.Decal cleaveFinisherPreview;
+
+        private void ClearCleaveFinisherPreview()
+        {
+            if (cleaveFinisherPreview.Root != null) Destroy(cleaveFinisherPreview.Root);
+            cleaveFinisherPreview = default;
+        }
 
         public void ResetMeleeCombo()
         {
+            ClearCleaveFinisherPreview();
             // Breaking Cleave starts a full recovery, even if its fast link cooldown elapsed.
             // Completed finishers retain the normal cooldown already owned by PlayerCombat.
             if (meleeComboSwing > 0 && !meleeFinisher && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
@@ -123,13 +132,18 @@ namespace PoeClone.Skills
                 float next = distance * progress;
                 controller.MoveAttackStep(transform.forward * (next - stepped));
                 stepped = next;
+                if (cleaveFinisherPreview.Root != null)
+                {
+                    cleaveFinisherPreview.Follow(transform.position + transform.forward * (distance - stepped), MeleeSkillReach() * ComboArea);
+                    cleaveFinisherPreview.SetProgress(elapsed / Mathf.Max(0.001f, seconds));
+                }
                 yield return null;
             }
         }
 
         private void PlayMeleeSound(SkillId skill, bool accent = true)
         {
-            PlaySkillSound(skill, transform.position);
+            if (skill != SkillId.Cleave || !meleeFinisher) PlaySkillSound(skill, transform.position);
             if (!accent) return;
             PlayComboImpactSound(skill, meleeFinisher, meleeCleaveAccent, transform.position);
             if (meleeFinisher)
@@ -284,6 +298,11 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.Cleave:
+                    if (meleeFinisher)
+                    {
+                        rate /= CleaveFinisherSlowdown;
+                        interval = Mathf.Max(interval, (CleaveWindup + CleaveRecovery) / rate);
+                    }
                     StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
                         () => Cleave(skill, level), CleaveRecovery));
                     break;
@@ -373,7 +392,21 @@ namespace PoeClone.Skills
         {
             controller.SetSkillCommit(true);
             PlaySkillAnimation(skill, animationWeapon, rate, mirrored: skill == SkillId.Cleave && meleeComboSwing % 2 == 0);
+            if (skill == SkillId.Cleave && meleeFinisher)
+            {
+                ClearCleaveFinisherPreview();
+                Color markerColor = new Color(0.65f, 0.25f, 1f);
+                cleaveFinisherPreview = GroundTelegraph.ImpactDisc(
+                    transform.position + transform.forward * meleeStepDistance, transform.forward,
+                    MeleeSkillReach() * ComboArea, CleaveHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
+                cleaveFinisherPreview.Root.name = "Cleave finisher area";
+                cleaveFinisherPreview.Block.SetFloat("_Impact", 0f);
+                cleaveFinisherPreview.Block.SetColor("_WarnColor", Color.Lerp(Color.black, markerColor, 0.2f));
+                cleaveFinisherPreview.Block.SetColor("_FillColor", markerColor);
+                cleaveFinisherPreview.SetProgress(0f);
+            }
             yield return MeleeWindup(windup / rate);
+            ClearCleaveFinisherPreview();
             // Slams read the hammer position after the arm and body have applied their strike pose.
             if (skill == SkillId.Pulverize || skill == SkillId.Fissure || skill == SkillId.Aftershock)
                 yield return new WaitForEndOfFrame();

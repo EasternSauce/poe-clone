@@ -1,3 +1,8 @@
+version: 2026-10-21-cleave-heavy-finisher
+- Cleave's fourth attack now winds up and animates three times slower, with a violet area marker that fills toward impact. Earlier slashes have no pre-attack marker.
+- Replaced the fourth-hit sound with a heavier crack and deep impact, playing on its own so the normal slash does not mask it.
+- Build picker DPS now accounts for the longer finisher.
+
 version: 2026-10-21-cursor-melee-steps
 - Removed the shadow-like ground previews before melee combo attacks.
 - On PC, each melee slash aims toward the current cursor and steps only when the cursor is farther than 1.5 metres away. Close targets can be slashed in place, and steps shorten as you approach them.

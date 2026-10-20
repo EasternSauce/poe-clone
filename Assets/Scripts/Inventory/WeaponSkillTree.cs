@@ -147,10 +147,10 @@ namespace PoeClone.Inventory
         public static float ComboFollowupSpeed(StatType grant) => grant == StatType.GrantCleave ? 2f : 4f;
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
-        public static float ComboSustainedSpeed(StatType grant)
+        public static float ComboSustainedSpeed(StatType grant, float finisherInterval = 1f)
         {
             int length = ComboLength(grant);
-            return length > 0 ? length / (1f + (length - 1f) / ComboFollowupSpeed(grant)) : 1f;
+            return length > 0 ? length / (finisherInterval + (length - 1f) / ComboFollowupSpeed(grant)) : 1f;
         }
 
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
