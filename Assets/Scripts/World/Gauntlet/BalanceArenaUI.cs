@@ -237,6 +237,30 @@ namespace PoeClone.World
             UiKit.TopLeft(settingsButton, new Vector2(180f, -top), new Vector2(150f, 42f));
             status.rectTransform.anchoredPosition = new Vector2(0f, -top - 54f);
             status.rectTransform.sizeDelta = new Vector2(size.x - 32f, 65f);
+            LayoutRoutes();
+        }
+
+        private void LayoutRoutes()
+        {
+            if (visibleChoices == null) return;
+            float width = Mathf.Max(1f, routeScroll.viewport.rect.width - 8f);
+            float y = 0;
+            int category = 0;
+            for (int i = 0; i < visibleChoices.Count; i++)
+            {
+                if (i == 0 || visibleChoices[i].level != visibleChoices[i - 1].level)
+                {
+                    if (i > 0) y += 8f;
+                    RoutePosition(categoryHeaders[category++].rectTransform, y, 28f);
+                    y += 32f;
+                }
+                Text label = routeLabels[i];
+                float height = Mathf.Max(46f, label.cachedTextGeneratorForLayout.GetPreferredHeight(
+                    label.text, label.GetGenerationSettings(new Vector2(width, 0f))) / label.pixelsPerUnit + 12f);
+                RoutePosition(routeButtons[i].rectTransform, y, height);
+                y += height + 4f;
+            }
+            routeScroll.content.sizeDelta = new Vector2(0f, y + 8f);
         }
 
         private void ChangeLevel(int delta)
@@ -266,7 +290,6 @@ namespace PoeClone.World
             // Keep every category in one list: the flexible level-one route must not hide the rest.
             visibleChoices = new List<BalanceArenaBuilds.Entry>();
             var leaders = new Dictionary<int, string>();
-            float y = 0;
             int category = 0;
             foreach (var group in choices.GroupBy(b => b.level).OrderBy(g => g.Key))
             {
@@ -279,8 +302,6 @@ namespace PoeClone.World
                 header.gameObject.SetActive(true);
                 header.text = "MINIMUM LEVEL " + group.Key + " · " + ranked.Count + (ranked.Count == 1 ? " route" : " routes");
                 header.raycastTarget = false;
-                RoutePosition(header.rectTransform, y, 28);
-                y += 32;
                 foreach (var choice in ranked)
                 {
                     int index = visibleChoices.Count;
@@ -292,18 +313,11 @@ namespace PoeClone.World
                         });
                         routeButtons.Add(button);
                         Text label = button.GetComponentInChildren<Text>();
-                        label.resizeTextForBestFit = true;
-                        label.resizeTextMinSize = 12;
-                        label.resizeTextMaxSize = 19;
                         routeLabels.Add(label);
                     }
-                    RoutePosition(routeButtons[index].rectTransform, y, 46);
-                    y += 50;
                 }
-                y += 8;
             }
             for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
-            routeScroll.content.sizeDelta = new Vector2(0, y);
             levelGroupLabel.text = "All level categories · Highest DPS first within each category · Green = leader";
             levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
@@ -318,7 +332,7 @@ namespace PoeClone.World
                 float dps = BalanceArenaBuilds.EstimatedDps(preview);
                 float bossDps = BalanceArenaBuilds.EstimatedDps(preview, boss: true);
                 bool highest = choice.id == leaders[choice.level];
-                routeLabels[i].text = choice.name + "  · Lv " + choice.level + "+" +
+                routeLabels[i].text = BalanceArenaBuilds.RouteEffects(choice) + "  · Lv " + choice.level + "+" +
                     "\n≈ " + dps.ToString("N0") + " effective DPS" +
                     (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
                     " at Lv " + preview.level + (highest ? " · TOP DPS" : "");
@@ -326,11 +340,12 @@ namespace PoeClone.World
                 routeButtons[i].color = !randomBuild && choice.id == route ? Selected : Color.white;
             }
             routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
-            detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected: " + skill + " · " + choices.First(b => b.id == route).name) +
+            detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
                 "\nDPS: full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
                 "\nWorst 30% ground loot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
+            LayoutRoutes();
         }
         private BalanceArenaBuilds.Entry Preview(BalanceArenaBuilds.Entry choice)
         {

@@ -31,6 +31,15 @@ namespace PoeClone.World
         public static Catalogue Data => catalogue ?? (catalogue = JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text));
         private static string[] Split(string text) => string.IsNullOrEmpty(text) ? new string[0] : text.Split(',');
 
+        public static string RouteEffects(Entry entry)
+        {
+            var grant = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant;
+            var destinations = Split(entry.weaponNodes).Select(id => WeaponSkillTrees.Find(grant, id))
+                .Where(node => node != null && node.Keystone).ToArray();
+            return destinations.Length == 0 ? "Flexible tree (no fixed destination effects)" :
+                string.Join("; ", destinations.Select(node => node.Description.Replace("\n", "; ")));
+        }
+
         private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();
 
         /// <summary>Median of three repeatable poor-loot kits, without touching player state or RNG.</summary>
