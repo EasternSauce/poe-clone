@@ -327,18 +327,18 @@ namespace PoeClone.Visuals
         // from the ordinary weapon swing. Skill timing below matches PlayerSkills' windups.
         private static readonly AttackProfile CleaveSkillProfile = new AttackProfile
         {
-            Duration = 0.98f, StrikeTime = 0.93f,
+            Duration = 0.98f / 3f, StrikeTime = 0.91f / 0.98f,
             WindupOffset = new Pose(55f, -105f, -25f, 65f),
             StrikeOffset = new Pose(-60f, 100f, 20f, 0f),
-            Range = 3f
+            Range = 3f, ConeHalfAngle = 90f
         };
 
         private static readonly AttackProfile CleaveGreatSkillProfile = new AttackProfile
         {
-            Duration = 0.98f, StrikeTime = 0.93f, TwoHandGrip = true,
+            Duration = 0.98f / 3f, StrikeTime = 0.91f / 0.98f, TwoHandGrip = true,
             WindupOffset = new Pose(-55f, -105f, -25f, 0f),
             StrikeOffset = new Pose(-28f, 100f, 20f, 0f),
-            Range = 3.3f, ConeHalfAngle = 75f
+            Range = 3.3f, ConeHalfAngle = 90f
         };
 
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile

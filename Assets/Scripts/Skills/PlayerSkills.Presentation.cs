@@ -61,9 +61,12 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.FrostNova:
-                case SkillId.Cleave:
                 case SkillId.Pulverize:
-                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, cast.Skill == SkillId.Cleave ? 0.3f : 0.4f, type: SkillEffects.DamagePattern(skill));
+                    SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.4f, type: SkillEffects.DamagePattern(skill));
+                    break;
+
+                case SkillId.Cleave:
+                    SkillEffects.Cone(cast.At, facing, cast.Size, CleaveHalfAngle, skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.Whirlwind:

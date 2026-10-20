@@ -43,7 +43,7 @@ namespace PoeClone.Skills
         {
             switch (id)
             {
-                case SkillId.Cleave: return 0.91f;
+                case SkillId.Cleave: return CleaveWindup + CleaveRecovery;
                 case SkillId.Pulverize:
                 case SkillId.Fissure:
                 case SkillId.Aftershock: return SlamWindup + StrikeRecovery;
@@ -58,6 +58,9 @@ namespace PoeClone.Skills
 
         private const float SlamWindup = 0.72f;
         private const float StrikeRecovery = 0.18f;
+        private const float CleaveWindup = 0.91f / 3f;
+        private const float CleaveRecovery = 0.07f / 3f;
+        private const float CleaveHalfAngle = 90f;
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
@@ -134,7 +137,8 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.Cleave:
-                    StartCoroutine(Spin(skill, level, rate));
+                    StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
+                        () => Cleave(skill, level), CleaveRecovery));
                     break;
                 case SkillId.Pulverize:
                     StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Pulverize(skill, level)));
@@ -195,34 +199,26 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ the moves
 
-        // A full turn on the spot, then everything in reach takes the blow.
-        private IEnumerator Spin(SkillDefinition skill, int level, float rate)
+        // A half-circle sweep in front of the player, without rotating their facing.
+        private void Cleave(SkillDefinition skill, int level)
         {
-            controller.SetSkillCommit(true);
-            PlaySkillAnimation(skill.Id, CurrentWeapon(), rate);
-            yield return new WaitForSeconds(0.65f / rate);
-
-            float seconds = 0.26f / rate;
-            float startYaw = transform.eulerAngles.y;
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                transform.rotation = Quaternion.Euler(0f, startYaw + 360f * (t / seconds), 0f);
-                yield return null;
-            }
-            transform.rotation = Quaternion.Euler(0f, startYaw, 0f);
-
-            float reach = Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
-            SkillEffects.Shockwave(transform.position, reach, skill.Color, 0.3f, type: SkillEffects.DamagePattern(skill));
+            float reach = MeleeSkillReach();
+            SkillEffects.Cone(transform.position, transform.forward, reach, CleaveHalfAngle,
+                skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
 
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
-            PlaySkillSound(skill.Id, transform.position);
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
-            controller.SetSkillCommit(false);
+            {
+                Vector3 to = enemy.transform.position - transform.position;
+                to.y = 0f;
+                if (Vector3.Dot(transform.forward, to) >= 0f)
+                    Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id);
+            }
         }
 
-        private IEnumerator CommittedStrike(SkillId skill, float windup, WeaponType animationWeapon, float rate, Action release)
+        private IEnumerator CommittedStrike(SkillId skill, float windup, WeaponType animationWeapon, float rate,
+            Action release, float recovery = StrikeRecovery)
         {
             controller.SetSkillCommit(true);
             PlaySkillAnimation(skill, animationWeapon, rate);
@@ -232,7 +228,7 @@ namespace PoeClone.Skills
                 yield return new WaitForEndOfFrame();
             PlaySkillSound(skill, transform.position);
             release();
-            yield return new WaitForSeconds(StrikeRecovery / rate);
+            yield return new WaitForSeconds(recovery / rate);
             controller.SetSkillCommit(false);
         }
 
