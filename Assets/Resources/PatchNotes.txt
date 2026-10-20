@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-editor-input
+- Launching the arena now opens and focuses Unity's Game tab and routes mouse and keyboard input to the game during the session, including when Play Unfocused is configured. Stopping Play restores the previous input-routing setting.
+
 version: 2026-10-20-arena-route-pages
 - Arena build pages now fill across minimum-level groups, so specialized builds appear alongside the flexible tree on the first page. Each route retains its minimum-level label and DPS ranking within its group.
 - The route selector now shows how many builds are listed and the current page.
