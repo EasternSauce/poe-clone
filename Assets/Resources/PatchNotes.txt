@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-menu-launch
+- The Editor's Balance Test Arena command now waits for the menu to close before entering Play, addressing startup input getting stuck until Pause is toggled.
+
 version: 2026-10-20-arena-free-roam
 - The arena now starts with a level 1 character ready to walk around, with the build picker closed. Press Esc or click Arena builds to open or close it; choosing a build starts a fresh run.
 - Arena builds and Settings buttons now sit below the health and mana HUD, including on touch screens. The build picker pauses the arena and can be closed without starting a run.

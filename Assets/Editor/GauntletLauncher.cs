@@ -35,7 +35,16 @@ namespace PoeClone.EditorTools
         private const double RunTimeoutSeconds = 30 * 60;
 
         [MenuItem("PoeClone/Balance Test Arena", priority = 35)]
-        private static void ManualMenu() => Debug.Log(Manual());
+        private static void ManualMenu()
+        {
+            // Let the native menu close and release input before entering Play mode.
+            // Entering Play inside its callback can leave the Game view ignoring input
+            // until the Editor's pause state changes, even though frames keep running.
+            EditorApplication.delayCall -= LaunchManualFromMenu;
+            EditorApplication.delayCall += LaunchManualFromMenu;
+        }
+
+        private static void LaunchManualFromMenu() => Debug.Log(Manual());
 
         [MenuItem("PoeClone/Balance/Class Gauntlet (Automated)", priority = 36)]
         private static void AutoMenu() => Debug.Log(Auto());
