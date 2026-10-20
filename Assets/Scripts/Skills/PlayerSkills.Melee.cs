@@ -34,6 +34,7 @@ namespace PoeClone.Skills
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
         private float ComboArea => meleeFinisher ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
+        public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
 
         public void ResetMeleeCombo()
         {
@@ -223,9 +224,11 @@ namespace PoeClone.Skills
             }
 
             interval = MeleeInterval(id.Value);
-            // Faster attacks speed the whole move up; slower ones leave a pause after it, like a swing.
-            float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval);
-            BeginMeleeCombo(skill, Mathf.Max(interval, MeleeSeconds(id.Value) / rate));
+            // Keep the normal cooldown for isolated attacks, but allow a queued follow-up after
+            // one third of the attack-speed-scaled interval. Fit the pose and hit into that gap.
+            float comboInterval = interval / WeaponSkillRules.ComboFollowupSpeed;
+            float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * WeaponSkillRules.ComboFollowupSpeed;
+            BeginMeleeCombo(skill, comboInterval);
             switch (skill.Id)
             {
                 case SkillId.Cleave:

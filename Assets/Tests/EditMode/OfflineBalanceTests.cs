@@ -67,10 +67,11 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var baseline = ComboDps(skill, weapon, sheet, step: 0);
             var combo = ComboDps(skill, weapon, sheet);
-            Assert.AreEqual(baseline.hit * factor, combo.hit, .001f);
-            Assert.AreEqual(baseline.uses, combo.uses, .001f, "A combo does not create extra attack uses");
-            if (skill == "FangStrike") Assert.AreEqual(baseline.dot * factor, combo.dot, .001f);
-            if (skill == "VenomSlash") Assert.AreEqual(baseline.dot, combo.dot, .001f, "Built-in Venom Slash poison does not scale with combo damage");
+            float cadence = skill == "Whirlwind" ? 1f : 3f;
+            Assert.AreEqual(baseline.hit * factor * cadence, combo.hit, .001f);
+            Assert.AreEqual(baseline.uses * cadence, combo.uses, .001f, "Successful follow-ups use one third of the normal interval");
+            if (skill == "FangStrike") Assert.AreEqual(baseline.dot * factor * cadence, combo.dot, .001f);
+            if (skill == "VenomSlash") Assert.AreEqual(baseline.dot * cadence, combo.dot, .001f, "Built-in poison gains frequency but not combo hit damage");
         }
 
         [Test]
@@ -79,7 +80,7 @@ namespace PoeClone.Tests
             var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 4);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
-            Assert.AreEqual(plainHit.hit * (1f + 1.35f + 1f + 2.25f * 1.15f * 1.3f) / 4f,
+            Assert.AreEqual(plainHit.hit * 3f * (1f + 1.35f + 1f + 2.25f * 1.15f * 1.3f) / 4f,
                 ComboDps("Cleave", weapon, sheet).hit, .001f);
         }
 
@@ -91,8 +92,22 @@ namespace PoeClone.Tests
             float expected = 0;
             for (int step = 1; step <= 4; step++) expected += ComboDps("Cleave", weapon, sheet, step).hit / 4f;
             Assert.AreEqual(expected, ComboDps("Cleave", weapon, sheet).hit, .001f);
-            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.4f,
+            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.4f * 3f,
                 "Heavy hits lose a smaller fraction of damage to armour");
+        }
+
+        [TestCase(-50f)]
+        [TestCase(0f)]
+        [TestCase(50f)]
+        [TestCase(200f)]
+        public void SingleTarget_FastComboIntervalStillScalesWithAttackSpeed(float attackSpeed)
+        {
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 0);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
+            float normalUses = ComboDps("Cleave", weapon, sheet, step: 0).uses;
+            float comboUses = ComboDps("Cleave", weapon, sheet).uses;
+            Assert.AreEqual(normalUses * 3f, comboUses, .001f);
+            Assert.AreEqual(1f / normalUses / 3f, 1f / comboUses, .001f);
         }
 
         [Test]

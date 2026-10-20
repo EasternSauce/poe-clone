@@ -1,3 +1,7 @@
+version: 2026-10-20-fast-combo-followups
+- Queued melee combo follow-ups now start after one-third of the normal weapon interval, still scaling with attack speed. Swing animations and hit timing are accelerated to fit the faster chain; missed queues and movement restore the normal attack cooldown.
+- Build picker DPS now includes the faster sustained combo cadence. Whirlwind remains unchanged.
+
 version: 2026-10-20-combo-build-picker-dps
 - Build picker DPS now assumes uninterrupted successful melee combos, including Cleave's second and fourth hits and each skill's finisher damage nodes. Each hit is mitigated separately before averaging the full combo.
 - Combo damage also feeds poison and burning estimates where those effects scale with the hit. Whirlwind remains unchanged.

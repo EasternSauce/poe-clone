@@ -144,6 +144,8 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
+        public const float ComboFollowupSpeed = 3f;
+
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
         public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f)
         {
