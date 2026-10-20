@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-input-investigation
+- Removed the automatic Editor startup Pause/Resume workaround, which did not resolve the first-session arena input issue.
+
 version: 2026-10-20-arena-mcp-input-recovery
 - Added a one-time Editor Pause/Resume cycle after arena startup to work around the first MCP-started session ignoring keyboard and mouse input despite running normally. An existing startup pause is preserved.
 
