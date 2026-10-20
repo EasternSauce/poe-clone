@@ -38,8 +38,8 @@ namespace PoeClone.Skills
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
-        private float comboPreviewStartedAt;
-        private readonly List<GroundTelegraph.Decal> comboPreview = new List<GroundTelegraph.Decal>();
+        private float meleeStepDistance;
+        private const float CursorSlashStandOff = 1.5f;
 
         public void ResetMeleeCombo()
         {
@@ -56,7 +56,6 @@ namespace PoeClone.Skills
                 attackAnimator.ComboBracing = false;
                 attackAnimator.CleaveComboPose = false;
             }
-            ClearComboPreview();
         }
 
         /// <summary>Buffer one follow-up near the next swing, including a held attack.</summary>
@@ -76,96 +75,35 @@ namespace PoeClone.Skills
                 meleeComboQueued = true;
                 controller.SetComboBrace(true);
                 if (attackAnimator != null) attackAnimator.ComboBracing = true;
-                ShowComboPreview();
             }
             return meleeComboQueued;
-        }
-
-        private void ClearComboPreview(bool release = false)
-        {
-            foreach (var decal in comboPreview)
-            {
-                if (decal.Root == null) continue;
-                if (release) decal.SetProgress(1f);
-                Destroy(decal.Root, release ? 0.07f : 0f);
-            }
-            comboPreview.Clear();
-        }
-
-        private void AdvanceComboPreview()
-        {
-            float progress = Mathf.InverseLerp(comboPreviewStartedAt, Mathf.Max(comboPreviewStartedAt + 0.01f, meleeComboReadyAt), Time.time);
-            foreach (var decal in comboPreview) decal.SetProgress(progress);
-        }
-
-        private void ShowComboPreview()
-        {
-            ClearComboPreview();
-            if (!ActiveMeleeSkill.HasValue) return;
-            var skill = SkillBook.Get(ActiveMeleeSkill.Value);
-            int length = WeaponSkillRules.ComboLength(skill.Grant);
-            bool final = length > 0 && (meleeComboSwing + 1) % length == 0;
-            float area = final ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
-            Vector3 facing = transform.forward;
-            Vector3 origin = transform.position + facing * (final ? 1.65f : 1.1f);
-            Vector3 slam = origin + facing * CharacterAttackAnimator.AttackRange(CurrentWeapon());
-            var pattern = SkillEffects.DamagePattern(skill);
-            void Add(GroundTelegraph.Decal decal)
-            {
-                decal.Root.name = "Locked combo area";
-                decal.Block.SetFloat("_Impact", 0f);
-                decal.Block.SetColor("_WarnColor", Color.Lerp(Color.black, skill.Color, 0.12f));
-                decal.Block.SetColor("_FillColor", skill.Color);
-                decal.SetProgress(0f);
-                comboPreview.Add(decal);
-            }
-            void Disc(Vector3 at, float radius, float angle = 180f) =>
-                Add(GroundTelegraph.ImpactDisc(at, facing, radius, angle, skill.Color, pattern));
-            void Line(Vector3 at, Vector3 along, float reach, float width) =>
-                Add(GroundTelegraph.ImpactLine(at, along, reach, width, skill.Color, pattern));
-            switch (skill.Id)
-            {
-                case SkillId.Cleave: Disc(origin, MeleeSkillReach() * area, CleaveHalfAngle); break;
-                case SkillId.Pulverize: Disc(slam, 3.6f * AreaMultiplier * MeleeRangeMultiplier * area); break;
-                case SkillId.Fissure: Line(slam, facing, FissureLength * MeleeRangeMultiplier * area, 2f * FissureHalfWidth * AreaMultiplier * area); break;
-                case SkillId.Aftershock:
-                    var radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier * area * Mathf.Sqrt(WeaponBonuses.RangeMultiplier),
-                        3 + Mathf.RoundToInt(WeaponBonuses.Get(WeaponSkillEffect.ExtraWaves)));
-                    for (int k = 0; k < radii.Length; k++)
-                    {
-                        if (k > 0) slam += facing * (radii[k - 1] + radii[k]) * 0.85f;
-                        Disc(slam, radii[k]);
-                    }
-                    break;
-                case SkillId.CrossSlash:
-                    float reach = MeleeSkillReach() * area;
-                    foreach (float angle in new[] { 45f, -45f })
-                    {
-                        Vector3 along = Quaternion.Euler(0f, angle, 0f) * facing;
-                        Line(origin - along * reach, along, reach * 2f, 2f * CrossHalfWidth * AreaMultiplier * area);
-                    }
-                    break;
-                case SkillId.LungingThrust:
-                    Line(origin, facing, 3f * MeleeRangeMultiplier * area + LungeStep * WeaponBonuses.RangeMultiplier, final ? 2f : 0.8f);
-                    break;
-                case SkillId.FangStrike: Disc(origin, 2.4f * MeleeRangeMultiplier * area, final ? CleaveHalfAngle : 20f); break;
-                case SkillId.ReapingArc: Disc(origin, MeleeSkillReach() * area, 72f); break;
-                case SkillId.VenomSlash: Disc(origin, MeleeSkillReach() * area, VenomSlashHalfAngle); break;
-            }
-            comboPreviewStartedAt = Time.time;
         }
 
         private void BeginMeleeCombo(SkillDefinition skill, float interval)
         {
             bool continuing = QueueMeleeFollowup(false) && Time.time >= meleeComboReadyAt;
-            controller.BeginComboAttack(continuing);
             if (attackAnimator != null) attackAnimator.ComboBracing = false;
-            ClearComboPreview(release: continuing);
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
             int length = WeaponSkillRules.ComboLength(skill.Grant);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
             meleeCleaveAccent = skill.Id == SkillId.Cleave && meleeComboSwing % length == 2;
             meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing);
+            float maxStep = meleeFinisher ? 1.65f : 1.1f;
+            meleeStepDistance = continuing ? maxStep : 0f;
+            Vector3? cursorDirection = null;
+            if (!TouchMode.Active)
+            {
+                // Sample each slash independently; never push through a close cursor or target.
+                meleeStepDistance = 0f;
+                if (PlayerCombat.CursorAimPoint(transform.position, out Vector3 cursor))
+                {
+                    Vector3 toCursor = cursor - transform.position;
+                    toCursor.y = 0f;
+                    meleeStepDistance = Mathf.Clamp(toCursor.magnitude - CursorSlashStandOff, 0f, maxStep);
+                    if (toCursor.sqrMagnitude > 0.001f) cursorDirection = toCursor;
+                }
+            }
+            controller.BeginComboAttack(continuing, cursorDirection);
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
@@ -177,7 +115,7 @@ namespace PoeClone.Skills
         {
             float elapsed = 0f;
             float stepped = 0f;
-            float distance = meleeComboSwing > 1 ? (meleeFinisher ? 1.65f : 1.1f) : 0f;
+            float distance = meleeStepDistance;
             while (elapsed < seconds)
             {
                 elapsed = Mathf.Min(seconds, elapsed + Time.deltaTime);

@@ -1,3 +1,7 @@
+version: 2026-10-21-cursor-melee-steps
+- Removed the shadow-like ground previews before melee combo attacks.
+- On PC, each melee slash aims toward the current cursor and steps only when the cursor is farther than 1.5 metres away. Close targets can be slashed in place, and steps shorten as you approach them.
+
 version: 2026-10-21-cleave-combo-readability
 - Cleave now holds its follow-through between alternating cuts instead of sweeping back across the target after every hit, making its four attacks easier to read.
 - Buffered melee follow-ups no longer expire while waiting for recovery. Follow-up windows last through the actual recovery, and movement input that cannot move the character during an attack no longer cancels the combo.

@@ -42,8 +42,15 @@ namespace PoeClone.Player
             if (braced) CancelWalk();
         }
 
-        public void BeginComboAttack(bool locked)
+        public void BeginComboAttack(bool locked, Vector3? aimDirection = null)
         {
+            if (aimDirection.HasValue)
+            {
+                Vector3 direction = aimDirection.Value;
+                direction.y = 0f;
+                if (direction.sqrMagnitude > 0.001f)
+                    transform.rotation = comboFacing = Quaternion.LookRotation(direction);
+            }
             comboAttackLocked = locked;
             IsComboBraced = false;
             if (locked) transform.rotation = comboFacing;

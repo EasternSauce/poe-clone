@@ -357,7 +357,6 @@ namespace PoeClone.Skills
                 return;
             }
 
-            AdvanceComboPreview();
             AdvanceCast();
 
             int pressed = VirtualInput.SkillPressed;
