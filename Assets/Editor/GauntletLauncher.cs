@@ -130,14 +130,17 @@ namespace PoeClone.EditorTools
         {
             if (state == PlayModeStateChange.EnteredPlayMode && MinimalCombatMode.ArenaEnabled)
             {
-                // MCP sets isPlaying directly, so Unity can leave keyboard/mouse input
-                // routed to the Editor while the arena keeps simulating. Focus after the
-                // transition, regardless of whether the menu or MCP started this session.
-                EditorApplication.delayCall -= FocusArenaGameView;
-                EditorApplication.delayCall += FocusArenaGameView;
+                // The first MCP-started session can simulate normally while accepting no
+                // input. Focusing the Game view alone does not recover it; an Editor
+                // pause/resume cycle does. Wait until the Play transition has finished.
+                EditorApplication.delayCall -= RecoverArenaInput;
+                EditorApplication.delayCall += RecoverArenaInput;
             }
             if (state == PlayModeStateChange.ExitingPlayMode)
-                EditorApplication.delayCall -= FocusArenaGameView;
+            {
+                EditorApplication.delayCall -= RecoverArenaInput;
+                EditorApplication.update -= ResumeArenaAfterInputRecovery;
+            }
             if (state == PlayModeStateChange.ExitingPlayMode && SessionState.GetBool(ActiveKey, false))
                 CollectRow();
             if (state != PlayModeStateChange.EnteredEditMode || !SessionState.GetBool(ActiveKey, false)) return;
@@ -149,10 +152,23 @@ namespace PoeClone.EditorTools
             SessionState.SetBool(ActiveKey, false);
         }
 
-        private static void FocusArenaGameView()
+        private static void RecoverArenaInput()
         {
-            if (EditorApplication.isPlaying && MinimalCombatMode.ArenaEnabled)
-                EditorApplication.ExecuteMenuItem("Window/General/Game");
+            // Preserve an intentional startup pause. This runs once per arena entry,
+            // never while playing normally or when opening the build picker.
+            if (!EditorApplication.isPlaying || !MinimalCombatMode.ArenaEnabled || EditorApplication.isPaused) return;
+            EditorApplication.update -= ResumeArenaAfterInputRecovery;
+            EditorApplication.update += ResumeArenaAfterInputRecovery;
+            EditorApplication.isPaused = true;
+        }
+
+        private static void ResumeArenaAfterInputRecovery()
+        {
+            // Use a separate Editor tick so Unity processes the paused input state.
+            EditorApplication.update -= ResumeArenaAfterInputRecovery;
+            if (!EditorApplication.isPlaying) return;
+            EditorApplication.isPaused = false;
+            EditorApplication.ExecuteMenuItem("Window/General/Game");
         }
 
         // ------------------------------------------------------------------ the automated queue
