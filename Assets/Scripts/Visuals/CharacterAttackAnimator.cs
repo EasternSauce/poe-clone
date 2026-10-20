@@ -75,6 +75,7 @@ namespace PoeClone.Visuals
             // Both hands on one weapon: the off arm copies the weapon arm, turned in so the hands
             // meet on the grip (see GripPose).
             public bool TwoHandGrip;
+            public bool ChargedGroundStab;
 
             // Half-angle of the cone the blow reaches (0: the attacker's own default).
             public float ConeHalfAngle;
@@ -364,6 +365,17 @@ namespace PoeClone.Visuals
             Range = CleaveGreatSkillProfile.Range, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
         };
 
+        // Hold a raised, downward-pointing blade, then plunge only at the end of the charge.
+        private static readonly AttackProfile CleaveGroundStabProfile = new AttackProfile
+        {
+            Duration = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery,
+            StrikeTime = CleaveSkillProfile.StrikeTime, SwingStart = 0.52f,
+            TwoHandGrip = true, ChargedGroundStab = true,
+            WindupOffset = new Pose(-110f, 0f, 0f, -100f),
+            StrikeOffset = new Pose(-25f, 0f, 0f, -5f),
+            Range = 3.3f, ConeHalfAngle = PlayerSkills.CleaveFinisherHalfAngle
+        };
+
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
         {
             Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.6f, SideLift = 45f,
@@ -603,7 +615,8 @@ namespace PoeClone.Visuals
             StaffBoltProfile,
             StaffSwingProfile,
             CleaveBackhandProfile,
-            CleaveGreatBackhandProfile
+            CleaveGreatBackhandProfile,
+            CleaveGroundStabProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -745,17 +758,22 @@ namespace PoeClone.Visuals
         /// Plays the dedicated procedural pose for a melee skill, sped up by <paramref name="rate"/>
         /// (attack speed). <paramref name="mirrored"/>: the cut from the other side, where there is one.
         /// </summary>
-        public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f, bool mirrored = false)
+        public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f, bool mirrored = false, bool finisher = false)
         {
-            PlaySkillPose(skill, weaponType, mirrored);
+            PlaySkillPose(skill, weaponType, mirrored, finisher);
             speedMultiplier = Mathf.Max(0.5f, rate);
         }
 
-        private void PlaySkillPose(SkillId skill, WeaponType weaponType, bool mirrored = false)
+        private void PlaySkillPose(SkillId skill, WeaponType weaponType, bool mirrored = false, bool finisher = false)
         {
             switch (skill)
             {
                 case SkillId.Cleave:
+                    if (finisher)
+                    {
+                        Play(CleaveGroundStabProfile);
+                        break;
+                    }
                     Play(SlotRules.IsTwoHandedMelee(weaponType)
                         ? (mirrored ? CleaveGreatBackhandProfile : CleaveGreatSkillProfile)
                         : (mirrored ? CleaveBackhandProfile : CleaveSkillProfile));
@@ -887,7 +905,7 @@ namespace PoeClone.Visuals
 
         private void Play(AttackProfile profile)
         {
-            cleaveLinkStart = CleaveComboPose && IsCleave(activeProfile) && IsCleave(profile);
+            cleaveLinkStart = CleaveComboPose && IsCleave(activeProfile) && (IsCleave(profile) || profile.ChargedGroundStab);
             if (cleaveLinkStart)
                 cleaveStartPose = activeProfile.TwoHandGrip ? activeProfile.StrikeOffset : Rest + activeProfile.StrikeOffset;
             speedMultiplier = 1f;
@@ -980,12 +998,14 @@ namespace PoeClone.Visuals
                     // An overhead lift gathers slowly up the side instead of whipping up in front.
                     leg = 0;
                     t = p.SideLift > 0f ? Mathf.SmoothStep(0f, 1f, f / p.SwingStart) : EaseOut(f / p.SwingStart);
+                    if (p.ChargedGroundStab)
+                        t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(f / (p.SwingStart * 0.35f)));
                 }
                 else
                 {
                     leg = 1;
                     t = (f - p.SwingStart) / (p.StrikeTime - p.SwingStart);
-                    if (p.SideLift > 0f || p.Staff)
+                    if (p.SideLift > 0f || p.Staff || p.ChargedGroundStab)
                         t *= t; // and the blow gathers speed on the way down
                 }
             }
@@ -1018,7 +1038,7 @@ namespace PoeClone.Visuals
             else
             {
                 // Cleave stops on the far side; returning across the target looked like a second hit.
-                pose = IsCleave(p) ? strike : Lerp(strike, start, t);
+                pose = IsCleave(p) || p.ChargedGroundStab ? strike : Lerp(strike, start, t);
                 offPose = Lerp(p.OffStrike, Rest, t);
             }
 
@@ -1087,7 +1107,14 @@ namespace PoeClone.Visuals
                 }
             }
 
-            if (IsCleave(p))
+            if (p.ChargedGroundStab)
+            {
+                float plunge = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(p.SwingStart, p.StrikeTime, f));
+                TorsoPitch = Mathf.Lerp(-5f, 28f, plunge);
+                TorsoYaw = 0f;
+                Lunge = 0f;
+            }
+            else if (IsCleave(p))
             {
                 // Keep the torso with the cut instead of adding an overhead heave and rebound.
                 TorsoPitch = 8f;

@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-ground-stab
+- Cleave's fourth attack holds the weapon ready to stab the ground during its charge, then plunges downward only on release.
+- Its violet warning marker, damage area and impact visual now cover a 180-degree semicircle in front of the character.
+
 version: 2026-10-21-cleave-heavy-finisher
 - Cleave's fourth attack now winds up and animates three times slower, with a violet area marker that fills toward impact. Earlier slashes have no pre-attack marker.
 - Replaced the fourth-hit sound with a heavier crack and deep impact, playing on its own so the normal slash does not mask it.

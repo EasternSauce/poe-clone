@@ -106,7 +106,8 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.Cleave:
-                    SkillEffects.Cone(cast.At, facing, cast.Size, CleaveHalfAngle, skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
+                    SkillEffects.Cone(cast.At, facing, cast.Size, cast.Finisher ? CleaveFinisherHalfAngle : CleaveHalfAngle,
+                        skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
                     break;
 
                 case SkillId.Whirlwind:

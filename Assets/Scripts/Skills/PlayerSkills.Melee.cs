@@ -213,6 +213,8 @@ namespace PoeClone.Skills
         internal const float CleaveWindup = 0.91f / 3f;
         internal const float CleaveRecovery = 0.18f;
         internal const float CleaveHalfAngle = 60f;
+        internal const float CleaveFinisherHalfAngle = 90f;
+        private float CleaveAttackHalfAngle => meleeFinisher ? CleaveFinisherHalfAngle : CleaveHalfAngle;
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
@@ -358,7 +360,7 @@ namespace PoeClone.Skills
         {
             if (attackAnimator != null)
             {
-                attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored);
+                attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored, finisher: meleeFinisher);
                 attackAnimator.CleaveComboPose = skill == SkillId.Cleave && !meleeFinisher;
             }
         }
@@ -372,7 +374,7 @@ namespace PoeClone.Skills
         private void Cleave(SkillDefinition skill, int level)
         {
             float reach = MeleeSkillReach() * ComboArea;
-            SkillEffects.Cone(transform.position, transform.forward, reach, CleaveHalfAngle,
+            SkillEffects.Cone(transform.position, transform.forward, reach, CleaveAttackHalfAngle,
                 skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);
 
@@ -382,7 +384,7 @@ namespace PoeClone.Skills
             {
                 Vector3 to = enemy.transform.position - transform.position;
                 to.y = 0f;
-                if (Vector3.Angle(transform.forward, to) <= CleaveHalfAngle)
+                if (Vector3.Angle(transform.forward, to) <= CleaveAttackHalfAngle)
                     MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback);
             }
         }
@@ -398,7 +400,7 @@ namespace PoeClone.Skills
                 Color markerColor = new Color(0.65f, 0.25f, 1f);
                 cleaveFinisherPreview = GroundTelegraph.ImpactDisc(
                     transform.position + transform.forward * meleeStepDistance, transform.forward,
-                    MeleeSkillReach() * ComboArea, CleaveHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
+                    MeleeSkillReach() * ComboArea, CleaveFinisherHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
                 cleaveFinisherPreview.Root.name = "Cleave finisher area";
                 cleaveFinisherPreview.Block.SetFloat("_Impact", 0f);
                 cleaveFinisherPreview.Block.SetColor("_WarnColor", Color.Lerp(Color.black, markerColor, 0.2f));
