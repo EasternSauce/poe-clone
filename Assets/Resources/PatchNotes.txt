@@ -1,3 +1,6 @@
+version: 2026-10-20-cleave-reach-tuning
+- Reduced Cleave's reach by 20%, keeping its 120-degree angle.
+
 version: 2026-10-20-cleave-range
 - Doubled Cleave's base range, including its targeting reach and visible arc.
 

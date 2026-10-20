@@ -73,7 +73,7 @@ namespace PoeClone.Skills
         {
             switch (ActiveMeleeSkill)
             {
-                case SkillId.Cleave: return 2f * Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
+                case SkillId.Cleave: return 1.6f * Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
                 case SkillId.Pulverize: return CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 3.6f * AreaMultiplier * MeleeRangeMultiplier;
                 case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier * AreaMultiplier;
                 case SkillId.LungingThrust: return 3f * MeleeRangeMultiplier + LungeStep * WeaponBonuses.RangeMultiplier;
