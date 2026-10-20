@@ -1,3 +1,6 @@
+version: 2026-10-20-arena-input-startup-refresh
+- Interactive arenas now apply a single Editor pause/resume refresh after the setup menu appears, avoiding the manual pause/unpause workaround for unresponsive buttons. Later manual pauses and automated gauntlet runs are unaffected.
+
 version: 2026-10-20-arena-editor-input
 - Launching the arena now opens and focuses Unity's Game tab and routes mouse and keyboard input to the game during the session, including when Play Unfocused is configured. Stopping Play restores the previous input-routing setting.
 
