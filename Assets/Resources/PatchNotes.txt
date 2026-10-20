@@ -1,3 +1,7 @@
+version: 2026-10-20-cleave-combo-pace
+- Halved Cleave's combo speed: swings and follow-ups now run at twice the normal cadence instead of four times.
+- Breaking Cleave before its fourth attack now starts a full normal attack interval before another combo can begin, scaling with attack speed.
+
 version: 2026-10-20-arena-input-investigation
 - Removed the automatic Editor startup Pause/Resume workaround, which did not resolve the first-session arena input issue.
 

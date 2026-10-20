@@ -26,6 +26,8 @@ namespace PoeClone.Skills
         private int meleeComboSwing;
         private int meleeComboMovement;
         private float meleeComboReadyAt;
+        private float meleeComboInterval;
+        private float meleeComboRestartAt;
         private bool meleeComboQueued;
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
@@ -35,11 +37,16 @@ namespace PoeClone.Skills
         private float ComboArea => meleeFinisher ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
+        public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
         private float comboPreviewStartedAt;
         private readonly List<GroundTelegraph.Decal> comboPreview = new List<GroundTelegraph.Decal>();
 
         public void ResetMeleeCombo()
         {
+            // Breaking Cleave starts a full recovery, even if its fast link cooldown elapsed.
+            // Completed finishers retain the normal cooldown already owned by PlayerCombat.
+            if (meleeComboSwing > 0 && !meleeFinisher && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
+                meleeComboRestartAt = Mathf.Max(meleeComboRestartAt, Time.time + meleeComboInterval);
             meleeComboSwing = 0;
             meleeComboQueued = false;
             meleeComboWeapon = null;
@@ -323,11 +330,12 @@ namespace PoeClone.Skills
             }
 
             interval = MeleeInterval(id.Value);
-            // Keep the normal cooldown for isolated attacks, but allow a queued follow-up after
-            // one quarter of the attack-speed-scaled interval. Fit the pose and hit into that gap.
-            float comboInterval = interval / WeaponSkillRules.ComboFollowupSpeed;
-            float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * WeaponSkillRules.ComboFollowupSpeed;
+            // Keep the normal cooldown between combos; fit each pose and hit into its fast link.
+            float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant);
+            float comboInterval = interval / comboSpeed;
+            float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * comboSpeed;
             BeginMeleeCombo(skill, comboInterval);
+            meleeComboInterval = interval;
             switch (skill.Id)
             {
                 case SkillId.Cleave:
