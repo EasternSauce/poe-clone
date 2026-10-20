@@ -1,3 +1,7 @@
+version: 2026-10-20-arena-free-roam
+- The arena now starts with a level 1 character ready to walk around, with the build picker closed. Press Esc or click Arena builds to open or close it; choosing a build starts a fresh run.
+- Arena builds and Settings buttons now sit below the health and mana HUD, including on touch screens. The build picker pauses the arena and can be closed without starting a run.
+
 version: 2026-10-20-arena-all-routes
 - All arena builds for a skill now appear in one scrollable list with visible minimum-level category headers. The initial level-one route no longer occupies a page by itself and hides the other builds behind page navigation.
 - Each category keeps descending DPS order and its green top entry. A scrollbar and route count make the remaining builds discoverable.

@@ -103,6 +103,8 @@ namespace PoeClone.UI
             if (GetComponent<NamePromptUI>()?.IsShowing == true) return;
             if (WeaponSkillTreeUI.IsOpen || DialogueUI.IsOpen || PassiveTreeUI.IsOpen || SkillBarUI.IsOpen || SkillBarUI.PickerOpen ||
                 AnyOpen<InventoryUI>() || AnyOpen<CharacterPageUI>()) return;
+            var arena = FindAnyObjectByType<World.BalanceArenaUI>();
+            if (arena != null) { arena.TogglePicker(); return; }
             OpenSettings();
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using PoeClone.Inventory;
+using PoeClone.UI;
 
 namespace PoeClone.World
 {
@@ -16,6 +17,11 @@ namespace PoeClone.World
         private readonly List<Vector2> layoutPositions = new List<Vector2>();
         private readonly List<Vector2> layoutSizes = new List<Vector2>();
         private Vector2 lastCanvasSize;
+        private float lastHudBottom;
+        private float timeScaleBeforePicker;
+        private bool audioPausedBeforePicker;
+        private bool pickerPaused;
+        public bool IsOpen => panel != null && panel.gameObject.activeSelf;
         private Text status, levelLabel, skillLabel, detail, routeCountLabel, levelGroupLabel;
         private ScrollRect routeScroll;
         private Image randomLevelButton, randomBuildButton, lowerLevelButton;
@@ -23,7 +29,7 @@ namespace PoeClone.World
         private readonly List<Text> routeLabels = new List<Text>();
         private readonly List<Text> categoryHeaders = new List<Text>();
         private string skill, route;
-        private int level = 21;
+        private int level = 1;
         private bool randomLevel, randomBuild;
         private List<BalanceArenaBuilds.Entry> choices;
         private string[] skills;
@@ -43,11 +49,14 @@ namespace PoeClone.World
             status.rectTransform.anchoredPosition = new Vector2(0, -12);
             status.rectTransform.sizeDelta = new Vector2(1000, 65);
             UiKit.AddOutline(status, Color.black, 1.5f);
-            newBuildButton = Button(canvas.transform, "New build", new Vector2(18, -16), new Vector2(150, 42),
-                MinimalCombatMode.RestartArena).rectTransform;
+            newBuildButton = Button(canvas.transform, "Arena builds", Vector2.zero, new Vector2(150, 42),
+                TogglePicker).rectTransform;
 
             settingsButton = Button(canvas.transform, "Settings", new Vector2(180, -16), new Vector2(150, 42),
-                () => FindAnyObjectByType<PoeClone.UI.EscapeMenuUI>()?.OpenSettings()).rectTransform;
+                () => {
+                    ClosePicker();
+                    FindAnyObjectByType<EscapeMenuUI>()?.OpenSettings();
+                }).rectTransform;
 
             Image background = UiKit.NewImage("ArenaSetup", canvas.transform, UiKit.PanelColor);
             panel = background.rectTransform;
@@ -88,9 +97,37 @@ namespace PoeClone.World
                 layoutPositions.Add(child.anchoredPosition);
                 layoutSizes.Add(child.sizeDelta);
             }
+            UiKit.CloseButton(panel, ClosePicker);
             Refresh();
             Layout();
+            panel.gameObject.SetActive(false);
         }
+
+        public void TogglePicker()
+        {
+            if (IsOpen) { ClosePicker(); return; }
+            if (Time.timeScale <= 0f || PatchNotesUI.IsShowing) return;
+            panel.gameObject.SetActive(true);
+            Layout();
+            PlayerHUD.SetHiddenBy(this, true);
+            timeScaleBeforePicker = Time.timeScale;
+            audioPausedBeforePicker = AudioListener.pause;
+            pickerPaused = true;
+            Time.timeScale = 0f;
+            AudioListener.pause = true;
+        }
+
+        private void ClosePicker()
+        {
+            if (panel != null) panel.gameObject.SetActive(false);
+            PlayerHUD.SetHiddenBy(this, false);
+            if (!pickerPaused) return;
+            pickerPaused = false;
+            Time.timeScale = timeScaleBeforePicker;
+            AudioListener.pause = audioPausedBeforePicker;
+        }
+
+        private void OnDestroy() => ClosePicker();
 
         private void BuildRouteList()
         {
@@ -193,11 +230,13 @@ namespace PoeClone.World
                 }
                 UiKit.TopLeft(layoutItems[i], at, dimensions);
             }
-            bool portrait = size.x < size.y;
-            UiKit.TopLeft(newBuildButton, new Vector2(16f, -12f), new Vector2(150f, 42f));
-            UiKit.TopLeft(settingsButton, new Vector2(portrait ? size.x - 166f : 180f, -12f), new Vector2(150f, 42f));
-            status.rectTransform.anchoredPosition = new Vector2(0f, portrait ? -64f : -12f);
-            status.rectTransform.sizeDelta = new Vector2(portrait ? size.x - 32f : Mathf.Max(200f, size.x - 700f), portrait ? 110f : 65f);
+            lastHudBottom = PlayerHUD.BottomPixels;
+            float occupied = TouchMode.Active ? Mathf.Max(lastHudBottom, TouchControlsUI.ShortcutBottomPixels) : lastHudBottom;
+            float top = occupied / canvasRect.GetComponent<Canvas>().scaleFactor + 12f;
+            UiKit.TopLeft(newBuildButton, new Vector2(16f, -top), new Vector2(150f, 42f));
+            UiKit.TopLeft(settingsButton, new Vector2(180f, -top), new Vector2(150f, 42f));
+            status.rectTransform.anchoredPosition = new Vector2(0f, -top - 54f);
+            status.rectTransform.sizeDelta = new Vector2(size.x - 32f, 65f);
         }
 
         private void ChangeLevel(int delta)
@@ -300,21 +339,25 @@ namespace PoeClone.World
         }
         private void StartRun()
         {
-            if (mode.Started) return;
             var pool = Available.Where(b => randomBuild || b.id == route).ToArray();
             // Choose a level first so random-level runs do not favour high levels with more routes.
             int[] levels = pool.Select(b => b.level).Distinct().ToArray();
             int pickedLevel = levels[Random.Range(0, levels.Length)];
             pool = pool.Where(b => b.level == pickedLevel).ToArray();
+            ClosePicker();
             mode.BeginArena(pool[Random.Range(0, pool.Length)]);
-            panel.gameObject.SetActive(false);
         }
         private void Update()
         {
-            if (canvasRect != null && canvasRect.rect.size != lastCanvasSize) Layout();
-            if (mode == null || status == null || !mode.Started) return;
+            if (canvasRect != null && (canvasRect.rect.size != lastCanvasSize || PlayerHUD.BottomPixels != lastHudBottom)) Layout();
+            if (mode == null || status == null) return;
+            if (!mode.Started)
+            {
+                status.text = "Level 1 · Explore the arena\nEsc or Arena builds to choose a build";
+                return;
+            }
             status.text = mode.Build.Name + " · Level " + mode.Level + "\n" + mode.Status + " · Deaths " + mode.Deaths;
-            if (mode.Finished) status.text += " · Use New build to play again";
+            if (mode.Finished) status.text += " · Open Arena builds to play again";
         }
         private static Text Label(Transform parent, string value, Vector2 at, Vector2 size, int fontSize)
         {

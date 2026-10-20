@@ -76,9 +76,14 @@ namespace PoeClone.World
         private GameObject doorBlock;
         private GauntletUI ui;
         private BalanceArenaBuilds.Entry arenaBuild;
+        private static BalanceArenaBuilds.Entry pendingArenaBuild;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => Instance = null;
+        private static void ResetStatics()
+        {
+            Instance = null;
+            pendingArenaBuild = null;
+        }
 
         private void Awake()
         {
@@ -124,7 +129,18 @@ namespace PoeClone.World
             else
             {
                 MinimalCombatMode.PlacePlayer(player, StartRoomCenter + new Vector3(0f, 1.1f, -2f), Quaternion.identity);
-                if (MinimalCombatMode.ArenaEnabled) gameObject.AddComponent<BalanceArenaUI>().Bind(this);
+                if (MinimalCombatMode.ArenaEnabled)
+                {
+                    Level = 1;
+                    player.RestoreProgress(Level, 0);
+                    player.GetComponent<PlayerStatsLink>()?.PushBase();
+                    player.Heal(player.MaxHealth);
+                    player.RestoreMana(player.MaxMana);
+                    gameObject.AddComponent<BalanceArenaUI>().Bind(this);
+                    var selectedBuild = pendingArenaBuild;
+                    pendingArenaBuild = null;
+                    if (selectedBuild != null) BeginArena(selectedBuild);
+                }
                 else
                 {
                     ui = gameObject.AddComponent<GauntletUI>();
@@ -168,7 +184,14 @@ namespace PoeClone.World
 
         public void BeginArena(BalanceArenaBuilds.Entry entry)
         {
-            if (Started || entry == null) return;
+            if (entry == null) return;
+            if (Started)
+            {
+                pendingArenaBuild = entry;
+                MinimalCombatMode.RestartArena();
+                return;
+            }
+            MinimalCombatMode.PlacePlayer(player, StartRoomCenter + new Vector3(0f, 1.1f, -2f), Quaternion.identity);
             arenaBuild = entry;
             Rolls = BalanceArenaBuilds.Data.rareRollsPerSlot;
             Begin(entry.AsBuild(), entry.level);
