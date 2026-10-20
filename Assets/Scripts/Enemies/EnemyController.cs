@@ -106,6 +106,21 @@ namespace PoeClone.Enemies
 
         public bool IsChilled => Time.time < chilledUntil;
 
+        private Vector3 knockbackDirection;
+        private float knockbackLeft;
+        private const float KnockbackSpeed = 9f;
+
+        public void Knockback(Vector3 direction, float distance)
+        {
+            // Enforce immunity here as well as in the tree description, for every caller.
+            if (health == null || health.IsDead || EnemyKinds.Get(health.KindIndex).IsBoss) return;
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f) return;
+            knockbackDirection = direction.normalized;
+            knockbackLeft = Mathf.Max(knockbackLeft, distance);
+            stagger?.Trigger();
+        }
+
         private const float HasteSpeed = 1.4f;
         private const float HasteAttackSpeed = 1.3f;
         private float hastedUntil = -1f;
@@ -300,6 +315,15 @@ namespace PoeClone.Enemies
 
         private void Update()
         {
+            if (knockbackLeft > 0f && controller.enabled && health != null && !health.IsDead)
+            {
+                float step = Mathf.Min(knockbackLeft, KnockbackSpeed * Time.deltaTime);
+                Vector3 knockbackFrom = transform.position;
+                Vector3 to = World.GroundObstacleMotion.ClampToArea(controller, knockbackFrom, knockbackFrom + knockbackDirection * step);
+                controller.Move(to - knockbackFrom);
+                knockbackLeft -= step;
+                return;
+            }
             if (player == null)
             {
                 player = FindAnyObjectByType<PlayerController>();

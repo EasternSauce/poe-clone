@@ -160,7 +160,26 @@ namespace PoeClone.Inventory
                 P("Venom Glands", U(E.Duration, 15), "Potent Venom", M(B(E.Poison, 25)), "Royal Venom", M(B(E.Poison, 40)), "Brood", B(E.Minions, 1), B(E.MoreDamage, -15)),
                 P("Serpent Scales", U(E.MinionLife, 12), "Hardened Scales", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Persistent Brood", M(B(E.MinionDuration, 60), B(E.Minions, 1), B(E.MoreDamage, -15)), "Regrowth", B(E.MinionRegen, 3)),
                 P("Striking Serpents", U(E.MinionMoveSpeed, 15), "Quick Fangs", M(B(E.Speed, 15)), "Toxic Trail", M(B(E.Cloud, 25)), "Serpent Swarm", B(E.Minions, 1), B(E.MoreDamage, -15)));
+            foreach (StatType grant in SkillGrants.MeleeSkills)
+                if (grant != StatType.GrantWhirlwind && t.TryGetValue(grant, out var meleeNodes))
+                    AddComboBranch(meleeNodes, grant);
             return t;
+        }
+
+        private static void AddComboBranch(List<WeaponSkillNode> nodes, StatType grant)
+        {
+            string[] names = { "Decisive Blow", "Sweeping Finish", "Driving Impact", "Grand Finale" };
+            WeaponSkillBonus[][] bonuses = {
+                M(B(E.ComboDamage, 15)), M(B(E.ComboArea, 25)),
+                M(B(E.ComboKnockback, 1.8f)), M(B(E.ComboDamage, 30), B(E.ComboArea, 35))
+            };
+            for (int i = 0; i < names.Length; i++)
+                nodes.Add(new WeaponSkillNode {
+                    Id = "combo_" + i, Parent = i == 0 ? null : "combo_" + (i - 1),
+                    Grant = grant, Depth = i, Name = names[i], Bonuses = bonuses[i],
+                    Notable = i == 2, Keystone = i == 3,
+                    Position = new Vector2(75f + i * 38f, -110f - i * 53f)
+                });
         }
 
         private static string Percent(float value, string stat) => Mathf.Abs(value).ToString("0.#") + "% " + (value < 0 ? "reduced " : "increased ") + stat;
@@ -175,6 +194,9 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
+                case E.ComboDamage: return More(b.Value, "damage with every third combo attack");
+                case E.ComboArea: return Percent(b.Value, "area of effect with every third combo attack");
+                case E.ComboKnockback: return "Every third combo attack knocks non-boss enemies back " + b.Value.ToString("0.#") + " metres";
                 case E.MageCastSpeedAfterSummon: return More(b.Value, "skeleton mage cast speed if you have summoned a minion in the last 4 seconds");
                 case E.Speed: return Percent(b.Value, grant == StatType.GrantSkeletonMages ? "minion cast speed" : minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
                 case E.Area: return Percent(b.Value, "area of effect" + (grant == StatType.GrantRainOfArrows ? " per arrow impact" : ""));

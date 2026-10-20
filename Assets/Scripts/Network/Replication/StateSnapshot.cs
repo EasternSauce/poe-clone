@@ -95,6 +95,7 @@ namespace PoeClone.Network.Replication
         public float dz;
         public float sz;     // size: a burst's or nova's radius
         public int c;        // projectiles fired
+        public bool cf;      // melee combo finisher
         public float[] pts;  // Chain Lightning: the arc's points, x,y,z per point
     }
 

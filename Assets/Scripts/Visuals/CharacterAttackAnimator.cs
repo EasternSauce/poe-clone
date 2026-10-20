@@ -346,6 +346,24 @@ namespace PoeClone.Visuals
             Range = 3.3f, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
         };
 
+        private static readonly AttackProfile CleaveBackhandProfile = new AttackProfile
+        {
+            Duration = CleaveSkillProfile.Duration, StrikeTime = CleaveSkillProfile.StrikeTime,
+            SwingStart = CleaveSkillProfile.SwingStart,
+            WindupOffset = new Pose(-55f, 60f, 20f, 35f),
+            StrikeOffset = new Pose(-60f, -60f, -20f, 0f),
+            Range = CleaveSkillProfile.Range, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
+        };
+
+        private static readonly AttackProfile CleaveGreatBackhandProfile = new AttackProfile
+        {
+            Duration = CleaveGreatSkillProfile.Duration, StrikeTime = CleaveGreatSkillProfile.StrikeTime,
+            SwingStart = CleaveGreatSkillProfile.SwingStart, TwoHandGrip = true,
+            WindupOffset = new Pose(-55f, 60f, 20f, 0f),
+            StrikeOffset = new Pose(-55f, -60f, -20f, 0f),
+            Range = CleaveGreatSkillProfile.Range, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
+        };
+
         private static readonly AttackProfile PulverizeMaceProfile = new AttackProfile
         {
             Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.6f, SideLift = 45f,
@@ -583,7 +601,9 @@ namespace PoeClone.Visuals
             CrossCutMirroredProfile,
             StaffCastProfile,
             StaffBoltProfile,
-            StaffSwingProfile
+            StaffSwingProfile,
+            CleaveBackhandProfile,
+            CleaveGreatBackhandProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -727,7 +747,11 @@ namespace PoeClone.Visuals
         {
             switch (skill)
             {
-                case SkillId.Cleave: Play(SlotRules.IsTwoHandedMelee(weaponType) ? CleaveGreatSkillProfile : CleaveSkillProfile); break;
+                case SkillId.Cleave:
+                    Play(SlotRules.IsTwoHandedMelee(weaponType)
+                        ? (mirrored ? CleaveGreatBackhandProfile : CleaveGreatSkillProfile)
+                        : (mirrored ? CleaveBackhandProfile : CleaveSkillProfile));
+                    break;
                 case SkillId.Pulverize:
                 case SkillId.Fissure:
                 case SkillId.Aftershock: Play(weaponType == WeaponType.Maul ? PulverizeMaulProfile : PulverizeMaceProfile); break;

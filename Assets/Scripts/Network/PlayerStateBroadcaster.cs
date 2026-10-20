@@ -258,7 +258,7 @@ namespace PoeClone.Network
                     n = c.Number, s = (int)c.Skill, lv = c.Level,
                     x = c.At.x, y = c.At.y, z = c.At.z,
                     dx = c.Facing.x, dz = c.Facing.z,
-                    sz = c.Size, c = c.Count, pts = pts
+                    sz = c.Size, c = c.Count, pts = pts, cf = c.Finisher
                 };
             }
         }

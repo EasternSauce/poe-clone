@@ -22,6 +22,11 @@ namespace PoeClone.Skills
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
             PlaySkillSound(cast.Skill, cast.At);
+            if (cast.Finisher)
+            {
+                var audio = PoeClone.Audio.AudioManager.Instance;
+                audio?.PlayEffect("combat.melee.finisher", cast.At, audio.Sfx("melee_combo_finisher"));
+            }
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)
@@ -99,10 +104,14 @@ namespace PoeClone.Skills
                     break;
 
                 case SkillId.LungingThrust:
+                    if (cast.Finisher)
+                        SkillEffects.Cone(cast.At, facing, cast.Size, CleaveHalfAngle, skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
                     SkillEffects.Arc(cast.At + Vector3.up, cast.At + Vector3.up + facing * cast.Size, skill.Color, 0.25f);
                     break;
 
                 case SkillId.FangStrike:
+                    if (cast.Finisher)
+                        SkillEffects.Cone(cast.At, facing, cast.Size, CleaveHalfAngle, skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
                     SkillEffects.Arc(cast.At + Vector3.up * 0.8f, cast.At + Vector3.up * 0.8f + facing * cast.Size, skill.Color, 0.18f);
                     break;
 

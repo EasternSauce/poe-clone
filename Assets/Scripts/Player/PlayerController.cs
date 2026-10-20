@@ -42,9 +42,19 @@ namespace PoeClone.Player
 
         public bool IsDashing => dashTimeLeft > 0f;
 
-        /// <summary>Rushes the character along a flat direction, covering the distance in the time.</summary>
-        public void Dash(Vector3 direction, float distance, float seconds)
+        // Attack-driven steps do not break a combo; walking, dashing and area travel do.
+        public int MovementRevision { get; private set; }
+
+        public void MoveAttackStep(Vector3 motion)
         {
+            if (!IsRooted)
+                MoveAlongGround(motion);
+        }
+
+        /// <summary>Rushes the character along a flat direction, covering the distance in the time.</summary>
+        public void Dash(Vector3 direction, float distance, float seconds, bool meleeAttack = false)
+        {
+            if (!meleeAttack) MovementRevision++;
             direction.y = 0f;
             if (direction.sqrMagnitude < 0.0001f)
                 direction = transform.forward;
@@ -100,6 +110,7 @@ namespace PoeClone.Player
         /// <summary>Discard movement in progress so it cannot resume on the far side of a gate.</summary>
         public void StopMovement()
         {
+            MovementRevision++;
             CancelWalk();
             dashTimeLeft = 0f;
             dashVelocity = Vector3.zero;
@@ -254,6 +265,9 @@ namespace PoeClone.Player
             bool staggered = stagger != null && stagger.IsStaggered;
             if (staggered)
                 movement = Vector3.zero;
+
+            if (movement.sqrMagnitude > 0.001f)
+                MovementRevision++;
 
             float speed = (IsSprinting() || channelling ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier * (HasOnslaught ? OnslaughtMore : 1f);
             if (IsChilled)

@@ -296,6 +296,7 @@ namespace PoeClone.Network
                     Facing = new Vector3(c.dx, 0f, c.dz),
                     Size = c.sz,
                     Count = c.c,
+                    Finisher = c.cf,
                     Points = points
                 }, body.transform);
             }

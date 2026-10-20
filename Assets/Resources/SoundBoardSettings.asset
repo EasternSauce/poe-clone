@@ -2026,6 +2026,17 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
+  - id: combat.melee.finisher
+    label: Melee combo finisher
+    group: Combat
+    description: Heavy impact layered onto every third melee combo attack.
+    soundGroupId: sound.combat.melee.finisher
+    aliases: []
+    sharedIds: []
+    defaults: []
+    suggestions: []
+    selected: {fileID: 0}
+    muted: 0
   soundGroups:
   - id: sound.player.swing
     purpose: Melee swings
@@ -2658,3 +2669,9 @@ MonoBehaviour:
     - {fileID: 8300000, guid: b169f030ce8ffe34bb22fe7fe32d65e7, type: 3}
     cooldown: 0
     topPriority: 0
+  - id: sound.combat.melee.finisher
+    purpose: Third melee combo attack impact
+    clips:
+    - {fileID: 8300000, guid: e55b5c1610d44addb031c58c9cee3ebe, type: 3}
+    cooldown: 0
+    topPriority: 1

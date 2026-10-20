@@ -226,7 +226,8 @@ namespace PoeClone.Player
             if (SkillSet != null)
                 SkillSet.AttackHeld = attackPressed;
 
-            if (attackPressed && cooldownTimer <= 0f && (controller == null || (!controller.IsSkillCommitted && !controller.IsChannelling)) &&
+            bool queuedMelee = SkillSet != null && SkillSet.QueueMeleeFollowup(attackPressed);
+            if ((attackPressed || queuedMelee) && cooldownTimer <= 0f && (controller == null || (!controller.IsSkillCommitted && !controller.IsChannelling)) &&
                 attackAnimator != null && !attackAnimator.IsAttacking)
                 StartAttack();
         }

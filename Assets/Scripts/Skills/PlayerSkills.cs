@@ -65,6 +65,7 @@ namespace PoeClone.Skills
             public int Count;
             public Vector3[] Points;
             public float Time;
+            public bool Finisher;
         }
 
         private const int RecentCastCount = 8;
@@ -113,6 +114,7 @@ namespace PoeClone.Skills
                 Number = CastCount,
                 Skill = skill.Id,
                 Level = level,
+                Finisher = skill.MeleeAttack && !skill.Channelled && meleeFinisher,
                 At = at ?? transform.position,
                 Facing = facing ?? transform.forward,
                 Size = size,
@@ -163,6 +165,7 @@ namespace PoeClone.Skills
 
         private void OnDisable()
         {
+            ResetMeleeCombo();
             CancelPendingCast();
             EndWhirlwind();
         }
@@ -175,6 +178,8 @@ namespace PoeClone.Skills
         /// <summary>Cancel pending casts and committed attacks when leaving an area or dying.</summary>
         public void CancelActions()
         {
+            ResetMeleeCombo();
+            meleeFinisher = false;
             CancelPendingCast();
             EndWhirlwind();
             StopAllCoroutines();

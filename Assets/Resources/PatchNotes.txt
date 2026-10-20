@@ -1,3 +1,8 @@
+version: 2026-10-20-melee-combos
+- Chain melee attacks by staying still and queueing the next swing within 0.22 seconds of its recovery. Movement or a missed window resets the combo; holding attack queues follow-ups automatically. Whirlwind is unchanged.
+- Follow-up attacks step forward, Cleave alternates swing direction, and every third attack deals 75% more damage with 35% greater reach, a heavy impact sound and a camera jolt. Third-hit thrusts also strike a cone of enemies.
+- Melee weapon trees now offer Decisive Blow, Sweeping Finish, Driving Impact and Grand Finale to strengthen combo finishers. Driving Impact knocks non-boss enemies back; bosses are immune.
+
 version: 2026-10-20-arena-scroll-speed
 - Reduced build picker mouse-wheel scrolling speed to one-third.
 

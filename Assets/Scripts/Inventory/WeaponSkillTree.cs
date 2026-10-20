@@ -14,7 +14,8 @@ namespace PoeClone.Inventory
         MoreDamage, LifeOnHit, ProjectileSpeed, MinionMoveSpeed, MinionDuration,
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
-        NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon
+        NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
+        ComboDamage, ComboArea, ComboKnockback
     }
 
     [Serializable]
@@ -114,8 +115,10 @@ namespace PoeClone.Inventory
         private static readonly int EffectCount = Enum.GetValues(typeof(WeaponSkillEffect)).Length;
         private readonly float[] values = new float[EffectCount];
         private float moreDamage = 1f;
+        private float comboMoreDamage = 1f;
         public float Get(WeaponSkillEffect effect) => values[(int)effect];
         public float MoreDamageMultiplier => moreDamage;
+        public float ComboDamageMultiplier => comboMoreDamage;
         public float AreaMultiplier => DefenceMath.RadiusMultiplier(Get(WeaponSkillEffect.Area));
         public float RangeMultiplier => Mathf.Max(0.3f, 1f + Get(WeaponSkillEffect.Range) / 100f);
         public float ProjectileSpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.ProjectileSpeed) / 100f);
@@ -133,6 +136,7 @@ namespace PoeClone.Inventory
                 {
                     values[(int)b.Effect] += b.Value;
                     if (b.Effect == WeaponSkillEffect.MoreDamage) moreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
+                    if (b.Effect == WeaponSkillEffect.ComboDamage) comboMoreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
                 }
             }
         }
