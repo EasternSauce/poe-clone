@@ -215,6 +215,10 @@ namespace PoeClone.Skills
         internal const float CleaveHalfAngle = 60f;
         internal const float CleaveFinisherHalfAngle = 180f;
         private float CleaveAttackHalfAngle => meleeFinisher ? CleaveFinisherHalfAngle : CleaveHalfAngle;
+        // Skill reach belongs to the skill, independent of weapon model size or handedness.
+        private const float CleaveBaseReach = 4.48f;
+        private const float CrossSlashBaseReach = 3.1f;
+        private const float SlamImpactDistance = 2.2f;
 
         /// <summary>Seconds between uses of a melee skill with the weapon in hand and the current attack speed.</summary>
         public float MeleeInterval(SkillId id) => 1f / Mathf.Max(0.01f,
@@ -225,14 +229,14 @@ namespace PoeClone.Skills
         {
             switch (ActiveMeleeSkill)
             {
-                case SkillId.Cleave: return 1.6f * Mathf.Max(2.6f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.6f) * MeleeRangeMultiplier) * AreaMultiplier;
-                case SkillId.Pulverize: return CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 3.6f * AreaMultiplier * MeleeRangeMultiplier;
+                case SkillId.Cleave: return CleaveBaseReach * MeleeRangeMultiplier * AreaMultiplier;
+                case SkillId.Pulverize: return SlamImpactDistance + 3.6f * AreaMultiplier * MeleeRangeMultiplier;
                 case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier * AreaMultiplier;
                 case SkillId.LungingThrust: return 3f * MeleeRangeMultiplier + LungeStep * WeaponBonuses.RangeMultiplier;
                 case SkillId.Whirlwind: return WhirlReach();
                 case SkillId.Fissure: return FissureLength * MeleeRangeMultiplier;
                 case SkillId.Aftershock: return 8f * AreaMultiplier * Mathf.Sqrt(WeaponBonuses.RangeMultiplier);
-                case SkillId.CrossSlash: return (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 1.4f) * MeleeRangeMultiplier * AreaMultiplier;
+                case SkillId.CrossSlash: return CrossSlashBaseReach * MeleeRangeMultiplier * AreaMultiplier;
                 case SkillId.FangStrike: return 2.4f * MeleeRangeMultiplier;
                 case SkillId.VenomSlash: return VenomSlashReach * MeleeRangeMultiplier * AreaMultiplier;
                 default: return CharacterAttackAnimator.AttackRange(CurrentWeapon());
@@ -409,9 +413,6 @@ namespace PoeClone.Skills
             }
             yield return MeleeWindup(windup / rate);
             ClearCleaveFinisherPreview();
-            // Slams read the hammer position after the arm and body have applied their strike pose.
-            if (skill == SkillId.Pulverize || skill == SkillId.Fissure || skill == SkillId.Aftershock)
-                yield return new WaitForEndOfFrame();
             PlayMeleeSound(skill);
             release();
             yield return new WaitForSeconds(recovery / rate);
@@ -473,15 +474,8 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ the blows
 
-        // Where a slam lands: under the weapon's head, else at the end of its reach.
-        private Vector3 SlamPoint()
-        {
-            Vector3 impact = transform.position + transform.forward * CharacterAttackAnimator.AttackRange(CurrentWeapon());
-            EquipmentVisuals visuals = GetComponentInChildren<EquipmentVisuals>();
-            if (visuals != null && visuals.TryGetMainHandHeadPosition(out Vector3 head))
-                impact = new Vector3(head.x, transform.position.y, head.z);
-            return impact;
-        }
+        // A fixed impact offset keeps slam placement identical across weapon models.
+        private Vector3 SlamPoint() => transform.position + transform.forward * SlamImpactDistance;
 
         private void Pulverize(SkillDefinition skill, int level)
         {
@@ -611,7 +605,7 @@ namespace PoeClone.Skills
             along.y = 0f;
             along.Normalize();
             float area = AreaMultiplier * ComboArea;
-            float reach = (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 1.4f) * MeleeRangeMultiplier * area;
+            float reach = CrossSlashBaseReach * MeleeRangeMultiplier * area;
             float halfWidth = CrossHalfWidth * area;
             Vector3 center = transform.position;
             Vector3 from = center - along * reach;

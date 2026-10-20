@@ -263,23 +263,6 @@ namespace PoeClone.Inventory
             }
         }
 
-        /// <summary>The equipped hammer's head in its current animated pose.</summary>
-        public bool TryGetMainHandHeadPosition(out Vector3 position)
-        {
-            if (spawned.TryGetValue(EquipSlot.MainHand, out List<GameObject> gear))
-            {
-                foreach (GameObject instance in gear)
-                {
-                    Transform head = instance != null ? instance.transform.Find("Head") : null;
-                    if (head == null) continue;
-                    position = head.position;
-                    return true;
-                }
-            }
-            position = Vector3.zero;
-            return false;
-        }
-
         // A higher tier of a shared look: its colours multiplied by the tier's tint (property
         // blocks, so the shared materials stay as they are).
         private static void Tint(GameObject instance, Color tint)

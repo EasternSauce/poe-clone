@@ -25,7 +25,8 @@ namespace PoeClone.Skills
 
         private const float WhirlMinTurnsPerSecond = 2.5f;
         private const float WhirlMaxTurnsPerSecond = 6f;
-        // Whirlwind's hit circle covers 30% less area than the weapon's reach would give.
+        private const float WhirlBaseReach = 2.6f;
+        // Whirlwind's hit circle covers 30% less area than its unscaled skill radius.
         private static readonly float WhirlAreaScale = DefenceMath.RadiusMultiplier(-30f);
         // Hits per second with a sword and no increased attack speed. Other weapons hit as much
         // faster or slower as their own swings are, so a maul's big hits don't come at a sword's rate.
@@ -159,8 +160,7 @@ namespace PoeClone.Skills
 
         private float WhirlReach()
         {
-            float melee = 1f + Mathf.Max(0f, Stat(StatType.MeleeRange) + WeaponBonuses.Get(WeaponSkillEffect.Range)) / 100f;
-            return Mathf.Max(2.4f, (CharacterAttackAnimator.AttackRange(CurrentWeapon()) + 0.4f) * melee) *
+            return WhirlBaseReach * MeleeRangeMultiplier *
                    SkillArea(SkillId.Whirlwind) * WhirlAreaScale;
         }
 
