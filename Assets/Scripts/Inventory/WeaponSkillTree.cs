@@ -159,7 +159,7 @@ namespace PoeClone.Inventory
             int length = ComboLength(grant);
             if (length == 0 || step <= 0) return 1f;
             if (step % length == 0)
-                return (grant == StatType.GrantCleave ? 2.25f : 1.75f) * finisherMore;
+                return (grant == StatType.GrantCleave ? 4.5f : 1.75f) * finisherMore;
             return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
         }
 

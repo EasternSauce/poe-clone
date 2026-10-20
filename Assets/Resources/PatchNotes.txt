@@ -1,3 +1,6 @@
+version: 2026-10-21-cleave-finisher-damage
+- Doubled Cleave's fourth-hit damage, from 2.25 to 4.5 times its normal hit damage. Finisher bonuses still apply, and build picker DPS reflects the increase.
+
 version: 2026-10-21-cleave-circle-impact
 - Cleave's fourth attack now damages a full circle around the character, with a matching violet marker and circular impact visual.
 - Replaced its finisher sound with a new ground-crash impact and rumbling decay.
