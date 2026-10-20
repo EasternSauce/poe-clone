@@ -59,6 +59,7 @@ namespace PoeClone.World
         public string ResultPath { get; private set; }
         public bool Finished => phase == Phase.Done;
         public bool Started => phase != Phase.Setup;
+        public bool SetupReady { get; private set; }
         public bool RerollsAllowed => !MinimalCombatMode.ArenaEnabled && Started && !Automated && Level > 1 && phase != Phase.Done;
 
         private Phase phase = Phase.Setup;
@@ -131,6 +132,7 @@ namespace PoeClone.World
                     ui.Bind(this);
                 }
             }
+            SetupReady = true;
         }
 
         // ------------------------------------------------------------------ rooms

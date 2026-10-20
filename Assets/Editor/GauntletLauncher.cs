@@ -34,8 +34,6 @@ namespace PoeClone.EditorTools
         private const string RunStartedKey = "PoeClone.Gauntlet.RunStarted";
         private const string SummaryPendingKey = "PoeClone.Gauntlet.SummaryPending";
         private const double RunTimeoutSeconds = 30 * 60;
-        private static bool inputRefreshPending;
-        private static bool inputRefreshPaused;
 
         [MenuItem("PoeClone/Balance Test Arena", priority = 35)]
         private static void ManualMenu() => Debug.Log(Manual());
@@ -139,17 +137,6 @@ namespace PoeClone.EditorTools
 
         private static void OnPlayModeChanged(PlayModeStateChange state)
         {
-            if (state == PlayModeStateChange.EnteredPlayMode)
-            {
-                inputRefreshPending = MinimalCombatMode.GauntletEnabled && MinimalCombatMode.Option("auto") != "1";
-                inputRefreshPaused = false;
-            }
-            if (state == PlayModeStateChange.ExitingPlayMode)
-            {
-                inputRefreshPending = false;
-                if (inputRefreshPaused) EditorApplication.isPaused = false;
-                inputRefreshPaused = false;
-            }
             if (state == PlayModeStateChange.EnteredPlayMode && SessionState.GetBool(ActiveKey, false))
                 PrepareGameViewInput();
             if (state == PlayModeStateChange.ExitingPlayMode && SessionState.GetBool(ActiveKey, false))
@@ -170,31 +157,6 @@ namespace PoeClone.EditorTools
 
         private static void Advance()
         {
-            // In this Editor configuration, interactive arena input can remain stale until the
-            // first pause/resume. Apply that refresh once, after the menu exists, rather than
-            // making the user do it. Never resume a pause that we didn't initiate.
-            if (inputRefreshPaused)
-            {
-                if (!EditorApplication.isPlaying) { inputRefreshPaused = false; return; }
-                if (!EditorApplication.isPaused) return;
-                inputRefreshPaused = false;
-                EditorApplication.isPaused = false;
-                PrepareGameViewInput();
-                return;
-            }
-            if (inputRefreshPending && EditorApplication.isPlaying && !EditorApplication.isPaused)
-            {
-                var arena = GauntletMode.Instance;
-                bool menuReady = UnityEngine.Object.FindAnyObjectByType<BalanceArenaUI>() != null ||
-                    UnityEngine.Object.FindAnyObjectByType<GauntletUI>() != null;
-                if (arena != null && !arena.Started && menuReady)
-                {
-                    inputRefreshPending = false;
-                    inputRefreshPaused = true;
-                    EditorApplication.isPaused = true;
-                    return;
-                }
-            }
             string queue = SessionState.GetString(QueueKey, "");
             if (EditorApplication.isPlaying)
             {

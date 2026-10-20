@@ -50,6 +50,7 @@ namespace PoeClone.World
         public static bool PreviewEnabled => InventoryMenuEnabled && QueryValue("preview") != "0";
         public static bool MenusEnabled => InventoryMenuEnabled || CharacterMenuEnabled || SkillMenuEnabled || PassiveMenuEnabled;
         public static bool AudioEnabled => !Enabled || QueryValue("audio") != "0";
+        public static bool IsLoading { get; private set; }
         public static bool GuaranteedGear => DropsEnabled && QueryValue("guaranteedGear") != "0";
         /// <summary>The debug class gauntlet (see <see cref="GauntletMode"/>) instead of the one-enemy arena.</summary>
         public static bool GauntletEnabled => Enabled && (ArenaEnabled || QueryValue("gauntlet") == "1");
@@ -71,6 +72,7 @@ namespace PoeClone.World
             enabledForUrl = null;
             query = null;
             options = null;
+            IsLoading = false;
         }
 
         private static string QueryValue(string key)
@@ -174,7 +176,52 @@ namespace PoeClone.World
             }
 
             if (QueryValue("touch") == "1") TouchMode.SetForced(true);
+            // Automated balance runs have no interactive startup. Interactive arenas follow the
+            // normal game's loading lifecycle, allowing engine/input initialization before UI setup.
+            if (GauntletEnabled && Option("auto") == "1" && !ArenaEnabled)
+            {
+                Time.timeScale = 1f;
+                BuildArena();
+                return;
+            }
+            IsLoading = true;
+            Time.timeScale = 0f;
+            StartCoroutine(LoadArena());
+        }
+
+        private IEnumerator LoadArena()
+        {
+            var cover = new GameObject("Arena Loading");
+            cover.transform.SetParent(transform, false);
+            var loading = cover.AddComponent<LoadingScreenUI>();
+            PlayerHUD.SetHiddenBy(this, true);
+            LoadingStatus.Set("Preparing arena");
+            yield return loading.FadeIn(ArenaEnabled ? "Balance Test Arena" : "Combat Arena");
+
+            // Build after the first player/input updates, not inside AfterSceneLoad callbacks.
+            BuildArena();
+            LoadingStatus.Set("Game interface");
+            if (GauntletEnabled)
+            {
+                var gauntlet = GetComponent<GauntletMode>();
+                while (!gauntlet.SetupReady) yield return null;
+            }
+            else yield return null;
+
+            Canvas.ForceUpdateCanvases();
+            Physics.SyncTransforms();
+            // Give the newly created EventSystem a player frame to activate its input module.
+            yield return null;
+            LoadingStatus.Clear();
+            yield return loading.FadeOut();
+            Destroy(cover);
+            PlayerHUD.SetHiddenBy(this, false);
+            IsLoading = false;
             Time.timeScale = 1f;
+        }
+
+        private void BuildArena()
+        {
             if (GauntletEnabled)
             {
                 // The gauntlet builds its own rooms and places the player itself.
@@ -248,6 +295,7 @@ namespace PoeClone.World
 
         private IEnumerator Start()
         {
+            while (IsLoading) yield return null;
             if (player == null || enemyPrefab == null || GauntletEnabled) yield break;
             // Let equipment/skill listeners bind before equipping the temporary weapon.
             yield return null;

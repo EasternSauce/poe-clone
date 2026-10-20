@@ -1,6 +1,10 @@
 version: 2026-10-20-forward-cleave
 - Cleave now strikes a half-circle in front of you instead of spinning and hitting all around. Its attack releases three times faster, with a short recovery and matching animation and effects.
 
+version: 2026-10-20-arena-loading-startup
+- Interactive arenas now use the loading screen while the arena and interface initialize over player frames. Controls become available after UI layout and input-module activation.
+- Removed the ineffective automatic Editor pause/resume workaround.
+
 version: 2026-10-20-arena-input-startup-refresh
 - Interactive arenas now apply a single Editor pause/resume refresh after the setup menu appears, avoiding the manual pause/unpause workaround for unresponsive buttons. Later manual pauses and automated gauntlet runs are unaffected.
 
