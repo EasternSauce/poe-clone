@@ -285,17 +285,17 @@ namespace PoeClone.Inventory
         {
             switch (weaponType)
             {
-                case WeaponType.Sword: return 1.2f;
-                case WeaponType.Axe: return 1.0f;
+                case WeaponType.Sword: return 0.7f;
+                case WeaponType.Axe: return 0.65f;
                 case WeaponType.Mace:
                 case WeaponType.Staff:
-                case WeaponType.Sceptre: return 0.9f;
-                case WeaponType.Dagger: return 2.0f;
+                case WeaponType.Sceptre: return 0.6f;
+                case WeaponType.Dagger: return 1.15f;
                 case WeaponType.Bow: return 1.25f;
-                case WeaponType.Greatsword: return 0.85f;
-                case WeaponType.Greataxe: return 0.8f;
-                case WeaponType.Maul: return 0.72f;
-                default: return 1.8f;
+                case WeaponType.Greatsword: return 0.6f;
+                case WeaponType.Greataxe: return 0.55f;
+                case WeaponType.Maul: return 0.5f;
+                default: return 1f;
             }
         }
 

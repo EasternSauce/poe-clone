@@ -42,7 +42,7 @@ namespace PoeClone.World
             float speed = Mathf.Max(.5f, 1 + ((skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.AttackSpeed) : sheet.Total(StatType.CastSpeed)) + tree.Get(E.Speed)) / 100);
             uses = skill.Spell ? 1f / Mathf.Max(.01f, skill.UseInterval(speed, sheet.CooldownRecoveryMultiplier)) :
                 SlotRules.BaseAttacksPerSecond(weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
-            if (skill.Channelled) uses = 4 * SlotRules.BaseAttacksPerSecond(weapon.WeaponType) / SlotRules.BaseAttacksPerSecond(WeaponType.Sword) * speed;
+            if (skill.Channelled) uses = WeaponSkillRules.WhirlwindHitsPerSecond(weapon.WeaponType, speed);
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
             if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
                 uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, doubleSlash: tree.Get(E.CleaveDoubleSlash) > 0f);

@@ -146,6 +146,10 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
+        // Continuous strikes per normal weapon attack interval, independent of any reference weapon.
+        public static float WhirlwindHitsPerSecond(WeaponType weapon, float attackRate) =>
+            (10f / 3f) * SlotRules.BaseAttacksPerSecond(weapon) * attackRate;
+
         public const float CleaveExplosionDamage = 5.5f;
         public const float CleaveDoubleSlashDamage = 1.15f;
         public const float CleaveBleedSeconds = 3f;

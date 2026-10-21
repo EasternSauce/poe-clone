@@ -1,3 +1,8 @@
+version: 2026-10-21-melee-weapon-pacing
+- Melee weapons have slower base attack speeds, so faster attacks require investment in attack speed. Swords now start at 0.70 attacks per second, axes at 0.65, maces, sceptres and staves at 0.60, daggers at 1.15, and unarmed attacks at 1.00. Bow speed is unchanged.
+- Greatswords, greataxes and mauls attack about 15-17% slower than their one-handed counterparts and gain roughly 20% base damage, providing a stronger offensive reward for giving up shield defenses. Existing saved weapons update their base damage when loaded.
+- Whirlwind hit frequency follows the slower weapon speeds too. Weapon tooltips and build picker DPS estimates use the same updated values.
+
 version: 2026-10-21-cleave-specialization-restore
 - Restored Twin Rhythm's cuts to 115% of normal hit damage and Explosive Finale's explosion to 550%, undoing the recent damage buffs. The fixed-level arena build picker remains available.
 

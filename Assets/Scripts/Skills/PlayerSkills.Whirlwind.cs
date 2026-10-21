@@ -23,14 +23,11 @@ namespace PoeClone.Skills
         /// <summary>Seconds between a channelled skill's mana payments.</summary>
         public const float ChannelTick = 0.5f;
 
-        private const float WhirlMinTurnsPerSecond = 2.5f;
+        private const float WhirlMinTurnsPerSecond = 1f;
         private const float WhirlMaxTurnsPerSecond = 6f;
         private const float WhirlBaseReach = 2.6f;
         // Whirlwind's hit circle covers 30% less area than its unscaled skill radius.
         private static readonly float WhirlAreaScale = DefenceMath.RadiusMultiplier(-30f);
-        // Hits per second with a sword and no increased attack speed. Other weapons hit as much
-        // faster or slower as their own swings are, so a maul's big hits don't come at a sword's rate.
-        private const float WhirlSwordHitsPerSecond = 4f;
         private const int WhirlHitsToStagger = 4;
         private const float WhirlFullSpeedDiameters = 5f;
 
@@ -131,8 +128,7 @@ namespace PoeClone.Skills
             }
         }
 
-        private float WhirlHitsPerSecond() => WhirlSwordHitsPerSecond * SkillAttackRate(SkillId.Whirlwind) *
-            CharacterAttackAnimator.BaseAttackSpeed(CurrentWeapon()) / CharacterAttackAnimator.BaseAttackSpeed(WeaponType.Sword);
+        private float WhirlHitsPerSecond() => WeaponSkillRules.WhirlwindHitsPerSecond(CurrentWeapon(), SkillAttackRate(SkillId.Whirlwind));
 
         // Newly met enemies included: one that spawns mid-spin can't block it either.
         private void IgnoreEnemiesWhileWhirling()
