@@ -189,11 +189,6 @@ namespace PoeClone.Skills
         {
             float lifeBefore = enemy != null ? enemy.CurrentHealth : 0f;
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill);
-            // Repeat the hit once; the repeat cannot trigger another echo.
-            float echo = skill == SkillId.Cleave ? WeaponBonuses.Get(WeaponSkillEffect.CleaveEcho) : 0f;
-            if (echo > 0 && enemy != null && !enemy.IsDead && enemy.CurrentHealth < lifeBefore &&
-                UnityEngine.Random.value * 100f < echo)
-                Hit(enemy, damage, color, attack: true, melee: true, skillId: skill);
             if (skill == SkillId.Cleave && CleaveExplosiveFinisher && enemy != null && !enemy.IsDead &&
                 enemy.CurrentHealth < lifeBefore && !EnemyKinds.Get(enemy.KindIndex).IsBoss)
                 enemy.GetComponent<PoeClone.Combat.Stagger>()?.Stun(2f);

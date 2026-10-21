@@ -61,7 +61,6 @@ namespace PoeClone.World
             }
             // Each double-slash cut is mitigated individually, then both hits contribute.
             float rate = uses, hits = doubleSlash ? 2 : 1, multiplier;
-            if (skill.Id == SkillId.Cleave) hits *= 1 + tree.Get(E.CleaveEcho) / 100;
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
@@ -103,7 +102,9 @@ namespace PoeClone.World
             float taken = (1 + .25f * shock) * (1 + .15f * curse);
             float dealt = AgainstEnemy(baseHit * multiplier * taken, element, sheet.Level, sheet, tree, skill.Summon);
             hitDps = dealt * rate * hits;
-            dotDps = 0;
+            // Bleeding stores a quarter of each final hit; armour and damage modifiers
+            // have already applied, and each hit contributes an independent stack.
+            dotDps = skill.Id == SkillId.Cleave ? hitDps * tree.Get(E.CleaveBleed) / 100f : 0f;
             float poison = tree.Get(E.Poison) / 100;
             float cloud = tree.Get(E.Cloud) / 100;
             float duration = Mathf.Max(1, Mathf.Round(6 * tree.DurationMultiplier)) / 6;

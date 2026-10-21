@@ -165,6 +165,9 @@ namespace PoeClone.Enemies
         private void OnDisable()
         {
             Active.Remove(this);
+            if (bleeding != null) StopCoroutine(bleeding);
+            bleeding = null;
+            bleeds.Clear();
         }
 
         private void Awake()
@@ -328,9 +331,9 @@ namespace PoeClone.Enemies
         private float poisonDamageToShow;
 
         /// <summary>Ailment ticks never stagger or play impact sounds. Poison numbers combine per target and frame.</summary>
-        public float TakeDamageOverTime(float amount, DamageType type, float penetration = 0f)
+        public float TakeDamageOverTime(float amount, DamageType type, float penetration = 0f, float armourPenetration = 0f)
         {
-            float dealt = TakeDamage(amount, type, 0f, penetration, flinch: false, playImpactSound: false);
+            float dealt = TakeDamage(amount, type, armourPenetration, penetration, flinch: false, playImpactSound: false);
             if (type == DamageType.Poison && dealt > 0f)
                 poisonDamageToShow += dealt;
             return dealt;
@@ -354,7 +357,52 @@ namespace PoeClone.Enemies
         /// <summary>Shocked: takes more damage from the player for a while (see HitEffects).</summary>
         public bool IsShocked => !dead && Time.time < shockedUntil;
         public bool IsBurning => !dead && Time.time < burnUntil;
-        internal bool HasPendingDamage => burning != null;
+        internal bool HasPendingDamage => burning != null || bleeding != null;
+
+        private struct BleedStack
+        {
+            public float PerSecond, Remaining;
+        }
+        private readonly List<BleedStack> bleeds = new List<BleedStack>();
+        private Coroutine bleeding;
+        public bool IsBleeding => !dead && bleeds.Count > 0;
+
+        /// <summary>Each hit adds its own bleed, based on damage already dealt after defences.</summary>
+        public void Bleed(float totalDamage, float seconds)
+        {
+            if (dead || totalDamage <= 0f || seconds <= 0f) return;
+            GetComponent<DistanceActivity>()?.KeepAwake();
+            bleeds.Add(new BleedStack { PerSecond = totalDamage / seconds, Remaining = seconds });
+            if (bleeding == null) bleeding = StartCoroutine(BleedTicks());
+        }
+
+        private IEnumerator BleedTicks()
+        {
+            const float tick = 0.25f;
+            while (!dead && bleeds.Count > 0)
+            {
+                yield return new WaitForSeconds(tick);
+                if (dead) break;
+                float amount = 0f;
+                for (int i = bleeds.Count - 1; i >= 0; i--)
+                {
+                    BleedStack stack = bleeds[i];
+                    float elapsed = Mathf.Min(tick, stack.Remaining);
+                    amount += stack.PerSecond * elapsed;
+                    stack.Remaining -= elapsed;
+                    if (stack.Remaining <= 0f) bleeds.RemoveAt(i);
+                    else bleeds[i] = stack;
+                }
+                // The originating hit already paid armour, critical and damage modifiers.
+                // Reuse normal damage/death/replication handling without mitigating it twice.
+                float dealt = TakeDamageOverTime(amount, DamageType.Physical, armourPenetration: 100f);
+                if (dealt > 0f)
+                    UI.CombatText.Show(transform.position + Vector3.up * 1.8f * transform.localScale.y,
+                        Mathf.CeilToInt(dealt).ToString(), new Color(0.8f, 0.18f, 0.16f), 0.6f);
+            }
+            bleeds.Clear();
+            bleeding = null;
+        }
 
         public void Shock(float seconds)
         {

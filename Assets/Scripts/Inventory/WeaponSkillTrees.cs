@@ -113,9 +113,9 @@ namespace PoeClone.Inventory
                     nodes.Add(new WeaponSkillNode {
                         Id = "v2_2_" + i, Parent = "v2_2_" + (i == 6 ? 2 : i - 1),
                         Grant = grant, Depth = i - 3, Keystone = i == 8,
-                        Name = i == 8 ? "Echoing Steel" : "Executioner",
+                        Name = i == 8 ? "Serrated Edge" : "Executioner",
                         Position = opening.Position + direction * ((i - 5) * 65f) - side * ((i - 5) * 25f),
-                        Bonuses = i == 8 ? M(B(E.CleaveEcho, 25)) : M(B(E.Damage, 10))
+                        Bonuses = i == 8 ? M(B(E.CleaveBleed, 25)) : M(B(E.Damage, 10))
                     });
             }
             all.Add(grant, nodes);
@@ -256,7 +256,7 @@ namespace PoeClone.Inventory
                 case E.CleaveExplosion: return "Replaces the fourth slash with a circular explosion at the sword's ground impact\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life, including bosses";
-                case E.CleaveEcho: return "Cleave hits have a " + b.Value.ToString("0.#") + "% chance to strike the same enemy again";
+                case E.CleaveBleed: return "Every Cleave hit inflicts bleeding for " + b.Value.ToString("0.#") + "% of its damage over " + WeaponSkillRules.CleaveBleedSeconds.ToString("0.#") + " seconds\nBleeds from separate hits stack";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboKnockback: return "Combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks) knock non-boss enemies back " + b.Value.ToString("0.#") + " metres";

@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-bleeding
+- Replaced Echoing Steel with Serrated Edge: every Cleave hit inflicts bleeding for 25% of the hit's actual damage over three seconds, at any enemy life level.
+- Bleeds from separate hits stack, show red damage ticks, and are included in arena damage estimates. Existing allocations to the keystone now grant bleeding.
+
 version: 2026-10-21-cleave-rhythm-and-arena-selection
 - Explosive Finale's fourth Cleave attack takes 20% longer and has a more readable ground plunge.
 - Twin Rhythm's cuts are slightly slower, with a distinct pause between its two double-slash pairs. Arena damage estimates include the new timing.

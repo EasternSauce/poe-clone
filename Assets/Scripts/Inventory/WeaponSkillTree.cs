@@ -15,7 +15,7 @@ namespace PoeClone.Inventory
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
-        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveEcho
+        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveBleed
     }
 
     [Serializable]
@@ -147,6 +147,7 @@ namespace PoeClone.Inventory
     public static class WeaponSkillRules
     {
         public const float CleaveExplosionDamage = 5.5f;
+        public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.2f;
         // Additional time between pairs, measured in normal weapon attack intervals.
         public const float CleaveDoubleSlashPause = 0.35f;

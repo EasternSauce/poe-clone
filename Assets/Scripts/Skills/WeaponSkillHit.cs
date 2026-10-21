@@ -32,6 +32,8 @@ namespace PoeClone.Skills
                 if (ai != null && Roll(b.Get(E.Chill))) ai.Chill(seconds);
                 if (Roll(b.Get(E.Shock))) enemy.Shock(4f * b.DurationMultiplier);
                 if (type == DamageType.Fire && Roll(b.Get(E.Ignite))) enemy.Ignite(dealt * 5f, 3f * b.DurationMultiplier);
+                if (b.Get(E.CleaveBleed) > 0f)
+                    enemy.Bleed(dealt * b.Get(E.CleaveBleed) / 100f, WeaponSkillRules.CleaveBleedSeconds);
                 // These effects are a share of the final hit; do not apply owner damage increases twice.
                 if (b.Get(E.Poison) > 0 || b.Get(E.Cloud) > 0)
                     WeaponVenom.Apply(owner, enemy, dealt, b.Get(E.Poison), b.Get(E.Cloud), inventory?.Stats, minionDamage: true, melee: melee, durationMultiplier: b.DurationMultiplier, radiusMultiplier: b.AreaMultiplier, tree: b);
