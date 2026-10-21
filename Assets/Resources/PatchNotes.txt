@@ -1,3 +1,6 @@
+version: 2026-10-21-cleave-second-hit-effects
+- Removed the explosion and extra impact sound from Cleave's second combo attack, including co-op and spectator views. Its normal slash sound and damage bonus remain.
+
 version: 2026-10-21-melee-skill-reach
 - Melee skills now use fixed base ranges and slam positions, independent of one-handed or two-handed weapon reach and model size. Melee range, skill-tree range, area and combo bonuses still apply.
 

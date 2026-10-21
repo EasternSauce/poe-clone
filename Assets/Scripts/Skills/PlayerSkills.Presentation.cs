@@ -30,19 +30,18 @@ namespace PoeClone.Skills
                     break;
             }
             // A short visual accent, kept compact so a long fissure doesn't hide the arena.
-            float burstRadius = cast.CleaveAccent ? Mathf.Clamp(radius * 0.3f, 0.8f, 1.5f)
-                : cast.Skill == SkillId.Cleave ? Mathf.Clamp(radius * 0.85f, 1.8f, 4.8f)
+            float burstRadius = cast.Skill == SkillId.Cleave ? Mathf.Clamp(radius * 0.85f, 1.8f, 4.8f)
                 : Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f);
             SkillEffects.Explosion(center, burstRadius, skill.Color);
         }
 
-        private static void PlayComboImpactSound(SkillId skill, bool finisher, bool cleaveAccent, Vector3 at)
+        private static void PlayComboImpactSound(SkillId skill, bool finisher, Vector3 at)
         {
-            if (!finisher && !cleaveAccent) return;
+            if (!finisher) return;
             var audio = PoeClone.Audio.AudioManager.Instance;
             if (audio == null) return;
-            string effect = cleaveAccent ? "combat.cleave.second" : skill == SkillId.Cleave ? "combat.cleave.finisher" : "combat.melee.finisher";
-            string clip = cleaveAccent ? "cleave_combo_second" : skill == SkillId.Cleave ? "cleave_combo_finisher" : "melee_combo_finisher";
+            string effect = skill == SkillId.Cleave ? "combat.cleave.finisher" : "combat.melee.finisher";
+            string clip = skill == SkillId.Cleave ? "cleave_combo_finisher" : "melee_combo_finisher";
             audio.PlayEffect(effect, at, audio.Sfx(clip));
         }
 
@@ -60,9 +59,9 @@ namespace PoeClone.Skills
 
             SkillDefinition skill = SkillBook.Get(cast.Skill);
             if (cast.Skill != SkillId.Cleave || !cast.Finisher) PlaySkillSound(cast.Skill, cast.At);
-            if (cast.Finisher || cast.CleaveAccent)
+            if (cast.Finisher)
                 PlayComboImpactVisual(cast, skill);
-            PlayComboImpactSound(cast.Skill, cast.Finisher, cast.CleaveAccent, cast.At);
+            PlayComboImpactSound(cast.Skill, cast.Finisher, cast.At);
             Vector3 facing = cast.Facing;
             facing.y = 0f;
             if (facing.sqrMagnitude < 0.0001f)

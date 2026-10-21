@@ -145,7 +145,7 @@ namespace PoeClone.Skills
         {
             if (skill != SkillId.Cleave || !meleeFinisher) PlaySkillSound(skill, transform.position);
             if (!accent) return;
-            PlayComboImpactSound(skill, meleeFinisher, meleeCleaveAccent, transform.position);
+            PlayComboImpactSound(skill, meleeFinisher, transform.position);
             if (meleeFinisher)
                 PoeClone.CameraSystem.CameraFollow.Shake(skill == SkillId.Cleave ? 0.22f : 0.16f, 0.16f);
             else if (meleeCleaveAccent)

@@ -125,7 +125,7 @@ namespace PoeClone.Skills
                 Time = Time.time
             };
             recentCasts[CastCount % RecentCastCount] = cast;
-            if (cast.Finisher || cast.CleaveAccent)
+            if (cast.Finisher)
                 PlayComboImpactVisual(cast, skill);
         }
 
