@@ -8,7 +8,7 @@ using PoeClone.Skills;
 
 namespace PoeClone.World
 {
-    /// <summary>Live weapon routes sharing passive/gear templates and repeatable best-of-pool loot.</summary>
+    /// <summary>Live weapon routes with authored family passives and repeatable best-of-pool loot.</summary>
     public static class BalanceArenaBuilds
     {
         [Serializable] public sealed class Catalogue
@@ -32,7 +32,7 @@ namespace PoeClone.World
             JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text)));
         private static string[] Split(string text) => string.IsNullOrEmpty(text) ? new string[0] : text.Split(',');
 
-        /// <summary>The saved survey supplies level-appropriate templates, never route definitions.</summary>
+        /// <summary>The saved survey supplies equipment templates; character and weapon trees are live.</summary>
         public static Catalogue Generate(Catalogue samples)
         {
             var entries = new List<Entry>();
@@ -58,7 +58,7 @@ namespace PoeClone.World
                         entries.Add(new Entry {
                             id = group.Key + "/" + route.Id, skill = group.Key, name = route.Name,
                             family = baseline.family, level = level.Key, sample = baseline.sample,
-                            weaponRank = baseline.weaponRank, passives = baseline.passives, gear = baseline.gear,
+                            weaponRank = baseline.weaponRank, passives = string.Join(",", ArenaPassiveBuilds.Plan(skill, level.Key)), gear = baseline.gear,
                             weaponNodes = string.Join(",", progress.nodes)
                         });
                     }

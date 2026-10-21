@@ -1,3 +1,7 @@
+version: 2026-10-21-arena-passive-templates
+- Arena skills now use one of four authored character passive builds: tanky attack-focused melee, glass-cannon magic and mana, glass-cannon physical bows and critical strikes, or necromancy followed by personal defenses.
+- Passive allocations follow consistent connected paths as levels increase. Minion builds prioritize the necromancy region before spending remaining points on tankiness. Equipment eligibility and damage estimates use the new allocations.
+
 version: 2026-10-21-cleave-default-combo-balance
 - Default Cleave now deals 100% damage on each of its four hits, removing the 35% damage bonuses on hits two and four. This also reduces damage for builds relying on Serrated Edge and Headsman's Blow without a combo specialization.
 - Explosive Finale retains its existing hit damage, and Twin Rhythm retains 115% damage per cut.
