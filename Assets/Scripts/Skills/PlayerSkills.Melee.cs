@@ -31,6 +31,7 @@ namespace PoeClone.Skills
         private float meleeComboRestartAt;
         private bool meleeComboQueued;
         private Coroutine meleeAction;
+        private bool meleeAttackDelivered;
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
         private bool meleeCleaveAccent;
@@ -54,9 +55,9 @@ namespace PoeClone.Skills
         public void ResetMeleeCombo()
         {
             ClearCleaveFinisherPreview();
-            // Breaking Cleave starts a full recovery, even if its fast link cooldown elapsed.
+            // Breaking a delivered Cleave starts a full recovery; an unreleased swing is free to cancel.
             // Completed finishers retain the normal cooldown already owned by PlayerCombat.
-            if (meleeComboSwing > 0 && !meleeFinisher && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
+            if (meleeComboSwing > 0 && meleeAttackDelivered && !meleeFinisher && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
                 meleeComboRestartAt = Mathf.Max(meleeComboRestartAt, Time.time + meleeComboInterval);
             meleeComboSwing = 0;
             meleeComboQueued = false;
@@ -75,15 +76,16 @@ namespace PoeClone.Skills
             // A finisher cannot buffer another fast follow-up or keep the old facing locked.
             // PlayerCombat retains its normal cooldown before the next opening attack.
             if (meleeComboSwing == 0 || meleeFinisher) return false;
-            // Movement can still break the opener before the combo commits halfway through.
+            // Movement can break the opener during the first two-thirds of the link.
             if (meleeComboSwing == 1 && Time.time < meleeComboBraceAt &&
                 controller.InputDirection().sqrMagnitude > 0.001f)
             {
+                bool delivered = meleeAttackDelivered;
                 if (meleeAction != null) StopCoroutine(meleeAction);
                 meleeAction = null;
                 ResetMeleeCombo();
                 controller.SetSkillCommit(false);
-                if (attackAnimator != null) attackAnimator.CancelAttack();
+                GetComponent<PlayerCombat>().CancelMeleeAttack(delivered);
                 return false;
             }
             if (controller.MovementRevision != meleeComboMovement || MainWeapon != meleeComboWeapon ||
@@ -95,7 +97,7 @@ namespace PoeClone.Skills
             if (!meleeComboQueued && attackHeld && (freshPress || Time.time >= meleeComboReadyAt - ComboQueueWindow))
                 meleeComboQueued = true;
 
-            // Buffer early clicks without bracing until the second half of this link.
+            // Buffer early clicks without bracing until the final third of this link.
             // Recheck queued input each frame so the lock starts even without another click.
             if (meleeComboQueued && !controller.IsComboBraced && Time.time >= meleeComboBraceAt)
             {
@@ -130,10 +132,11 @@ namespace PoeClone.Skills
                 }
             }
             controller.BeginComboAttack(continuing, cursorDirection);
+            meleeAttackDelivered = false;
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
-            meleeComboBraceAt = Time.time + interval * 0.5f;
+            meleeComboBraceAt = Time.time + interval * (2f / 3f);
             meleeComboReadyAt = Time.time + interval;
         }
 
@@ -433,6 +436,7 @@ namespace PoeClone.Skills
             yield return MeleeWindup(windup / rate);
             ClearCleaveFinisherPreview();
             PlayMeleeSound(skill);
+            meleeAttackDelivered = true;
             release();
             yield return new WaitForSeconds(recovery / rate);
             FinishMeleeAction();
@@ -464,6 +468,7 @@ namespace PoeClone.Skills
             yield return new WaitForSeconds(0.16f / rate);
 
             PlayMeleeSound(skill.Id);
+            meleeAttackDelivered = true;
             LungingThrust(skill, level, reach, target);
             yield return new WaitForSeconds(0.16f / rate);
             FinishMeleeAction();
@@ -485,6 +490,7 @@ namespace PoeClone.Skills
                 if (cut == 0) yield return MeleeWindup(CrossCutStrike / rate);
                 else yield return new WaitForSeconds(CrossCutStrike / rate);
                 PlayMeleeSound(skill.Id, accent: cut == 0);
+                meleeAttackDelivered = true;
                 CrossCut(skill, level, Quaternion.Euler(0f, cut == 0 ? 45f : -45f, 0f) * transform.forward);
                 yield return new WaitForSeconds((cut == 0 ? CrossCutGap : CrossCutRecovery) / rate);
             }

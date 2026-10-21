@@ -158,6 +158,15 @@ namespace PoeClone.Player
             cooldownTimer = 0f;
         }
 
+        /// <summary>Cancel an opener using its actual damage release, rather than the animation's strike frame.</summary>
+        public void CancelMeleeAttack(bool delivered)
+        {
+            float recovery = cooldownTimer;
+            if (attackAnimator != null) attackAnimator.CancelAttack();
+            if (delivered) cooldownTimer = recovery;
+            else OnAttackCancelled();
+        }
+
         private void OnRevived()
         {
             cooldownTimer = 0f;

@@ -1,3 +1,7 @@
+version: 2026-10-21-combo-cancel-recovery
+- Moving can cancel a melee opener during the first two-thirds of the interval to the next attack. Buffered follow-ups lock movement and facing only during the final third.
+- Cancelling before the hit is delivered no longer starts an attack or Cleave restart cooldown. Attacks that already released their hit still require recovery.
+
 version: 2026-10-21-combo-halfway-lock
 - Buffered melee combo follow-ups now lock movement and facing only after half of the interval to the next attack has passed.
 - Moving during the first half cancels the opening attack, letting you break away before committing to the combo.
