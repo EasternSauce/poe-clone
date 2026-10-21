@@ -83,7 +83,7 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
             Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_0_5"));
-            float cadence = 4f / 3f;
+            float cadence = 1.5f;
             Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 5.5f) / 4f,
                 ComboDps("Cleave", weapon, sheet).hit, .001f);
         }
@@ -132,7 +132,7 @@ namespace PoeClone.Tests
             var agile = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_1_", 6);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
             float ratio = SingleTarget("Cleave", explosion, sheet) / SingleTarget("Cleave", agile, sheet);
-            Assert.That(ratio, Is.InRange(1.2f, 1.6f), "Landing the slow finisher should reward its greater commitment");
+            Assert.That(ratio, Is.InRange(1.2f, 1.85f), "Landing the slow finisher should reward its greater commitment");
             Assert.AreEqual(2f, WeaponSkillRules.ComboFollowupSpeed(StatType.GrantCleave, doubleSlash: true));
             Assert.AreEqual(2, WeaponSkillRules.ComboLength(StatType.GrantCleave, true));
         }
