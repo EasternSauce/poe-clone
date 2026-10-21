@@ -1,3 +1,6 @@
+version: 2026-10-21-two-handed-hit-damage
+- Two-handed melee weapons now have 35-40% more base damage per hit than the matching one-handed sword, axe or mace tier. They retain their slower attack speeds. Added damage and enemy armour can change the final per-hit difference.
+
 version: 2026-10-21-melee-weapon-pacing
 - Melee weapons have slower base attack speeds, so faster attacks require investment in attack speed. Swords now start at 0.70 attacks per second, axes at 0.65, maces, sceptres and staves at 0.60, daggers at 1.15, and unarmed attacks at 1.00. Bow speed is unchanged.
 - Greatswords, greataxes and mauls attack about 15-17% slower than their one-handed counterparts and gain roughly 20% base damage, providing a stronger offensive reward for giving up shield defenses. Existing saved weapons update their base damage when loaded.

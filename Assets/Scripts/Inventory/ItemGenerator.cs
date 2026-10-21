@@ -341,20 +341,20 @@ namespace PoeClone.Inventory
             Arm("staff", Leaning.Int, "archmage_staff", "Archmage Staff", WeaponType.Staff, 1, 4, 8, "gnarled_staff", Gilded, 10, Mod(StatType.SpellDamage, 15), Mod(StatType.Intelligence, 14)),
             Arm("staff", Leaning.Int, "eldritch_staff", "Eldritch Staff", WeaponType.Staff, 1, 4, 12, "gnarled_staff", Royal, 14, Mod(StatType.SpellDamage, 20), Mod(StatType.Intelligence, 20)),
 
-            // ---- Great weapons give up the off hand for heavier hits, at a modestly slower pace.
+            // ---- Great weapons have 35-40% more base hit damage than matching one-handed tiers.
             // Melee skill reach is defined by the skill, independent of weapon handedness.
-            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, 17),
-            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, 28),
-            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, 42),
-            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, 60),
-            Arm("greataxe", Leaning.Str, "woodsplitter", "Woodsplitter", WeaponType.Greataxe, 2, 4, 1, null, Plain, 14),
-            Arm("greataxe", Leaning.Str, "double_axe", "Double Axe", WeaponType.Greataxe, 2, 4, 4, "woodsplitter", Steel, 24),
-            Arm("greataxe", Leaning.Str, "headsman_axe", "Headsman Axe", WeaponType.Greataxe, 2, 4, 8, "woodsplitter", Gilded, 36),
-            Arm("greataxe", Leaning.Str, "executioner_axe", "Executioner Axe", WeaponType.Greataxe, 2, 4, 12, "woodsplitter", Dark, 50),
-            Arm("maul", Leaning.Str, "great_mallet", "Great Mallet", WeaponType.Maul, 2, 4, 1, null, Plain, 16),
-            Arm("maul", Leaning.Str, "sledgehammer", "Sledgehammer", WeaponType.Maul, 2, 4, 4, "great_mallet", Steel, 26),
-            Arm("maul", Leaning.Str, "earthbreaker", "Earthbreaker", WeaponType.Maul, 2, 4, 8, "great_mallet", Gilded, 38),
-            Arm("maul", Leaning.Str, "titan_maul", "Titan Maul", WeaponType.Maul, 2, 4, 12, "great_mallet", Royal, 54),
+            Arm("greatsword", Leaning.Str, "bastard_sword", "Bastard Sword", WeaponType.Greatsword, 1, 4, 1, null, Plain, 11),
+            Arm("greatsword", Leaning.Str, "claymore", "Claymore", WeaponType.Greatsword, 1, 4, 4, "bastard_sword", Steel, 18),
+            Arm("greatsword", Leaning.Str, "zweihander", "Zweihander", WeaponType.Greatsword, 1, 4, 8, "bastard_sword", Gilded, 28),
+            Arm("greatsword", Leaning.Str, "colossus_blade", "Colossus Blade", WeaponType.Greatsword, 1, 4, 12, "bastard_sword", Royal, 40),
+            Arm("greataxe", Leaning.Str, "woodsplitter", "Woodsplitter", WeaponType.Greataxe, 2, 4, 1, null, Plain, 9.5f),
+            Arm("greataxe", Leaning.Str, "double_axe", "Double Axe", WeaponType.Greataxe, 2, 4, 4, "woodsplitter", Steel, 16.5f),
+            Arm("greataxe", Leaning.Str, "headsman_axe", "Headsman Axe", WeaponType.Greataxe, 2, 4, 8, "woodsplitter", Gilded, 25),
+            Arm("greataxe", Leaning.Str, "executioner_axe", "Executioner Axe", WeaponType.Greataxe, 2, 4, 12, "woodsplitter", Dark, 35),
+            Arm("maul", Leaning.Str, "great_mallet", "Great Mallet", WeaponType.Maul, 2, 4, 1, null, Plain, 11),
+            Arm("maul", Leaning.Str, "sledgehammer", "Sledgehammer", WeaponType.Maul, 2, 4, 4, "great_mallet", Steel, 18),
+            Arm("maul", Leaning.Str, "earthbreaker", "Earthbreaker", WeaponType.Maul, 2, 4, 8, "great_mallet", Gilded, 26),
+            Arm("maul", Leaning.Str, "titan_maul", "Titan Maul", WeaponType.Maul, 2, 4, 12, "great_mallet", Royal, 37),
         };
 
         // How often each kind of item drops, against the others (its lines share it equally).
