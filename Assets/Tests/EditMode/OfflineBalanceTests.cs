@@ -83,7 +83,7 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
             Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_0_5"));
-            float cadence = 4f / (2.25f + 1.5f);
+            float cadence = 4f / (1.875f + 1.5f);
             Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 4.5f) / 4f,
                 ComboDps("Cleave", weapon, sheet).hit, .001f);
         }

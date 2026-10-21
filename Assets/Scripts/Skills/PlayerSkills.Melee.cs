@@ -48,7 +48,7 @@ namespace PoeClone.Skills
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
-        internal const float CleaveFinisherSlowdown = 4.5f;
+        internal const float CleaveFinisherSlowdown = 3.75f;
         private GroundTelegraph.Decal cleaveFinisherPreview;
 
         private void ClearCleaveFinisherPreview()
@@ -345,7 +345,7 @@ namespace PoeClone.Skills
             {
                 case SkillId.Cleave:
                     // Fit each normal slash exactly into its link, including slow weapons.
-                    // The explosion then takes 4.5 links rather than the old three.
+                    // The explosion takes 3.75 links, between its previous timings.
                     rate = (CleaveWindup + CleaveRecovery) / comboInterval;
                     if (CleaveDoubleSlash)
                     {

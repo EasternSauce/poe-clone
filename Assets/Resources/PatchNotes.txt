@@ -1,3 +1,6 @@
+version: 2026-10-21-cleave-finisher-pace
+- Cleave's explosive fourth attack is faster, with its charge and animation set between their earlier and most recent timings.
+
 version: 2026-10-21-cleave-opening-edge-choices
 - Opening Edge now leads to two shorter routes: Headsman's Blow executes enemies below 20% life, including bosses; Echoing Steel gives Cleave hits a 25% chance to strike the same enemy again. Either ending fits alongside a Cleave combo specialization.
 - The arena build picker now generates routes and legal combinations from the current weapon trees automatically. New and changed keystones appear with their current effects, point costs and damage estimates.
