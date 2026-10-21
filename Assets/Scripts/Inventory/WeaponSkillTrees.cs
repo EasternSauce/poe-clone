@@ -115,7 +115,7 @@ namespace PoeClone.Inventory
                         Grant = grant, Depth = i - 3, Keystone = i == 8,
                         Name = i == 8 ? "Serrated Edge" : "Executioner",
                         Position = opening.Position + direction * ((i - 5) * 65f) - side * ((i - 5) * 25f),
-                        Bonuses = i == 8 ? M(B(E.CleaveBleed, 25)) : M(B(E.Damage, 10))
+                        Bonuses = i == 8 ? M(B(E.CleaveBleed, 10)) : M(B(E.Damage, 10))
                     });
             }
             all.Add(grant, nodes);
@@ -162,7 +162,7 @@ namespace PoeClone.Inventory
             Add(t, StatType.GrantCleave,
                 P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
                 P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 20))));
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))));
             Add(t, StatType.GrantPulverize,
                 P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
                 P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
@@ -254,7 +254,7 @@ namespace PoeClone.Inventory
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.CleaveExplosion: return "Replaces the fourth slash with a circular explosion at the sword's ground impact\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
-                case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
+                case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals " + (WeaponSkillRules.CleaveDoubleSlashDamage * 100f).ToString("0.#") + "% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life, including bosses";
                 case E.CleaveBleed: return "Every Cleave hit inflicts bleeding for " + b.Value.ToString("0.#") + "% of its damage over " + WeaponSkillRules.CleaveBleedSeconds.ToString("0.#") + " seconds\nBleeds from separate hits stack";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");

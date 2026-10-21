@@ -8,7 +8,7 @@ using PoeClone.Skills;
 
 namespace PoeClone.World
 {
-    /// <summary>Live weapon routes with sampled passive/gear templates and the best of fresh loot rolls.</summary>
+    /// <summary>Live weapon routes sharing passive/gear templates and repeatable best-of-pool loot.</summary>
     public static class BalanceArenaBuilds
     {
         [Serializable] public sealed class Catalogue
@@ -45,21 +45,20 @@ namespace PoeClone.World
                     {
                         var baseline = level.FirstOrDefault(e => e.id.EndsWith("/base", StringComparison.Ordinal)) ?? level.First();
                         if (route.Nodes.Length > baseline.weaponRank) continue;
-                        var template = level.FirstOrDefault(e => e.name == route.Name) ?? baseline;
                         var progress = new WeaponSkillProgress { level = baseline.weaponRank };
                         foreach (string id in route.Nodes)
                             if (!progress.Allocate(skill.Grant, id)) throw new InvalidOperationException("Arena: illegal live route " + route.Name);
                         // Preserve useful sampled travel preferences, then fill from the live tree.
                         // Never add an unselected keystone or silently change the advertised route.
-                        foreach (string id in Split(template.weaponNodes).Concat(tree?.Select(n => n.Id) ?? Enumerable.Empty<string>()))
+                        foreach (string id in Split(baseline.weaponNodes).Concat(tree?.Select(n => n.Id) ?? Enumerable.Empty<string>()))
                         {
                             var node = WeaponSkillTrees.Find(skill.Grant, id);
                             if (node != null && !node.Keystone) progress.Allocate(skill.Grant, id);
                         }
                         entries.Add(new Entry {
                             id = group.Key + "/" + route.Id, skill = group.Key, name = route.Name,
-                            family = template.family, level = level.Key, sample = template.sample,
-                            weaponRank = baseline.weaponRank, passives = template.passives, gear = template.gear,
+                            family = baseline.family, level = level.Key, sample = baseline.sample,
+                            weaponRank = baseline.weaponRank, passives = baseline.passives, gear = baseline.gear,
                             weaponNodes = string.Join(",", progress.nodes)
                         });
                     }
@@ -79,12 +78,19 @@ namespace PoeClone.World
 
         private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();
 
+        // Route choices must not change the item pools used to compare the same skill and level.
+        private static int EquipmentSeed(Entry entry)
+        {
+            int seed = entry.level;
+            foreach (char c in entry.skill) seed = unchecked(seed * 31 + c);
+            return seed;
+        }
+
         /// <summary>Median of three repeatable best-of-pool kits, without touching player state or RNG.</summary>
         public static float EstimatedDps(Entry entry, bool boss = false)
         {
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
-            int seed = entry.level;
-            foreach (char c in entry.id) seed = unchecked(seed * 31 + c);
+            int seed = EquipmentSeed(entry);
             var rolls = new float[3];
             for (int i = 0; i < rolls.Length; i++)
             {
@@ -105,14 +111,14 @@ namespace PoeClone.World
             return damageEstimates[(entry, boss)] = rolls[1];
         }
 
-        public static GauntletLoadout.Result Equip(Entry entry, PlayerStats player, PlayerInventory inventory, System.Random rng)
+        public static GauntletLoadout.Result Equip(Entry entry, PlayerStats player, PlayerInventory inventory)
         {
             var passives = player.GetComponent<PlayerPassives>();
             passives.Allocation.ResetAll();
             foreach (string id in Split(entry.passives))
                 if (!passives.Take(id)) throw new InvalidOperationException("Arena: invalid recorded passive " + id);
             foreach (EquipSlot slot in SlotRules.AllSlots) inventory.Equipment.Unequip(slot);
-            var result = CreateKit(entry, rng);
+            var result = CreateKit(entry);
             foreach (var pick in result.Picks)
                 if (!inventory.Equipment.Restore(pick.Slot, pick.Item, out _))
                     throw new InvalidOperationException("Arena: cannot equip " + pick.Item.Id);
@@ -121,7 +127,7 @@ namespace PoeClone.World
 
         public static GauntletLoadout.Result CreateKit(Entry entry, System.Random rng = null)
         {
-            rng = rng ?? new System.Random();
+            rng = rng ?? new System.Random(EquipmentSeed(entry));
             var result = new GauntletLoadout.Result();
             var basis = new BaseStats { Level = entry.level }
                 .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)

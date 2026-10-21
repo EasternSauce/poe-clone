@@ -1,3 +1,8 @@
+version: 2026-10-21-cleave-specialization-balance
+- Twin Rhythm's individual cuts now deal 115% of normal hit damage, up from 80%, keeping its slower rhythm and pause between pairs.
+- Headsman's Blow now executes below 15% life. Serrated Edge now inflicts 10% of each hit's damage as bleeding over three seconds.
+- Arena routes for the same skill and level now share passive and equipment templates and repeatable drop pools, making weapon-tree comparisons consistent. Build picker estimates use shared rolls too.
+
 version: 2026-10-21-arena-best-loot
 - Arena builds now equip the highest-scoring item from each slot's drop pool instead of picking from the worst 30%. Build picker damage estimates use the improved equipment too.
 

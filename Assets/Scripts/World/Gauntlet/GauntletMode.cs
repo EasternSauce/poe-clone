@@ -213,7 +213,7 @@ namespace PoeClone.World
             player.GetComponent<PlayerStatsLink>()?.PushBase();
             var notes = new List<string>();
             if (arenaBuild != null)
-                kit = BalanceArenaBuilds.Equip(arenaBuild, player, inventory, new System.Random(seed ^ 0x5bd1e995));
+                kit = BalanceArenaBuilds.Equip(arenaBuild, player, inventory);
             else
             {
                 GauntletLoadout.AllocatePassives(player.GetComponent<PlayerPassives>(), build, Level, notes);

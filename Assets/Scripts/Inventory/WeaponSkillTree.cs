@@ -147,6 +147,7 @@ namespace PoeClone.Inventory
     public static class WeaponSkillRules
     {
         public const float CleaveExplosionDamage = 5.5f;
+        public const float CleaveDoubleSlashDamage = 1.15f;
         public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.2f;
         // Additional time between pairs, measured in normal weapon attack intervals.
@@ -168,8 +169,8 @@ namespace PoeClone.Inventory
         {
             int length = ComboLength(grant, doubleSlash);
             if (length == 0 || step <= 0) return 1f;
-            // Each Twin Rhythm part contains two separately delivered 80% hits.
-            if (grant == StatType.GrantCleave && doubleSlash) return 0.8f * (step % length == 0 ? 1.1f : 1f);
+            // Each Twin Rhythm part contains two separately delivered cuts.
+            if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (step % length == 0 ? 1.1f : 1f);
             if (step % length == 0)
                 return (grant == StatType.GrantCleave ? (explosiveCleave ? CleaveExplosionDamage : 1.35f) : 1.75f) * finisherMore;
             return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
