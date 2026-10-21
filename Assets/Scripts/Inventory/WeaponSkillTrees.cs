@@ -197,8 +197,8 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
-                case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals 450% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds\nCannot be combined with Twin Rhythm within the 10-point budget";
-                case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit\nCannot be combined with Explosive Finale within the 10-point budget";
+                case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals 450% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
+                case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboKnockback: return "Combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks) knock non-boss enemies back " + b.Value.ToString("0.#") + " metres";
