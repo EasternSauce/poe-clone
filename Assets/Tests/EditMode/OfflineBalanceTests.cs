@@ -218,6 +218,38 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void ArenaCatalogue_CleaveRoutesUseCurrentNodesAndCreateLoadouts()
+        {
+            var builds = Type.GetType("PoeClone.World.BalanceArenaBuilds, Assembly-CSharp", true);
+            var data = builds.GetProperty("Data").GetValue(null);
+            var entries = ((IEnumerable)data.GetType().GetField("builds").GetValue(data)).Cast<object>()
+                .Where(e => (string)e.GetType().GetField("skill").GetValue(e) == "Cleave").ToArray();
+            var names = new HashSet<string>();
+            foreach (var entry in entries)
+            {
+                var type = entry.GetType();
+                string name = (string)type.GetField("name").GetValue(entry);
+                names.Add(name);
+                int rank = (int)type.GetField("weaponRank").GetValue(entry);
+                var progress = new WeaponSkillProgress { level = rank };
+                foreach (string id in ((string)type.GetField("weaponNodes").GetValue(entry)).Split(','))
+                    Assert.IsTrue(progress.Allocate(StatType.GrantCleave, id), name + " has stale or illegal node " + id);
+                Assert.AreEqual(0, progress.Available, "Recorded routes should spend their weapon points");
+            }
+            CollectionAssert.AreEquivalent(new[] { "Flexible tree (no destinations)", "Explosive Finale", "Twin Rhythm", "Headsman's Blow" }, names);
+            foreach (var group in entries.GroupBy(e => (string)e.GetType().GetField("id").GetValue(e)))
+            {
+                var ordered = group.OrderBy(e => (int)e.GetType().GetField("level").GetValue(e)).ToArray();
+                foreach (var entry in new[] { ordered.First(), ordered.Last() })
+                {
+                    // Exercise the same loadout creation and damage preview that builds the picker.
+                    Assert.DoesNotThrow(() => builds.GetMethod("CreateKit").Invoke(null, new object[] { entry, new Random(1) }));
+                    Assert.Greater((float)builds.GetMethod("EstimatedDps").Invoke(null, new object[] { entry, false }), 0f);
+                }
+            }
+        }
+
+        [Test]
         public void Catalogue_CoversEverySkillAndEveryDestination_WithLegalBudgets()
         {
             var catalogue = (IEnumerable)EditorType("BalanceArchetypes").GetMethod("Catalogue").Invoke(null, null);

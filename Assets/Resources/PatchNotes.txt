@@ -1,3 +1,6 @@
+version: 2026-10-21-cleave-build-picker
+- Fixed Cleave disappearing from the arena build picker after its weapon-tree rework. Its recorded builds now use the current regular combo, Explosive Finale, Twin Rhythm and culling routes, with legal point allocations at every offered level.
+
 version: 2026-10-21-cleave-specializations
 - Cleave's normal fourth hit is now a regular slash with 35% more damage and 15% greater reach. The circular explosion must be unlocked through Explosive Finale; it charges more slowly and stuns surviving non-boss enemies for two seconds.
 - Twin Rhythm offers an alternative two-part combo: double slash into another double slash, with a separate alternating swing and hit for each cut. Its shorter commitments offer more flexibility, with sustained damage tuned to compete with Explosive Finale.
