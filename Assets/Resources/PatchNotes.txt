@@ -1,3 +1,7 @@
+version: 2026-10-21-arena-fixed-level-builds
+- Every arena skill now offers builds at levels 1, 10, 16, 24, 30 and 34, with up to four distinct weapon-tree allocations at each level, including developing routes before keystones unlock.
+- Builds are ranked using damage at their listed level. Clicking a row starts that exact level, and random levels use the same six milestones.
+
 version: 2026-10-21-cleave-specialization-dps
 - Twin Rhythm's cuts now deal 150% of normal hit damage, up from 115%. Explosive Finale's explosion now deals 600%, up from 550%. Both combo specializations offer more sustained DPS than combining Serrated Edge and Headsman's Blow; build picker estimates and skill descriptions use the new damage.
 

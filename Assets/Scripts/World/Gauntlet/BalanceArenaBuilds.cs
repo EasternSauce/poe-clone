@@ -11,6 +11,19 @@ namespace PoeClone.World
     /// <summary>Live weapon routes with authored family passives and repeatable best-of-pool loot.</summary>
     public static class BalanceArenaBuilds
     {
+        public static readonly int[] PickerLevels = { 1, 10, 16, 24, 30, 34 };
+        private static readonly Dictionary<string, Entry[]> pickerChoices = new Dictionary<string, Entry[]>();
+
+        public static Entry[] PickerChoices(string skill)
+        {
+            if (pickerChoices.TryGetValue(skill, out var cached)) return cached;
+            return pickerChoices[skill] = Data.builds.Where(e => e.skill == skill && PickerLevels.Contains(e.level))
+                .GroupBy(e => e.level).OrderBy(g => g.Key)
+                .SelectMany(g => g.GroupBy(e => string.Join(",", Split(e.weaponNodes).OrderBy(id => id, StringComparer.Ordinal)))
+                    .Select(allocations => allocations.First())
+                    .OrderByDescending(e => EstimatedDps(e)).ThenBy(e => e.name, StringComparer.Ordinal).Take(4)).ToArray();
+        }
+
         [Serializable] public sealed class Catalogue
         {
             public string source, generatedUtc, model;
@@ -44,9 +57,9 @@ namespace PoeClone.World
                     foreach (var level in group.GroupBy(e => e.level).OrderBy(g => g.Key))
                     {
                         var baseline = level.FirstOrDefault(e => e.id.EndsWith("/base", StringComparison.Ordinal)) ?? level.First();
-                        if (route.Nodes.Length > baseline.weaponRank) continue;
                         var progress = new WeaponSkillProgress { level = baseline.weaponRank };
-                        foreach (string id in route.Nodes)
+                        // Preview a legal developing route before its destination unlocks.
+                        foreach (string id in route.Nodes.Take(baseline.weaponRank))
                             if (!progress.Allocate(skill.Grant, id)) throw new InvalidOperationException("Arena: illegal live route " + route.Name);
                         // Preserve useful sampled travel preferences, then fill from the live tree.
                         // Never add an unselected keystone or silently change the advertised route.
@@ -56,7 +69,8 @@ namespace PoeClone.World
                             if (node != null && !node.Keystone) progress.Allocate(skill.Grant, id);
                         }
                         entries.Add(new Entry {
-                            id = group.Key + "/" + route.Id, skill = group.Key, name = route.Name,
+                            id = group.Key + "/" + route.Id, skill = group.Key,
+                            name = route.Nodes.Length > baseline.weaponRank ? "Toward " + route.Name : route.Name,
                             family = baseline.family, level = level.Key, sample = baseline.sample,
                             weaponRank = baseline.weaponRank, passives = string.Join(",", ArenaPassiveBuilds.Plan(skill, level.Key)), gear = baseline.gear,
                             weaponNodes = string.Join(",", progress.nodes)
@@ -72,8 +86,12 @@ namespace PoeClone.World
             var grant = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant;
             var destinations = Split(entry.weaponNodes).Select(id => WeaponSkillTrees.Find(grant, id))
                 .Where(node => node != null && node.Keystone).ToArray();
-            return destinations.Length == 0 ? "Flexible tree (no fixed destination effects)" :
-                string.Join("; ", destinations.Select(node => node.Description.Replace("\n", "; ")));
+            if (destinations.Length > 0)
+                return string.Join("; ", destinations.Select(node => node.Description.Replace("\n", "; ")));
+            var allocated = Split(entry.weaponNodes).Select(id => WeaponSkillTrees.Find(grant, id)).Where(node => node != null);
+            return string.Join("; ", allocated.SelectMany(node => node.Bonuses)
+                .GroupBy(bonus => bonus.Effect)
+                .Select(group => WeaponSkillTrees.Describe(new WeaponSkillBonus(group.Key, group.Sum(bonus => bonus.Value)), grant)));
         }
 
         private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();

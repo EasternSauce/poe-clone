@@ -7,7 +7,7 @@ using PoeClone.UI;
 
 namespace PoeClone.World
 {
-    /// <summary>Browser for live weapon-tree routes, with route-specific minimum levels.</summary>
+    /// <summary>Browser for distinct live builds at shared level milestones.</summary>
     public sealed class BalanceArenaUI : MonoBehaviour
     {
         private GauntletMode mode;
@@ -266,11 +266,10 @@ namespace PoeClone.World
 
         private void ChangeLevel(int delta)
         {
-            level = Mathf.Clamp(level + delta, MinimumLevel, 34);
+            int index = System.Array.IndexOf(BalanceArenaBuilds.PickerLevels, level);
+            level = BalanceArenaBuilds.PickerLevels[Mathf.Clamp(index + delta, 0, BalanceArenaBuilds.PickerLevels.Length - 1)];
             randomLevel = false; Refresh();
         }
-        private int MinimumLevel => randomBuild ? 1 : choices.First(b => b.id == route).level;
-        private IEnumerable<BalanceArenaBuilds.Entry> Available => BalanceArenaBuilds.Data.builds.Where(b => randomLevel || b.level == level);
         private void ChangeSkill(int delta)
         {
             int current = System.Array.IndexOf(skills, skill);
@@ -283,25 +282,22 @@ namespace PoeClone.World
         {
             skills = BalanceArenaBuilds.Data.builds.Select(b => b.skill).Distinct().ToArray();
             if (!skills.Contains(skill)) skill = skills[0];
-            choices = BalanceArenaBuilds.Data.builds.Where(b => b.skill == skill)
-                .GroupBy(b => b.id).Select(g => g.OrderBy(b => b.level).First()).ToList();
-            if (!choices.Any(b => b.id == route)) route = choices[0].id;
-            level = Mathf.Max(level, MinimumLevel);
-            lowerLevelButton.color = !randomLevel && level <= MinimumLevel ? new Color(.45f, .45f, .45f) : Color.white;
-            // Keep every category in one list: the flexible level-one route must not hide the rest.
+            choices = BalanceArenaBuilds.PickerChoices(skill).ToList();
+            if (!choices.Any(b => b.id == route && b.level == level)) route = choices.First(b => b.level == level).id;
+            lowerLevelButton.color = !randomLevel && level == 1 ? new Color(.45f, .45f, .45f) : Color.white;
             visibleChoices = new List<BalanceArenaBuilds.Entry>();
             var leaders = new Dictionary<int, string>();
             int category = 0;
             foreach (var group in choices.GroupBy(b => b.level).OrderBy(g => g.Key))
             {
-                var ranked = group.OrderByDescending(b => BalanceArenaBuilds.EstimatedDps(Preview(b)))
+                var ranked = group.OrderByDescending(b => BalanceArenaBuilds.EstimatedDps(b))
                     .ThenBy(b => b.name, System.StringComparer.Ordinal).ThenBy(b => b.id, System.StringComparer.Ordinal).ToList();
                 leaders[group.Key] = ranked[0].id;
                 if (category >= categoryHeaders.Count)
                     categoryHeaders.Add(Label(routeScroll.content, "", Vector2.zero, Vector2.zero, 18));
                 Text header = categoryHeaders[category++];
                 header.gameObject.SetActive(true);
-                header.text = "MINIMUM LEVEL " + group.Key + " · " + ranked.Count + (ranked.Count == 1 ? " route" : " routes");
+                header.text = "LEVEL " + group.Key + " · " + ranked.Count + (ranked.Count == 1 ? " build" : " builds");
                 header.raycastTarget = false;
                 foreach (var choice in ranked)
                 {
@@ -311,8 +307,8 @@ namespace PoeClone.World
                     {
                         Image button = Button(routeScroll.content, "", Vector2.zero, Vector2.zero, () => {
                             route = visibleChoices[index].id;
-                            randomBuild = false;
-                            level = Mathf.Max(level, visibleChoices[index].level);
+                            randomBuild = randomLevel = false;
+                            level = visibleChoices[index].level;
                             StartRun();
                         });
                         routeButtons.Add(button);
@@ -325,8 +321,8 @@ namespace PoeClone.World
                 }
             }
             for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
-            levelGroupLabel.text = "All level categories · Highest DPS first within each category · Green frame = top DPS";
-            levelLabel.text = randomLevel ? "Level " + MinimumLevel + "–34" : "Level " + level;
+            levelGroupLabel.text = "Levels 1, 10, 16, 24, 30, 34 · Highest DPS first at each level · Green frame = best at that level";
+            levelLabel.text = randomLevel ? "Random milestone" : "Level " + level;
             skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
@@ -335,35 +331,31 @@ namespace PoeClone.World
                 routeButtons[i].gameObject.SetActive(i < visibleChoices.Count);
                 if (i >= visibleChoices.Count) continue;
                 var choice = visibleChoices[i];
-                var preview = Preview(choice);
-                float dps = BalanceArenaBuilds.EstimatedDps(preview);
-                float bossDps = BalanceArenaBuilds.EstimatedDps(preview, boss: true);
+                float dps = BalanceArenaBuilds.EstimatedDps(choice);
+                float bossDps = BalanceArenaBuilds.EstimatedDps(choice, boss: true);
                 bool highest = choice.id == leaders[choice.level];
                 routeHighlights[i].gameObject.SetActive(highest);
-                routeLabels[i].text = BalanceArenaBuilds.RouteEffects(choice) + "  · Lv " + choice.level + "+" +
+                routeLabels[i].text = choice.name + " · " + BalanceArenaBuilds.RouteEffects(choice) +
                     "\n≈ " + dps.ToString("N0") + " effective DPS" +
                     (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
-                    " at Lv " + preview.level + (highest ? " · TOP DPS" : "");
+                    " at Lv " + choice.level + (highest ? " · BEST AT THIS LEVEL" : "");
                 routeLabels[i].color = highest ? HighestDps : UiKit.TextColor;
-                routeButtons[i].color = !randomBuild && choice.id == route ? Selected :
+                routeButtons[i].color = !randomBuild && choice.id == route && choice.level == level ? Selected :
                     highest ? new Color(.7f, 1f, .8f) : Color.white;
             }
-            routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
+            routeCountLabel.text = choices.Count + " builds in " + category + " level groups · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
-                (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
+                "\nEach row starts at its listed level. Random levels use the same six milestones." +
                 "\nDPS: successful full combos, full army + repeatable buffs; executes where applicable. Excludes opening/kill buffs and downtime." +
                 "\nShared gear pools and passives per skill and level. Best drop per slot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
             LayoutRoutes();
         }
-        private BalanceArenaBuilds.Entry Preview(BalanceArenaBuilds.Entry choice)
-        {
-            int previewLevel = randomLevel ? choice.level : Mathf.Max(level, choice.level);
-            return BalanceArenaBuilds.Data.builds.First(b => b.id == choice.id && b.level == previewLevel);
-        }
         private void StartRun()
         {
-            var pool = Available.Where(b => randomBuild || b.id == route).ToArray();
+            string pickedSkill = randomBuild ? skills[Random.Range(0, skills.Length)] : skill;
+            var pool = BalanceArenaBuilds.PickerChoices(pickedSkill)
+                .Where(b => (randomLevel || b.level == level) && (randomBuild || randomLevel || b.id == route)).ToArray();
             // Choose a level first so random-level runs do not favour high levels with more routes.
             int[] levels = pool.Select(b => b.level).Distinct().ToArray();
             int pickedLevel = levels[Random.Range(0, levels.Length)];
