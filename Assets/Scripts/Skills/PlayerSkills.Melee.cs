@@ -45,7 +45,8 @@ namespace PoeClone.Skills
             ? 1.15f : 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
-        public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
+        public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt &&
+            (!CleaveDoubleSlash || meleeComboSwing == 0 || meleeFinisher || Time.time >= meleeComboReadyAt);
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
         private GroundTelegraph.Decal cleaveFinisherPreview;
@@ -141,6 +142,8 @@ namespace PoeClone.Skills
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
+            if (CleaveDoubleSlash && !meleeFinisher)
+                interval += MeleeInterval(skill.Id) * WeaponSkillRules.CleaveDoubleSlashPause;
             meleeComboBraceAt = Time.time + interval * (2f / 3f);
             meleeComboReadyAt = Time.time + interval;
         }
@@ -343,13 +346,14 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.Cleave:
-                    // Fit every hit, including the explosion, into the same combo link.
+                    // Give the explosive plunge a little more weight than the normal cuts.
                     rate = (CleaveWindup + CleaveRecovery) / comboInterval;
                     if (CleaveDoubleSlash)
                     {
                         meleeAction = StartCoroutine(CleaveDoubleCut(skill, level, rate * 2f));
                         break;
                     }
+                    if (CleaveExplosiveFinisher) rate /= WeaponSkillRules.CleaveExplosionDuration;
                     meleeAction = StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
                         () => Cleave(skill, level), CleaveRecovery));
                     break;
@@ -495,6 +499,10 @@ namespace PoeClone.Skills
                 Cleave(skill, level, cut);
                 yield return new WaitForSeconds(CleaveRecovery / rate);
             }
+            // Preserve the pause even when frame timing extends the first pair.
+            if (!meleeFinisher)
+                meleeComboReadyAt = Mathf.Max(meleeComboReadyAt,
+                    Time.time + MeleeInterval(skill.Id) * WeaponSkillRules.CleaveDoubleSlashPause);
             FinishMeleeAction();
         }
 

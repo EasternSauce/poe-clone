@@ -99,27 +99,22 @@ namespace PoeClone.Inventory
             }
             if (grant == StatType.GrantCleave)
             {
-                // Opening Edge starts its own four-point fork. Either ending fits alongside
-                // a six-point combo variant, with two travel nodes after the notable.
-                nodes.RemoveAll(n => n.Id == "v2_2_0" || n.Id == "v2_2_1");
+                // Every notable follows two small nodes. The Executioner endings fork
+                // after Opening Edge and each take six points from the tree's start.
                 var opening = nodes.Find(n => n.Id == "v2_2_2");
-                opening.Parent = null;
                 Vector2 direction = opening.Position.normalized;
                 Vector2 side = new Vector2(-direction.y, direction.x);
-                opening.Position = direction * 70f;
-                opening.Depth = 0;
                 for (int i = 3; i <= 5; i++)
                 {
                     var node = nodes.Find(n => n.Id == "v2_2_" + i);
-                    node.Depth = i - 2;
-                    node.Position = direction * (70f + (i - 2) * 65f) + side * ((i - 2) * 25f);
+                    node.Position = opening.Position + direction * ((i - 2) * 65f) + side * ((i - 2) * 25f);
                 }
                 for (int i = 6; i <= 8; i++)
                     nodes.Add(new WeaponSkillNode {
                         Id = "v2_2_" + i, Parent = "v2_2_" + (i == 6 ? 2 : i - 1),
-                        Grant = grant, Depth = i - 5, Keystone = i == 8,
+                        Grant = grant, Depth = i - 3, Keystone = i == 8,
                         Name = i == 8 ? "Echoing Steel" : "Executioner",
-                        Position = direction * (70f + (i - 5) * 65f) - side * ((i - 5) * 25f),
+                        Position = opening.Position + direction * ((i - 5) * 65f) - side * ((i - 5) * 25f),
                         Bonuses = i == 8 ? M(B(E.CleaveEcho, 25)) : M(B(E.Damage, 10))
                     });
             }

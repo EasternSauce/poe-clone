@@ -1,3 +1,9 @@
+version: 2026-10-21-cleave-rhythm-and-arena-selection
+- Explosive Finale's fourth Cleave attack takes 20% longer and has a more readable ground plunge.
+- Twin Rhythm's cuts are slightly slower, with a distinct pause between its two double-slash pairs. Arena damage estimates include the new timing.
+- Clicking an arena build now starts it immediately, using at least that build's minimum level.
+- Opening Edge now follows two small nodes. Both Executioner endings require six points; existing Cleave allocations are refunded without losing weapon level or experience.
+
 version: 2026-10-21-cleave-ground-impact
 - Explosive Finale's fourth Cleave attack now centers its explosion, damage and ground preview on the sword's ground strike ahead of the player.
 - The explosive attack now animates and releases as quickly as the other combo hits. Build picker damage estimates reflect its faster pace.

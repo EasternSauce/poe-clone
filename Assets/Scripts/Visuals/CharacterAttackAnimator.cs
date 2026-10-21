@@ -365,11 +365,11 @@ namespace PoeClone.Visuals
             Range = CleaveGreatSkillProfile.Range, ConeHalfAngle = PlayerSkills.CleaveHalfAngle
         };
 
-        // Hold a raised, downward-pointing blade, then plunge only at the end of the charge.
+        // Raise the blade, then give the ground plunge enough time to read clearly.
         private static readonly AttackProfile CleaveGroundStabProfile = new AttackProfile
         {
             Duration = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery,
-            StrikeTime = CleaveSkillProfile.StrikeTime, SwingStart = 0.52f,
+            StrikeTime = CleaveSkillProfile.StrikeTime, SwingStart = 0.35f,
             TwoHandGrip = true, ChargedGroundStab = true,
             WindupOffset = new Pose(-110f, 0f, 0f, -100f),
             StrikeOffset = new Pose(-25f, 0f, 0f, -5f),

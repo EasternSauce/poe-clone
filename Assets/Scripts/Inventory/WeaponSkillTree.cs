@@ -21,7 +21,7 @@ namespace PoeClone.Inventory
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 3;
+        public int version = 4;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -37,7 +37,7 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantCleave ? 3 : 2;
+            int requiredVersion = grant == StatType.GrantCleave ? 4 : 2;
             if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
@@ -147,14 +147,19 @@ namespace PoeClone.Inventory
     public static class WeaponSkillRules
     {
         public const float CleaveExplosionDamage = 5.5f;
+        public const float CleaveExplosionDuration = 1.2f;
+        // Additional time between pairs, measured in normal weapon attack intervals.
+        public const float CleaveDoubleSlashPause = 0.35f;
         public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false) =>
-            grant == StatType.GrantCleave ? (doubleSlash ? 2f : 2.25f) : 4f;
+            grant == StatType.GrantCleave ? (doubleSlash ? 1.7f : 2.25f) : 4f;
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
-        public static float ComboSustainedSpeed(StatType grant, float finisherInterval = 1f, bool doubleSlash = false)
+        public static float ComboSustainedSpeed(StatType grant, bool doubleSlash = false)
         {
             int length = ComboLength(grant, doubleSlash);
-            return length > 0 ? length / (finisherInterval + (length - 1f) / ComboFollowupSpeed(grant, doubleSlash)) : 1f;
+            float linkInterval = 1f / ComboFollowupSpeed(grant, doubleSlash);
+            if (grant == StatType.GrantCleave && doubleSlash) linkInterval += CleaveDoubleSlashPause;
+            return length > 0 ? length / (1f + (length - 1f) * linkInterval) : 1f;
         }
 
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>

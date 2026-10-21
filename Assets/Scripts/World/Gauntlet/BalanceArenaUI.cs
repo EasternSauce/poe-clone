@@ -68,7 +68,7 @@ namespace PoeClone.World
             UiKit.Frame(panel);
             Text title = Label(panel, "Balance Test Arena", new Vector2(30, -20), new Vector2(1060, 50), 36);
             UiKit.Heading(title);
-            Label(panel, "Choose a weapon-tree route and test it in combat", new Vector2(30, -78), new Vector2(1060, 32), 20);
+            Label(panel, "Click a build to start the arena immediately", new Vector2(30, -78), new Vector2(1060, 32), 20);
 
             lowerLevelButton = Button(panel, "−", new Vector2(40, -130), new Vector2(65, 48), () => ChangeLevel(-1));
             levelLabel = Label(panel, "", new Vector2(115, -130), new Vector2(200, 48), 24);
@@ -310,7 +310,10 @@ namespace PoeClone.World
                     if (index >= routeButtons.Count)
                     {
                         Image button = Button(routeScroll.content, "", Vector2.zero, Vector2.zero, () => {
-                            route = visibleChoices[index].id; randomBuild = false; Refresh();
+                            route = visibleChoices[index].id;
+                            randomBuild = false;
+                            level = Mathf.Max(level, visibleChoices[index].level);
+                            StartRun();
                         });
                         routeButtons.Add(button);
                         Image highlight = UiKit.Rim(button.rectTransform, outset: -1f, tint: HighestDps);

@@ -50,6 +50,9 @@ Sound loudness lives in the audio files. To make a sound louder or quieter, re-r
 
 # Cleanup around changes
 
+Weapon skill trees must start with small nodes. Place at least two small nodes
+before each notable; never put a notable at or next to the start.
+
 When making a specific code change, spend some time looking for improvements in and around the code you are touching: remove old, dead, or unreachable code. Do small cleanups alongside the change. If a spot looks like it needs a bigger refactor, ask the user first instead of doing it unprompted.
 
 # Change completion
