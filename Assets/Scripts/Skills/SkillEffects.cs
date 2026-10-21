@@ -135,12 +135,12 @@ namespace PoeClone.Skills
         /// it for an instant, and a bright ring floating above their heads that sweeps out to the
         /// radius. Over in about a quarter of a second, so a chain of them never hides the fight.
         /// </summary>
-        public static void Explosion(Vector3 center, float radius, Color color)
+        public static void Explosion(Vector3 center, float radius, Color color, float ringHeight = RingHeight)
         {
             if (!AdaptiveQuality.AllowEffect(center)) return;
             var go = new GameObject("Explosion");
             go.transform.position = new Vector3(center.x, GroundY(center), center.z);
-            go.AddComponent<SkillEffects>().StartCoroutine(Explode(go, radius, color));
+            go.AddComponent<SkillEffects>().StartCoroutine(Explode(go, radius, color, ringHeight));
         }
 
         private static readonly int ShadowColorId = Shader.PropertyToID("_ShadowColor");
@@ -149,7 +149,7 @@ namespace PoeClone.Skills
         private const float RingHeight = 2.3f;     // just above a character's head
         private const int RingSegments = 32;
 
-        private static IEnumerator Explode(GameObject root, float radius, Color color)
+        private static IEnumerator Explode(GameObject root, float radius, Color color, float ringHeight)
         {
             var glow = new MaterialPropertyBlock();
             Transform Glowing(PrimitiveType type, Color c)
@@ -186,7 +186,7 @@ namespace PoeClone.Skills
                 for (int k = 0; k < RingSegments; k++)
                 {
                     float a = k / (float)RingSegments * Mathf.PI * 2f;
-                    ring[k].localPosition = new Vector3(Mathf.Cos(a) * r, RingHeight, Mathf.Sin(a) * r);
+                    ring[k].localPosition = new Vector3(Mathf.Cos(a) * r, ringHeight, Mathf.Sin(a) * r);
                     ring[k].localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 0f);
                     ring[k].localScale = new Vector3(width, 0.08f, length);
                 }

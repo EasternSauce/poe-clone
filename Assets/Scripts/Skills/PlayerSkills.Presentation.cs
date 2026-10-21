@@ -10,11 +10,16 @@ namespace PoeClone.Skills
         // Shared by the attacking player and replicated casts, at the actual damage release.
         private static void PlayComboImpactVisual(CastRecord cast, SkillDefinition skill)
         {
+            if (cast.Skill == SkillId.Cleave && cast.Finisher)
+            {
+                // Match the circular ground impact, including all range and area bonuses.
+                SkillEffects.Explosion(cast.At, cast.Size, skill.Color, ringHeight: 0.08f);
+                return;
+            }
             Vector3 center = cast.At;
             float radius = cast.Size;
             switch (cast.Skill)
             {
-                case SkillId.Cleave when cast.Finisher:
                 case SkillId.Pulverize:
                 case SkillId.CrossSlash:
                     break;
@@ -30,8 +35,7 @@ namespace PoeClone.Skills
                     break;
             }
             // A short visual accent, kept compact so a long fissure doesn't hide the arena.
-            float burstRadius = cast.Skill == SkillId.Cleave ? Mathf.Clamp(radius * 0.85f, 1.8f, 4.8f)
-                : Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f);
+            float burstRadius = Mathf.Clamp(radius * 0.65f, 1.2f, 3.5f);
             SkillEffects.Explosion(center, burstRadius, skill.Color);
         }
 
