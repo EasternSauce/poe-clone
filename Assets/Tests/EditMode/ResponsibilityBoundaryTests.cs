@@ -20,6 +20,62 @@ namespace PoeClone.Tests
         private static object Binding(object bindings, int slot) =>
             bindings.GetType().GetProperty("Item").GetValue(bindings, new object[] { slot });
 
+        [Test]
+        public void ArenaCameraResetRestoresPlayerViewAfterInspectionAndZoom()
+        {
+            var followType = RuntimeType("PoeClone.CameraSystem.CameraFollow");
+            var cameraObject = new GameObject("arena camera reset test");
+            var player = new GameObject("arena camera target test");
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var statics = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            var saved = new Dictionary<FieldInfo, object>();
+            foreach (string name in new[] { "Zoom", "SustainedShake", "shakeLeft", "shakeSeconds", "shakeStrength" })
+            {
+                var field = followType.GetField(name, statics);
+                saved[field] = field.GetValue(null);
+            }
+            try
+            {
+                var camera = cameraObject.AddComponent<Camera>();
+                var follow = (Behaviour)cameraObject.AddComponent(followType);
+                player.transform.position = new Vector3(4, 1, 8);
+                Call(follow, "ResetForArena", player.transform);
+                Vector3 position = camera.transform.position;
+                Quaternion rotation = camera.transform.rotation;
+                float fieldOfView = camera.fieldOfView;
+
+                followType.GetField("target", flags).SetValue(follow, camera.transform);
+                followType.GetField("playerZoom", flags).SetValue(follow, 1.3f);
+                followType.GetField("zoom", flags).SetValue(follow, 2f);
+                followType.GetField("appliedShake", flags).SetValue(follow, Vector3.one);
+                followType.GetField("Zoom").SetValue(null, 2f);
+                followType.GetField("SustainedShake").SetValue(null, 1f);
+                followType.GetMethod("Shake").Invoke(null, new object[] { 2f, 10f });
+                camera.transform.SetPositionAndRotation(Vector3.zero, Quaternion.Euler(5, 180, 25));
+                camera.orthographic = true;
+                camera.fieldOfView = 100;
+                camera.enabled = follow.enabled = false;
+                cameraObject.SetActive(false);
+
+                Call(follow, "ResetForArena", player.transform);
+                Assert.AreSame(player.transform, followType.GetProperty("Target").GetValue(follow));
+                Assert.That(Vector3.Distance(position, camera.transform.position), Is.LessThan(.001f));
+                Assert.That(Quaternion.Angle(rotation, camera.transform.rotation), Is.LessThan(.001f));
+                Assert.AreEqual(fieldOfView, camera.fieldOfView);
+                Assert.IsFalse(camera.orthographic);
+                Assert.IsTrue(camera.enabled && follow.enabled && cameraObject.activeSelf);
+                Assert.AreEqual(1f, followType.GetField("Zoom").GetValue(null));
+                Assert.AreEqual(0f, followType.GetField("SustainedShake").GetValue(null));
+                Assert.AreEqual(0f, followType.GetField("shakeLeft", statics).GetValue(null));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(cameraObject);
+                UnityEngine.Object.DestroyImmediate(player);
+                foreach (var pair in saved) pair.Key.SetValue(null, pair.Value);
+            }
+        }
+
         [TestCase(1f, 1f, .1f, 4f)]
         [TestCase(2f, 1f, .05f, 4f)]
         [TestCase(1f, 2f, .1f, 2f)]

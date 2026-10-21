@@ -1,3 +1,6 @@
+version: 2026-10-21-arena-view-reset
+- Starting or restarting an arena now restores its camera target, framing and lens, clears zoom and shake effects, and resumes time and audio. In the Unity Editor, it also selects Game view and hides gizmos.
+
 version: 2026-10-21-cleave-quicker-explosion
 - Explosive Finale's fourth attack now charges and animates in 20% less time.
 

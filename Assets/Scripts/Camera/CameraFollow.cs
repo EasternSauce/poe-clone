@@ -210,6 +210,23 @@ namespace PoeClone.CameraSystem
             transform.position = DesiredPosition();
         }
 
+        /// <summary>Start an arena from its configured camera pose, without inherited view effects.</summary>
+        public void ResetForArena(Transform player)
+        {
+            ResetStatics();
+            zoom = playerZoom = 1f;
+            pinchDistance = 0f;
+            pinchIdA = pinchIdB = 0;
+            appliedShake = Vector3.zero;
+            target = player;
+            enabled = true;
+            gameObject.SetActive(true);
+            var cam = GetComponent<Camera>();
+            if (cam != null) cam.enabled = true;
+            ApplyLens();
+            SnapToTarget();
+        }
+
         public void SetTarget(Transform newTarget)
         {
             target = newTarget;

@@ -133,6 +133,8 @@ namespace PoeClone.World
                 return;
             }
 
+            ResetPresentation();
+
             foreach (GameObject root in SceneManager.GetActiveScene().GetRootGameObjects())
             {
                 var inventoryMenu = root.GetComponent<InventoryUI>();
@@ -173,7 +175,6 @@ namespace PoeClone.World
             }
 
             if (QueryValue("touch") == "1") TouchMode.SetForced(true);
-            Time.timeScale = 1f;
             if (GauntletEnabled)
             {
                 // The gauntlet builds its own rooms and places the player itself.
@@ -207,6 +208,34 @@ namespace PoeClone.World
             gameObject.AddComponent<TouchControlsUI>();
             Physics.SyncTransforms();
         }
+
+        private void ResetPresentation()
+        {
+            Time.timeScale = 1f;
+            AudioListener.pause = false;
+            var follow = Camera.main?.GetComponent<CameraFollow>() ?? FindAnyObjectByType<CameraFollow>(FindObjectsInactive.Include);
+            follow?.ResetForArena(player.transform);
+#if UNITY_EDITOR
+            // Run after the Editor has finished changing Play/scene state so its own
+            // focus handling cannot leave the arena behind the Scene view and grid.
+            UnityEditor.EditorApplication.delayCall -= FocusGameView;
+            UnityEditor.EditorApplication.delayCall += FocusGameView;
+#endif
+        }
+
+#if UNITY_EDITOR
+        private static void FocusGameView()
+        {
+            if (!UnityEditor.EditorApplication.isPlaying) return;
+            var type = typeof(UnityEditor.EditorWindow).Assembly.GetType("UnityEditor.GameView");
+            if (type == null) return;
+            var view = UnityEditor.EditorWindow.GetWindow(type);
+            var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+            type.GetProperty("showGizmos", flags)?.SetValue(view, false);
+            view.Focus();
+            view.Repaint();
+        }
+#endif
 
         public static readonly Color FloorColor = new Color(0.38f, 0.42f, 0.34f);
         public static readonly Color WallColor = new Color(0.3f, 0.32f, 0.28f);
