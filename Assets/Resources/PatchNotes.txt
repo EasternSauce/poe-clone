@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-ground-impact
+- Explosive Finale's fourth Cleave attack now centers its explosion, damage and ground preview on the sword's ground strike ahead of the player.
+- The explosive attack now animates and releases as quickly as the other combo hits. Build picker damage estimates reflect its faster pace.
+
 version: 2026-10-21-arena-view-reset
 - Starting or restarting an arena now restores its camera target, framing and lens, clears zoom and shake effects, and resumes time and audio. In the Unity Editor, it also selects Game view and hides gizmos.
 

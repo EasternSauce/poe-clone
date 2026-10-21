@@ -48,7 +48,6 @@ namespace PoeClone.Skills
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
-        internal const float CleaveFinisherSlowdown = 3f;
         private GroundTelegraph.Decal cleaveFinisherPreview;
 
         private void ClearCleaveFinisherPreview()
@@ -161,7 +160,7 @@ namespace PoeClone.Skills
                 stepped = next;
                 if (cleaveFinisherPreview.Root != null)
                 {
-                    cleaveFinisherPreview.Follow(transform.position + transform.forward * (distance - stepped), MeleeSkillReach() * ComboArea);
+                    cleaveFinisherPreview.Follow(SlamPoint() + transform.forward * (distance - stepped), MeleeSkillReach() * ComboArea);
                     cleaveFinisherPreview.SetProgress(elapsed / Mathf.Max(0.001f, seconds));
                 }
                 yield return null;
@@ -172,7 +171,7 @@ namespace PoeClone.Skills
         {
             if (skill != SkillId.Cleave || !CleaveExplosiveFinisher) PlaySkillSound(skill, transform.position);
             if (!accent) return;
-            PlayComboImpactSound(skill, MeleeImpactFinisher, transform.position);
+            PlayComboImpactSound(skill, MeleeImpactFinisher, CleaveExplosiveFinisher ? SlamPoint() : transform.position);
             if (MeleeImpactFinisher)
                 PoeClone.CameraSystem.CameraFollow.Shake(skill == SkillId.Cleave ? 0.22f : 0.16f, 0.16f);
             else if (meleeCleaveAccent)
@@ -344,18 +343,12 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.Cleave:
-                    // Fit each normal slash exactly into its link, including slow weapons.
-                    // The explosion takes three links, keeping its charge distinct from a slash.
+                    // Fit every hit, including the explosion, into the same combo link.
                     rate = (CleaveWindup + CleaveRecovery) / comboInterval;
                     if (CleaveDoubleSlash)
                     {
                         meleeAction = StartCoroutine(CleaveDoubleCut(skill, level, rate * 2f));
                         break;
-                    }
-                    if (CleaveExplosiveFinisher)
-                    {
-                        rate /= CleaveFinisherSlowdown;
-                        interval = Mathf.Max(interval, (CleaveWindup + CleaveRecovery) / rate);
                     }
                     meleeAction = StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
                         () => Cleave(skill, level), CleaveRecovery));
@@ -421,20 +414,21 @@ namespace PoeClone.Skills
 
         // ------------------------------------------------------------------ the moves
 
-        // A 120-degree sweep in front of the player, without rotating their facing.
+        // Normal cuts sweep in front; the explosive finisher radiates from the ground strike.
         private void Cleave(SkillDefinition skill, int level, int cut = -1)
         {
             float reach = MeleeSkillReach() * ComboArea;
+            Vector3 center = CleaveExplosiveFinisher ? SlamPoint() : transform.position;
             // Short-lived footprints keep the two rapid cuts from merging into one fan.
-            SkillEffects.Cone(transform.position, transform.forward, reach, CleaveAttackHalfAngle,
+            SkillEffects.Cone(center, transform.forward, reach, CleaveAttackHalfAngle,
                 skill.Color, cut >= 0 ? 0.1f : 0.3f, SkillEffects.DamagePattern(skill));
-            Record(skill, level, reach, count: cut + 1);
+            Record(skill, level, reach, count: cut + 1, at: center);
 
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage;
             float knockback = ComboKnockback;
-            foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
+            foreach (EnemyHealth enemy in EnemiesWithin(center, reach))
             {
-                Vector3 to = enemy.transform.position - transform.position;
+                Vector3 to = enemy.transform.position - center;
                 to.y = 0f;
                 if (Vector3.Angle(transform.forward, to) <= CleaveAttackHalfAngle)
                     MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback);
@@ -469,7 +463,7 @@ namespace PoeClone.Skills
                 ClearCleaveFinisherPreview();
                 Color markerColor = new Color(0.65f, 0.25f, 1f);
                 cleaveFinisherPreview = GroundTelegraph.ImpactDisc(
-                    transform.position + transform.forward * meleeStepDistance, transform.forward,
+                    SlamPoint() + transform.forward * meleeStepDistance, transform.forward,
                     MeleeSkillReach() * ComboArea, CleaveFinisherHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
                 cleaveFinisherPreview.Root.name = "Cleave finisher area";
                 cleaveFinisherPreview.Block.SetFloat("_Impact", 0f);
