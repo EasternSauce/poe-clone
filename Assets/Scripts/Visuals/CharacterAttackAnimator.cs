@@ -761,7 +761,7 @@ namespace PoeClone.Visuals
         public void PlaySkillAttack(SkillId skill, WeaponType weaponType, float rate = 1f, bool mirrored = false, bool finisher = false)
         {
             PlaySkillPose(skill, weaponType, mirrored, finisher);
-            speedMultiplier = Mathf.Max(0.5f, rate);
+            speedMultiplier = Mathf.Max(0.01f, rate);
         }
 
         private void PlaySkillPose(SkillId skill, WeaponType weaponType, bool mirrored = false, bool finisher = false)

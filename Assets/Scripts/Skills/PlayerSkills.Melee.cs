@@ -36,15 +36,19 @@ namespace PoeClone.Skills
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
         private bool meleeCleaveAccent;
+        private bool CleaveDoubleSlash => ActiveMeleeSkill == SkillId.Cleave && WeaponBonuses.Get(WeaponSkillEffect.CleaveDoubleSlash) > 0f;
+        private bool CleaveExplosiveFinisher => ActiveMeleeSkill == SkillId.Cleave && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f;
+        private bool MeleeImpactFinisher => meleeFinisher && (ActiveMeleeSkill != SkillId.Cleave || CleaveExplosiveFinisher);
         private float meleeComboDamage = 1f;
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
-        private float ComboArea => meleeFinisher ? 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea)) : 1f;
+        private float ComboArea => !meleeFinisher || CleaveDoubleSlash ? 1f : ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher
+            ? 1.15f : 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt;
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
-        internal const float CleaveFinisherSlowdown = 3f;
+        internal const float CleaveFinisherSlowdown = 4.5f;
         private GroundTelegraph.Decal cleaveFinisherPreview;
 
         private void ClearCleaveFinisherPreview()
@@ -58,7 +62,7 @@ namespace PoeClone.Skills
             ClearCleaveFinisherPreview();
             // Breaking a delivered Cleave starts a full recovery; an unreleased swing is free to cancel.
             // Completed finishers retain the normal cooldown already owned by PlayerCombat.
-            if (meleeComboSwing > 0 && meleeAttackDelivered && !meleeFinisher && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
+            if (meleeComboSwing > 0 && meleeAttackDelivered && !meleeFinisher && !CleaveDoubleSlash && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
                 meleeComboRestartAt = Mathf.Max(meleeComboRestartAt, Time.time + meleeComboInterval);
             meleeComboSwing = 0;
             meleeComboQueued = false;
@@ -113,11 +117,12 @@ namespace PoeClone.Skills
             bool continuing = QueueMeleeFollowup(false) && Time.time >= meleeComboReadyAt;
             if (attackAnimator != null) attackAnimator.ComboBracing = false;
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
-            int length = WeaponSkillRules.ComboLength(skill.Grant);
+            int length = WeaponSkillRules.ComboLength(skill.Grant, CleaveDoubleSlash);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
-            meleeCleaveAccent = skill.Id == SkillId.Cleave && meleeComboSwing % length == 2;
-            meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing);
-            float maxStep = meleeFinisher ? 1.65f : 1.1f;
+            meleeCleaveAccent = skill.Id == SkillId.Cleave && !CleaveDoubleSlash && meleeComboSwing % length == 2;
+            meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing,
+                explosiveCleave: WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f, doubleSlash: CleaveDoubleSlash);
+            float maxStep = meleeFinisher && !CleaveDoubleSlash ? 1.65f : 1.1f;
             meleeStepDistance = continuing ? maxStep : 0f;
             Vector3? cursorDirection = null;
             if (!TouchMode.Active)
@@ -165,10 +170,10 @@ namespace PoeClone.Skills
 
         private void PlayMeleeSound(SkillId skill, bool accent = true)
         {
-            if (skill != SkillId.Cleave || !meleeFinisher) PlaySkillSound(skill, transform.position);
+            if (skill != SkillId.Cleave || !CleaveExplosiveFinisher) PlaySkillSound(skill, transform.position);
             if (!accent) return;
-            PlayComboImpactSound(skill, meleeFinisher, transform.position);
-            if (meleeFinisher)
+            PlayComboImpactSound(skill, MeleeImpactFinisher, transform.position);
+            if (MeleeImpactFinisher)
                 PoeClone.CameraSystem.CameraFollow.Shake(skill == SkillId.Cleave ? 0.22f : 0.16f, 0.16f);
             else if (meleeCleaveAccent)
                 PoeClone.CameraSystem.CameraFollow.Shake(0.08f, 0.1f);
@@ -180,7 +185,11 @@ namespace PoeClone.Skills
 
         private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback)
         {
+            float lifeBefore = enemy != null ? enemy.CurrentHealth : 0f;
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill);
+            if (skill == SkillId.Cleave && CleaveExplosiveFinisher && enemy != null && !enemy.IsDead &&
+                enemy.CurrentHealth < lifeBefore && !EnemyKinds.Get(enemy.KindIndex).IsBoss)
+                enemy.GetComponent<PoeClone.Combat.Stagger>()?.Stun(2f);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);
         }
@@ -237,7 +246,7 @@ namespace PoeClone.Skills
         internal const float CleaveRecovery = 0.18f;
         internal const float CleaveHalfAngle = 60f;
         internal const float CleaveFinisherHalfAngle = 180f;
-        private float CleaveAttackHalfAngle => meleeFinisher ? CleaveFinisherHalfAngle : CleaveHalfAngle;
+        private float CleaveAttackHalfAngle => CleaveExplosiveFinisher ? CleaveFinisherHalfAngle : CleaveHalfAngle;
         // Skill reach belongs to the skill, independent of weapon model size or handedness.
         private const float CleaveBaseReach = 4.48f;
         private const float CrossSlashBaseReach = 3.1f;
@@ -330,7 +339,15 @@ namespace PoeClone.Skills
             switch (skill.Id)
             {
                 case SkillId.Cleave:
-                    if (meleeFinisher)
+                    // Fit each normal slash exactly into its link, including slow weapons.
+                    // The explosion then takes 4.5 links rather than the old three.
+                    rate = (CleaveWindup + CleaveRecovery) / comboInterval;
+                    if (CleaveDoubleSlash)
+                    {
+                        meleeAction = StartCoroutine(CleaveDoubleCut(skill, level, rate * 2f));
+                        break;
+                    }
+                    if (CleaveExplosiveFinisher)
                     {
                         rate /= CleaveFinisherSlowdown;
                         interval = Mathf.Max(interval, (CleaveWindup + CleaveRecovery) / rate);
@@ -390,8 +407,8 @@ namespace PoeClone.Skills
         {
             if (attackAnimator != null)
             {
-                attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored, finisher: meleeFinisher);
-                attackAnimator.CleaveComboPose = skill == SkillId.Cleave && !meleeFinisher;
+                attackAnimator.PlaySkillAttack(skill, weapon, rate, mirrored, finisher: MeleeImpactFinisher);
+                attackAnimator.CleaveComboPose = skill == SkillId.Cleave && !CleaveExplosiveFinisher;
             }
         }
 
@@ -400,12 +417,13 @@ namespace PoeClone.Skills
         // ------------------------------------------------------------------ the moves
 
         // A 120-degree sweep in front of the player, without rotating their facing.
-        private void Cleave(SkillDefinition skill, int level)
+        private void Cleave(SkillDefinition skill, int level, int cut = -1)
         {
             float reach = MeleeSkillReach() * ComboArea;
+            // Short-lived footprints keep the two rapid cuts from merging into one fan.
             SkillEffects.Cone(transform.position, transform.forward, reach, CleaveAttackHalfAngle,
-                skill.Color, 0.3f, SkillEffects.DamagePattern(skill));
-            Record(skill, level, reach);
+                skill.Color, cut >= 0 ? 0.1f : 0.3f, SkillEffects.DamagePattern(skill));
+            Record(skill, level, reach, count: cut + 1);
 
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage;
             float knockback = ComboKnockback;
@@ -441,7 +459,7 @@ namespace PoeClone.Skills
         {
             controller.SetSkillCommit(true);
             PlaySkillAnimation(skill, animationWeapon, rate, mirrored: skill == SkillId.Cleave && meleeComboSwing % 2 == 0);
-            if (skill == SkillId.Cleave && meleeFinisher)
+            if (skill == SkillId.Cleave && CleaveExplosiveFinisher)
             {
                 ClearCleaveFinisherPreview();
                 Color markerColor = new Color(0.65f, 0.25f, 1f);
@@ -460,6 +478,24 @@ namespace PoeClone.Skills
             PlayMeleeSound(skill);
             release();
             yield return new WaitForSeconds(recovery / rate);
+            FinishMeleeAction();
+        }
+
+        // Two complete alternating swing profiles, with a separate release, sound and
+        // damage event per cut. One pair is one input/commitment; the second pair is optional.
+        private IEnumerator CleaveDoubleCut(SkillDefinition skill, int level, float rate)
+        {
+            controller.SetSkillCommit(true);
+            for (int cut = 0; cut < 2; cut++)
+            {
+                PlaySkillAnimation(skill.Id, CurrentWeapon(), rate, mirrored: cut == 1);
+                if (cut == 0) yield return MeleeWindup(CleaveWindup / rate);
+                else yield return new WaitForSeconds(CleaveWindup / rate);
+                if (!TryReleaseMeleeAttack()) yield break;
+                PlayMeleeSound(skill.Id, accent: false);
+                Cleave(skill, level, cut);
+                yield return new WaitForSeconds(CleaveRecovery / rate);
+            }
             FinishMeleeAction();
         }
 

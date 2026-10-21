@@ -16,6 +16,7 @@ namespace PoeClone.Combat
         [SerializeField] private float duration = 0.4f;
 
         private float timer;
+        private float stunnedUntil;
 
         public bool IsStaggered { get; private set; }
 
@@ -39,6 +40,14 @@ namespace PoeClone.Combat
                 attackAnimator.CancelAttack();
         }
 
+        /// <summary>A timed stun survives subsequent ordinary hit reactions.</summary>
+        public void Stun(float seconds)
+        {
+            if (seconds <= 0f) return;
+            stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
+            Trigger();
+        }
+
         private void Update()
         {
             if (!IsStaggered)
@@ -47,7 +56,7 @@ namespace PoeClone.Combat
             timer += Time.deltaTime;
             float t = duration > 0f ? timer / duration : 1f;
 
-            if (t >= 1f)
+            if (t >= 1f && Time.time >= stunnedUntil)
             {
                 IsStaggered = false;
                 RecoilFraction = 0f;

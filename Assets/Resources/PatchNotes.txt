@@ -1,3 +1,9 @@
+version: 2026-10-21-cleave-specializations
+- Cleave's normal fourth hit is now a regular slash with 35% more damage and 15% greater reach. The circular explosion must be unlocked through Explosive Finale; it charges more slowly and stuns surviving non-boss enemies for two seconds.
+- Twin Rhythm offers an alternative two-part combo: double slash into another double slash, with a separate alternating swing and hit for each cut. Its shorter commitments offer more flexibility, with sustained damage tuned to compete with Explosive Finale.
+- Cleave now has three six-point branches, each with two small nodes between its notable and keystone. The two combo variants cannot both fit within the ten-point budget. Full-life damage and culling remain; generic more-damage, area and knockback nodes are removed.
+- Existing Cleave tree points are refunded without losing weapon level or experience. Build picker damage estimates account for both new variants.
+
 version: 2026-10-21-walking-melee-priority
 - Holding movement and attack together now keeps you walking instead of repeatedly starting and cancelling a melee opener. Melee attacks can start once movement is released; committed combos still finish normally.
 

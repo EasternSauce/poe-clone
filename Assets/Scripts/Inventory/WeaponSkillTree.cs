@@ -15,13 +15,13 @@ namespace PoeClone.Inventory
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
-        ComboDamage, ComboArea, ComboKnockback
+        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 2;
+        public int version = 3;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -37,7 +37,8 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            if (version < 2) { nodes = new List<string>(); version = 2; }
+            int requiredVersion = grant == StatType.GrantCleave ? 3 : 2;
+            if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
             var saved = nodes;
@@ -147,25 +148,28 @@ namespace PoeClone.Inventory
         public static float ComboFollowupSpeed(StatType grant) => grant == StatType.GrantCleave ? 2f : 4f;
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
-        public static float ComboSustainedSpeed(StatType grant, float finisherInterval = 1f)
+        public static float ComboSustainedSpeed(StatType grant, float finisherInterval = 1f, bool doubleSlash = false)
         {
-            int length = ComboLength(grant);
+            int length = ComboLength(grant, doubleSlash);
             return length > 0 ? length / (finisherInterval + (length - 1f) / ComboFollowupSpeed(grant)) : 1f;
         }
 
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
-        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f)
+        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f, bool explosiveCleave = false, bool doubleSlash = false)
         {
-            int length = ComboLength(grant);
+            int length = ComboLength(grant, doubleSlash);
             if (length == 0 || step <= 0) return 1f;
+            // Each Twin Rhythm part contains two separately delivered 80% hits.
+            if (grant == StatType.GrantCleave && doubleSlash) return 0.8f * (step % length == 0 ? 1.1f : 1f);
             if (step % length == 0)
-                return (grant == StatType.GrantCleave ? 4.5f : 1.75f) * finisherMore;
+                return (grant == StatType.GrantCleave ? (explosiveCleave ? 4.5f : 1.35f) : 1.75f) * finisherMore;
             return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
         }
 
         /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>
-        public static int ComboLength(StatType grant)
+        public static int ComboLength(StatType grant, bool doubleSlash = false)
         {
+            if (grant == StatType.GrantCleave && doubleSlash) return 2;
             switch (grant)
             {
                 case StatType.GrantPulverize:

@@ -28,7 +28,7 @@ namespace PoeClone.Inventory
             public WeaponSkillBonus[] Small, Major, Final, Alternative;
         }
         private static Path P(string name, WeaponSkillBonus[] small, string notable, WeaponSkillBonus[] major,
-            string end, WeaponSkillBonus[] final, string side, params WeaponSkillBonus[] alternative) =>
+            string end, WeaponSkillBonus[] final, string side = null, params WeaponSkillBonus[] alternative) =>
             new Path { Name = name, Small = small, Notable = notable, Major = major, End = end, Final = final, Side = side, Alternative = alternative };
 
         private static void Add(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, params Path[] paths)
@@ -44,6 +44,9 @@ namespace PoeClone.Inventory
                     new Vector2(207, 68), new Vector2(247, 103), new Vector2(292, 117),
                     new Vector2(212, -30), new Vector2(263, -65)
                 };
+                // Cleave has three independent six-point routes: two small nodes separate
+                // each notable from its keystone, and both combo variants cost twelve points.
+                if (grant == StatType.GrantCleave) System.Array.Resize(ref shape, 6);
                 float angle = (rotation + lane * 120f) * Mathf.Deg2Rad;
                 for (int i = 0; i < shape.Length; i++)
                 {
@@ -101,9 +104,9 @@ namespace PoeClone.Inventory
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
                 P("Infected Shaft", U(E.ProjectileSpeed, 12), "Piercing Fangs", M(B(E.Pierce, 1)), "Contagious Volley", M(B(E.Projectiles, 2)), "Quick Fangs", B(E.Speed, 20)));
             Add(t, StatType.GrantCleave,
-                P("Broad Blade", U(E.Area, 10), "Wide Sweep", M(B(E.Area, 25)), "Horizon Cleaver", M(B(E.Area, 35)), "Reaching Edge", B(E.Area, 35)),
-                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Overwhelming Blow", M(B(E.MoreDamage, 30)), "Tempered Steel", B(E.Speed, 18)),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.Cull, 20)), "Clean Cut", B(E.ArmourPenetration, 80)));
+                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
+                P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.Cull, 20))));
             Add(t, StatType.GrantPulverize,
                 P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
                 P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
@@ -161,7 +164,7 @@ namespace PoeClone.Inventory
                 P("Serpent Scales", U(E.MinionLife, 12), "Hardened Scales", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Persistent Brood", M(B(E.MinionDuration, 60), B(E.Minions, 1), B(E.MoreDamage, -15)), "Regrowth", B(E.MinionRegen, 3)),
                 P("Striking Serpents", U(E.MinionMoveSpeed, 15), "Quick Fangs", M(B(E.Speed, 15)), "Toxic Trail", M(B(E.Cloud, 25)), "Serpent Swarm", B(E.Minions, 1), B(E.MoreDamage, -15)));
             foreach (StatType grant in SkillGrants.MeleeSkills)
-                if (WeaponSkillRules.ComboLength(grant) > 0 && t.TryGetValue(grant, out var meleeNodes))
+                if (grant != StatType.GrantCleave && WeaponSkillRules.ComboLength(grant) > 0 && t.TryGetValue(grant, out var meleeNodes))
                     AddComboBranch(meleeNodes, grant);
             return t;
         }
@@ -194,6 +197,8 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
+                case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals 450% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds\nCannot be combined with Twin Rhythm within the 10-point budget";
+                case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit\nCannot be combined with Explosive Finale within the 10-point budget";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboKnockback: return "Combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks) knock non-boss enemies back " + b.Value.ToString("0.#") + " metres";

@@ -51,7 +51,7 @@ namespace PoeClone.Tests
             return ((float)args[offset], (float)args[offset + 1], (float)args[offset + 2]);
         }
 
-        [TestCase("Cleave", 1.4f)]
+        [TestCase("Cleave", 1.175f)]
         [TestCase("Pulverize", 1.25f)]
         [TestCase("Fissure", 1.25f)]
         [TestCase("Aftershock", 1.25f)]
@@ -68,7 +68,8 @@ namespace PoeClone.Tests
             var baseline = ComboDps(skill, weapon, sheet, step: 0);
             var combo = ComboDps(skill, weapon, sheet);
             int length = WeaponSkillRules.ComboLength((StatType)Enum.Parse(typeof(StatType), "Grant" + skill));
-            float cadence = length > 0 ? length / (1f + (length - 1f) / 4f) : 1f;
+            float followupSpeed = WeaponSkillRules.ComboFollowupSpeed((StatType)Enum.Parse(typeof(StatType), "Grant" + skill));
+            float cadence = length > 0 ? length / (1f + (length - 1f) / followupSpeed) : 1f;
             Assert.AreEqual(baseline.hit * factor * cadence, combo.hit, .001f);
             Assert.AreEqual(baseline.uses * cadence, combo.uses, .001f, "Complete combos include one normal interval after each finisher");
             if (skill == "FangStrike") Assert.AreEqual(baseline.dot * factor * cadence, combo.dot, .001f);
@@ -76,13 +77,63 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void SingleTarget_FinisherNodesBoostOnlyTheFinalComboHit()
+        public void SingleTarget_CleaveExplosionChangesOnlyFourthHitAndCadence()
         {
-            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "combo_", 4);
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 5);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
-            Assert.AreEqual(plainHit.hit * (4f / 1.75f) * (1f + 1.35f + 1f + 2.25f * 1.15f * 1.3f) / 4f,
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_0_5"));
+            float cadence = 4f / (2.25f + 1.5f);
+            Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 4.5f) / 4f,
                 ComboDps("Cleave", weapon, sheet).hit, .001f);
+        }
+
+        [Test]
+        public void Cleave_KeystonesHaveTwoTravelNodesAfterNotablesAndCannotBeCombined()
+        {
+            var nodes = WeaponSkillTrees.For(StatType.GrantCleave);
+            Assert.AreEqual(18, nodes.Count);
+            foreach (var keystone in nodes.Where(n => n.Keystone))
+            {
+                var parent = WeaponSkillTrees.Find(StatType.GrantCleave, keystone.Parent);
+                Assert.IsFalse(parent.Notable);
+                parent = WeaponSkillTrees.Find(StatType.GrantCleave, parent.Parent);
+                Assert.IsFalse(parent.Notable);
+                parent = WeaponSkillTrees.Find(StatType.GrantCleave, parent.Parent);
+                Assert.IsTrue(parent.Notable);
+            }
+            foreach (int first in new[] { 0, 1 })
+            {
+                var progress = new WeaponSkillProgress { level = 10 };
+                for (int i = 0; i < 6; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + first + "_" + i));
+                for (int i = 0; i < 4; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + (1 - first) + "_" + i));
+                Assert.IsFalse(progress.Allocate(StatType.GrantCleave, "v2_" + (1 - first) + "_4"));
+            }
+            Assert.IsFalse(nodes.SelectMany(n => n.Bonuses).Any(b => b.Effect == WeaponSkillEffect.MoreDamage ||
+                b.Effect == WeaponSkillEffect.Area || b.Effect == WeaponSkillEffect.ComboArea || b.Effect == WeaponSkillEffect.ComboKnockback));
+        }
+
+        [Test]
+        public void Cleave_OldAllocationsRefundWithoutLosingWeaponLevel()
+        {
+            var progress = new WeaponSkillProgress { version = 2, level = 10, nodes = new List<string> { "v2_0_0", "combo_0" } };
+            progress.Sanitize(StatType.GrantCleave);
+            Assert.AreEqual(10, progress.level);
+            Assert.AreEqual(10, progress.Available);
+            Assert.AreEqual(3, progress.version);
+        }
+
+        [TestCase(0f)]
+        [TestCase(100f)]
+        [TestCase(200f)]
+        public void Cleave_DoubleSlashRemainsCompetitiveWithExplosion(float attackSpeed)
+        {
+            var explosion = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 6);
+            var agile = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_1_", 6);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
+            float ratio = SingleTarget("Cleave", agile, sheet) / SingleTarget("Cleave", explosion, sheet);
+            Assert.That(ratio, Is.InRange(.8f, 1.2f), "Two separately mitigated cuts per part must compete with the slow explosion");
+            Assert.AreEqual(2, WeaponSkillRules.ComboLength(StatType.GrantCleave, true));
         }
 
         [Test]
@@ -93,7 +144,7 @@ namespace PoeClone.Tests
             float expected = 0;
             for (int step = 1; step <= 4; step++) expected += ComboDps("Cleave", weapon, sheet, step).hit / 4f;
             Assert.AreEqual(expected, ComboDps("Cleave", weapon, sheet).hit, .001f);
-            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.4f * (4f / 1.75f),
+            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.175f * (4f / 2.5f),
                 "Heavy hits lose a smaller fraction of damage to armour");
         }
 
@@ -107,8 +158,8 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
             float normalUses = ComboDps("Cleave", weapon, sheet, step: 0).uses;
             float comboUses = ComboDps("Cleave", weapon, sheet).uses;
-            Assert.AreEqual(normalUses * (4f / 1.75f), comboUses, .001f);
-            Assert.AreEqual((1f / normalUses + 3f / (normalUses * 4f)) / 4f, 1f / comboUses, .001f);
+            Assert.AreEqual(normalUses * (4f / 2.5f), comboUses, .001f);
+            Assert.AreEqual((1f / normalUses + 3f / (normalUses * 2f)) / 4f, 1f / comboUses, .001f);
         }
 
         [Test]

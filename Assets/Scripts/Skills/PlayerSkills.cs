@@ -115,7 +115,8 @@ namespace PoeClone.Skills
                 Number = CastCount,
                 Skill = skill.Id,
                 Level = level,
-                Finisher = skill.MeleeAttack && !skill.Channelled && meleeFinisher,
+                // Cleave's finisher presentation is exclusive to Explosive Finale.
+                Finisher = skill.MeleeAttack && !skill.Channelled && MeleeImpactFinisher,
                 CleaveAccent = skill.Id == SkillId.Cleave && meleeCleaveAccent,
                 At = at ?? transform.position,
                 Facing = facing ?? transform.forward,

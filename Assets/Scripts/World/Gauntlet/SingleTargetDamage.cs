@@ -23,7 +23,7 @@ namespace PoeClone.World
             skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
         public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull = false)
         {
-            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant));
+            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant, tree.Get(E.CleaveDoubleSlash) > 0f));
             hitDps = dotDps = uses = 0f;
             // Mitigate each hit before averaging: armour absorbs a smaller share of heavy blows.
             // Repeat complete successful combos, including the normal interval after each finisher.
@@ -47,16 +47,14 @@ namespace PoeClone.World
             if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
             {
                 float finisherInterval = 1f;
-                if (skill.Id == SkillId.Cleave)
-                {
-                    float seconds = PlayerSkills.CleaveWindup + PlayerSkills.CleaveRecovery;
-                    float animationRate = Mathf.Max(1f, seconds * uses) * WeaponSkillRules.ComboFollowupSpeed(skill.Grant);
-                    finisherInterval = Mathf.Max(1f, seconds * PlayerSkills.CleaveFinisherSlowdown / animationRate * uses);
-                }
-                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, finisherInterval);
+                if (skill.Id == SkillId.Cleave && tree.Get(E.CleaveExplosion) > 0f)
+                    finisherInterval = PlayerSkills.CleaveFinisherSlowdown / WeaponSkillRules.ComboFollowupSpeed(skill.Grant);
+                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, finisherInterval, tree.Get(E.CleaveDoubleSlash) > 0f);
             }
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
-            float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier);
+            bool doubleSlash = skill.Id == SkillId.Cleave && tree.Get(E.CleaveDoubleSlash) > 0f;
+            float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier,
+                tree.Get(E.CleaveExplosion) > 0f, doubleSlash);
             baseHit *= combo;
             var element = WeaponSkillHit.Element(tree, BaseElement(skill));
             bool attack = skill.MeleeAttack || skill.Bow;
@@ -66,7 +64,8 @@ namespace PoeClone.World
                 else if (sheet.Total(StatType.PhysicalToCold) > 0) element = DamageType.Cold;
                 else if (sheet.Total(StatType.PhysicalToLightning) > 0) element = DamageType.Lightning;
             }
-            float rate = uses, hits = 1, multiplier;
+            // Each double-slash cut is mitigated individually, then both hits contribute.
+            float rate = uses, hits = doubleSlash ? 2 : 1, multiplier;
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
