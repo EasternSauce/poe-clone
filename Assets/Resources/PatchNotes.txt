@@ -1,3 +1,7 @@
+version: 2026-10-21-life-leech-rate
+- Attack and spell life leech now recover life over time: each hit recovers 2% of maximum life per second, up to 10% maximum life per hit. All active leech shares a 20% maximum life per second cap; excess recovery is not saved for later.
+- Reaching full life removes all active leech, and hits at full life cannot store leech for later damage. Leech also clears on death. Life gained on attack hit remains instant.
+
 version: 2026-10-21-two-handed-hit-damage
 - Two-handed melee weapons now have 35-40% more base damage per hit than the matching one-handed sword, axe or mace tier. They retain their slower attack speeds. Added damage and enemy armour can change the final per-hit difference.
 

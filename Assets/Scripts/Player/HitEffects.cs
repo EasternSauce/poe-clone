@@ -149,7 +149,7 @@ namespace PoeClone.Player
             {
                 float spellLeech = sheet.Total(StatType.SpellLeech);
                 if (spellLeech > 0f)
-                    stats.Heal(damage * spellLeech / 100f);
+                    stats.Leech(damage * spellLeech / 100f);
             }
 
             if (!secondary && !enemy.IsDead && Roll(sheet, StatType.CurseOnHit, rollSeed))
@@ -168,7 +168,7 @@ namespace PoeClone.Player
 
                 float leech = sheet.Total(StatType.LifeLeech);
                 if (leech > 0f)
-                    stats.Heal(damage * leech / 100f);
+                    stats.Leech(damage * leech / 100f);
 
                 if (!enemy.IsDead && ai != null && Roll(sheet, StatType.ChillOnHit, rollSeed))
                     ai.Chill(ChillSeconds);

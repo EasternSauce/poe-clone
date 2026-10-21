@@ -41,6 +41,9 @@ namespace PoeClone.Player
         private float currentHealth;
         private float currentMana;
         private bool dead;
+        private readonly LifeLeech lifeLeech = new LifeLeech();
+
+        private void OnDisable() => lifeLeech.Clear();
 
         private enum RespawnPhase { None, Countdown, AwaitingRevive }
         private RespawnPhase respawnPhase = RespawnPhase.None;
@@ -213,14 +216,18 @@ namespace PoeClone.Player
                 currentMana = Mathf.Min(MaxMana, currentMana + DefenceMath.ManaRegenPerSecond(MaxMana, Intelligence, manaRegen,
                     sheet != null ? sheet.Total(StatType.PercentManaRegen) : 0f) * Time.deltaTime);
                 float percentRegen = sheet != null && regenerates ? sheet.Total(StatType.PercentLifeRegen) : 0f;
-                currentHealth = Mathf.Min(MaxHealth, currentHealth + DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
+                Heal(DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
 
                 if (healOverTimeLeft > 0f)
                 {
                     float step = Mathf.Min(healOverTimeLeft, healOverTimeRate * Time.deltaTime);
                     healOverTimeLeft -= step;
-                    currentHealth = Mathf.Min(MaxHealth, currentHealth + step);
+                    Heal(step);
                 }
+                if (currentHealth >= MaxHealth)
+                    lifeLeech.Clear();
+                else
+                    Heal(lifeLeech.Tick(Time.deltaTime, MaxHealth));
             }
 
             if (respawnPhase == RespawnPhase.Countdown)
@@ -287,6 +294,7 @@ namespace PoeClone.Player
             experience = Mathf.Clamp(savedExperience, 0, ExperienceRequiredForNextLevel() - 1);
             currentHealth = MaxHealth;
             currentMana = MaxMana;
+            lifeLeech.Clear();
         }
 
         private void LevelUp(bool announce = true)
@@ -302,6 +310,7 @@ namespace PoeClone.Player
 
             currentHealth = MaxHealth;
             currentMana = MaxMana;
+            lifeLeech.Clear();
 
             LeveledUp?.Invoke(level);
             if (!announce)
@@ -501,6 +510,17 @@ namespace PoeClone.Player
                 AudioManager.Instance.PlayRandomAtPoint(AudioManager.Instance.playerHurt, transform.position);
         }
 
+        /// <summary>Starts one hit's life leech. Full life discards all leech, including new hits.</summary>
+        public void Leech(float amount)
+        {
+            if (dead || currentHealth >= MaxHealth)
+            {
+                lifeLeech.Clear();
+                return;
+            }
+            lifeLeech.Add(amount, MaxHealth);
+        }
+
         public void Heal(float amount)
         {
             if (dead || amount <= 0f)
@@ -510,6 +530,8 @@ namespace PoeClone.Player
                 MaxHealth,
                 currentHealth + amount
             );
+            if (currentHealth >= MaxHealth)
+                lifeLeech.Clear();
         }
 
         // Stops movement/the character controller and plays the same limb-collapse used for
@@ -519,6 +541,7 @@ namespace PoeClone.Player
         private void Die()
         {
             dead = true;
+            lifeLeech.Clear();
             currentHealth = 0f;
             poison.Clear();
             respawnPhase = RespawnPhase.Countdown;
@@ -551,6 +574,7 @@ namespace PoeClone.Player
                 yield return PoeClone.World.WorldBuilder.Instance.EnsureArrival(areas.CurrentAreaIndex, spawnPosition);
 
             dead = false;
+            lifeLeech.Clear();
             currentHealth = MaxHealth;
             currentMana = MaxMana;
 
@@ -595,6 +619,7 @@ namespace PoeClone.Player
             maxHealth = maxHp;
             maxMana = maxMp;
             currentHealth = health;
+            lifeLeech.Clear();
             currentMana = mana;
             dead = isDead;
             countdownTimer = countdown;
@@ -616,6 +641,8 @@ namespace PoeClone.Player
             bonusMaxMana = maxMana;
 
             currentHealth = Mathf.Min(currentHealth, MaxHealth);
+            if (currentHealth >= MaxHealth)
+                lifeLeech.Clear();
             currentMana = Mathf.Min(currentMana, MaxMana);
         }
     }
