@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-damage-and-combo-defense
+- Cleave's base damage is halved from 110% to 55% weapon damage, affecting its default combo, Explosive Finale, Twin Rhythm and hit-based bleeding. Build picker damage estimates use the new base damage.
+- Damage reduction while locked into a melee combo is reduced from 60% to 30%.
+
 version: 2026-10-21-arena-passive-templates
 - Arena skills now use one of four authored character passive builds: tanky attack-focused melee, glass-cannon magic and mana, glass-cannon physical bows and critical strikes, or necromancy followed by personal defenses.
 - Passive allocations follow consistent connected paths as levels increase. Minion builds prioritize the necromancy region before spending remaining points on tankiness. Equipment eligibility and damage estimates use the new allocations.
