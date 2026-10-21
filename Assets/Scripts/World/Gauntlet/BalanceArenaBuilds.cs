@@ -8,7 +8,7 @@ using PoeClone.Skills;
 
 namespace PoeClone.World
 {
-    /// <summary>Live weapon routes with sampled passive/gear templates and fresh poor-loot rolls.</summary>
+    /// <summary>Live weapon routes with sampled passive/gear templates and the best of fresh loot rolls.</summary>
     public static class BalanceArenaBuilds
     {
         [Serializable] public sealed class Catalogue
@@ -79,7 +79,7 @@ namespace PoeClone.World
 
         private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();
 
-        /// <summary>Median of three repeatable poor-loot kits, without touching player state or RNG.</summary>
+        /// <summary>Median of three repeatable best-of-pool kits, without touching player state or RNG.</summary>
         public static float EstimatedDps(Entry entry, bool boss = false)
         {
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
@@ -150,19 +150,17 @@ namespace PoeClone.World
                 if (available == null) throw new InvalidOperationException("Arena: no wearable base for " + recordedBase);
                 StatType? grant = slot == EquipSlot.MainHand
                     ? (StatType?)SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant : null;
-                var candidates = new List<GauntletLoadout.SlotPick>();
+                GauntletLoadout.SlotPick pick = null;
                 for (int i = 0; i < rolls; i++)
                 {
                     var item = ItemGenerator.Generate(rng, available.Id, entry.level, ItemGenerator.RollRarity(rng), grant);
                     // Compare normalized stat totals so large armour/life numbers do not
                     // automatically outweigh smaller speed, resistance or skill rolls.
                     float score = item.Modifiers.Sum(mod => mod.Value * GauntletLoadout.UnitValue(mod.Stat));
-                    candidates.Add(new GauntletLoadout.SlotPick { Slot = slot, Item = item, Score = score, Rolls = rolls,
-                        Note = "bottom 30% of ground-loot rolls; survey route sample " + entry.sample });
+                    if (pick == null || score > pick.Score)
+                        pick = new GauntletLoadout.SlotPick { Slot = slot, Item = item, Score = score, Rolls = rolls,
+                            Note = "best of ground-loot rolls; survey route sample " + entry.sample };
                 }
-                candidates.Sort((left, right) => left.Score.CompareTo(right.Score));
-                int bottomCount = Math.Max(1, Mathf.FloorToInt(candidates.Count * .3f));
-                var pick = candidates[rng.Next(bottomCount)];
                 if (slot == EquipSlot.MainHand && pick.Item.MainSkillGrant.HasValue)
                 {
                     pick.Item.SkillProgress = new WeaponSkillProgress { level = entry.weaponRank };

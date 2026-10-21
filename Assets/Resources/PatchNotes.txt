@@ -1,3 +1,6 @@
+version: 2026-10-21-arena-best-loot
+- Arena builds now equip the highest-scoring item from each slot's drop pool instead of picking from the worst 30%. Build picker damage estimates use the improved equipment too.
+
 version: 2026-10-21-cleave-bleeding
 - Replaced Echoing Steel with Serrated Edge: every Cleave hit inflicts bleeding for 25% of the hit's actual damage over three seconds, at any enemy life level.
 - Bleeds from separate hits stack, show red damage ticks, and are included in arena damage estimates. Existing allocations to the keystone now grant bleeding.

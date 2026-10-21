@@ -352,7 +352,7 @@ namespace PoeClone.World
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
                 "\nDPS: successful full combos, full army + repeatable buffs; executes where applicable. Excludes opening/kill buffs and downtime." +
-                "\nWorst 30% ground loot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
+                "\nBest item from each ground-loot pool. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
             LayoutRoutes();
         }
