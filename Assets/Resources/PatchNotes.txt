@@ -1,3 +1,6 @@
+version: 2026-10-21-cleave-specialization-dps
+- Twin Rhythm's cuts now deal 150% of normal hit damage, up from 115%. Explosive Finale's explosion now deals 600%, up from 550%. Both combo specializations offer more sustained DPS than combining Serrated Edge and Headsman's Blow; build picker estimates and skill descriptions use the new damage.
+
 version: 2026-10-21-cleave-damage-and-combo-defense
 - Cleave's base damage is halved from 110% to 55% weapon damage, affecting its default combo, Explosive Finale, Twin Rhythm and hit-based bleeding. Build picker damage estimates use the new base damage.
 - Damage reduction while locked into a melee combo is reduced from 60% to 30%.

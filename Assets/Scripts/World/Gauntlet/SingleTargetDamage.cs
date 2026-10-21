@@ -102,7 +102,7 @@ namespace PoeClone.World
             float taken = (1 + .25f * shock) * (1 + .15f * curse);
             float dealt = AgainstEnemy(baseHit * multiplier * taken, element, sheet.Level, sheet, tree, skill.Summon);
             hitDps = dealt * rate * hits;
-            // Bleeding stores a quarter of each final hit; armour and damage modifiers
+            // Bleeding stores the tree's percentage of each final hit; armour and damage modifiers
             // have already applied, and each hit contributes an independent stack.
             dotDps = skill.Id == SkillId.Cleave ? hitDps * tree.Get(E.CleaveBleed) / 100f : 0f;
             float poison = tree.Get(E.Poison) / 100;

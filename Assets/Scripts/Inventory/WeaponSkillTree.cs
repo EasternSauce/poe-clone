@@ -146,8 +146,8 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
-        public const float CleaveExplosionDamage = 5.5f;
-        public const float CleaveDoubleSlashDamage = 1.15f;
+        public const float CleaveExplosionDamage = 6f;
+        public const float CleaveDoubleSlashDamage = 1.5f;
         public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.2f;
         // Additional time between pairs, measured in normal weapon attack intervals.
