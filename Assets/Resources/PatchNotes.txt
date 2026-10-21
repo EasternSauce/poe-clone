@@ -1,3 +1,7 @@
+version: 2026-10-21-cleave-speed-and-impact
+- Regular Cleave and Explosive Finale slash 12.5% faster through their combos. Twin Rhythm keeps its existing pace.
+- Explosive Finale's fourth hit now deals 550% of normal hit damage, up from 450%, rewarding its longer commitment. Its description and build picker damage estimates reflect the increase.
+
 version: 2026-10-21-cleave-finisher-pace
 - Cleave's explosive fourth attack is faster, with its charge and animation set between their earlier and most recent timings.
 

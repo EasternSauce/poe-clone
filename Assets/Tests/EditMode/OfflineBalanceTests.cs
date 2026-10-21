@@ -83,8 +83,8 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
             var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
             Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_0_5"));
-            float cadence = 4f / (1.875f + 1.5f);
-            Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 4.5f) / 4f,
+            float cadence = 4f / 3f;
+            Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 5.5f) / 4f,
                 ComboDps("Cleave", weapon, sheet).hit, .001f);
         }
 
@@ -126,13 +126,14 @@ namespace PoeClone.Tests
         [TestCase(0f)]
         [TestCase(100f)]
         [TestCase(200f)]
-        public void Cleave_DoubleSlashRemainsCompetitiveWithExplosion(float attackSpeed)
+        public void Cleave_ExplosionDamageRewardsItsLongerCommitment(float attackSpeed)
         {
             var explosion = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 6);
             var agile = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_1_", 6);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
-            float ratio = SingleTarget("Cleave", agile, sheet) / SingleTarget("Cleave", explosion, sheet);
-            Assert.That(ratio, Is.InRange(.8f, 1.2f), "Two separately mitigated cuts per part must compete with the slow explosion");
+            float ratio = SingleTarget("Cleave", explosion, sheet) / SingleTarget("Cleave", agile, sheet);
+            Assert.That(ratio, Is.InRange(1.2f, 1.6f), "Landing the slow finisher should reward its greater commitment");
+            Assert.AreEqual(2f, WeaponSkillRules.ComboFollowupSpeed(StatType.GrantCleave, doubleSlash: true));
             Assert.AreEqual(2, WeaponSkillRules.ComboLength(StatType.GrantCleave, true));
         }
 
@@ -144,7 +145,7 @@ namespace PoeClone.Tests
             float expected = 0;
             for (int step = 1; step <= 4; step++) expected += ComboDps("Cleave", weapon, sheet, step).hit / 4f;
             Assert.AreEqual(expected, ComboDps("Cleave", weapon, sheet).hit, .001f);
-            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.175f * (4f / 2.5f),
+            Assert.Greater(expected, ComboDps("Cleave", weapon, sheet, step: 0).hit * 1.175f * (4f / (1f + 3f / 2.25f)),
                 "Heavy hits lose a smaller fraction of damage to armour");
         }
 
@@ -158,8 +159,8 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
             float normalUses = ComboDps("Cleave", weapon, sheet, step: 0).uses;
             float comboUses = ComboDps("Cleave", weapon, sheet).uses;
-            Assert.AreEqual(normalUses * (4f / 2.5f), comboUses, .001f);
-            Assert.AreEqual((1f / normalUses + 3f / (normalUses * 2f)) / 4f, 1f / comboUses, .001f);
+            Assert.AreEqual(normalUses * (4f / (1f + 3f / 2.25f)), comboUses, .001f);
+            Assert.AreEqual((1f / normalUses + 3f / (normalUses * 2.25f)) / 4f, 1f / comboUses, .001f);
         }
 
         [Test]

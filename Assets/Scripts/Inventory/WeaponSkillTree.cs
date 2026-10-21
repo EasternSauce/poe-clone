@@ -146,13 +146,15 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
-        public static float ComboFollowupSpeed(StatType grant) => grant == StatType.GrantCleave ? 2f : 4f;
+        public const float CleaveExplosionDamage = 5.5f;
+        public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false) =>
+            grant == StatType.GrantCleave ? (doubleSlash ? 2f : 2.25f) : 4f;
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
         public static float ComboSustainedSpeed(StatType grant, float finisherInterval = 1f, bool doubleSlash = false)
         {
             int length = ComboLength(grant, doubleSlash);
-            return length > 0 ? length / (finisherInterval + (length - 1f) / ComboFollowupSpeed(grant)) : 1f;
+            return length > 0 ? length / (finisherInterval + (length - 1f) / ComboFollowupSpeed(grant, doubleSlash)) : 1f;
         }
 
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
@@ -163,7 +165,7 @@ namespace PoeClone.Inventory
             // Each Twin Rhythm part contains two separately delivered 80% hits.
             if (grant == StatType.GrantCleave && doubleSlash) return 0.8f * (step % length == 0 ? 1.1f : 1f);
             if (step % length == 0)
-                return (grant == StatType.GrantCleave ? (explosiveCleave ? 4.5f : 1.35f) : 1.75f) * finisherMore;
+                return (grant == StatType.GrantCleave ? (explosiveCleave ? CleaveExplosionDamage : 1.35f) : 1.75f) * finisherMore;
             return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
         }
 

@@ -258,7 +258,7 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
-                case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals 450% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
+                case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life, including bosses";
                 case E.CleaveEcho: return "Cleave hits have a " + b.Value.ToString("0.#") + "% chance to strike the same enemy again";

@@ -335,7 +335,7 @@ namespace PoeClone.Skills
 
             interval = MeleeInterval(id.Value);
             // Keep the normal cooldown between combos; fit each pose and hit into its fast link.
-            float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant);
+            float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant, CleaveDoubleSlash);
             float comboInterval = interval / comboSpeed;
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * comboSpeed;
             BeginMeleeCombo(skill, comboInterval);
