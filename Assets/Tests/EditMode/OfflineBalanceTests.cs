@@ -92,7 +92,7 @@ namespace PoeClone.Tests
         public void Cleave_KeystonesHaveTwoTravelNodesAfterNotablesAndCannotBeCombined()
         {
             var nodes = WeaponSkillTrees.For(StatType.GrantCleave);
-            Assert.AreEqual(18, nodes.Count);
+            Assert.AreEqual(19, nodes.Count);
             foreach (var keystone in nodes.Where(n => n.Keystone))
             {
                 var parent = WeaponSkillTrees.Find(StatType.GrantCleave, keystone.Parent);
@@ -172,7 +172,6 @@ namespace PoeClone.Tests
             Assert.AreEqual(before * 1.2f, SingleTarget("SkeletonMages", weapon, sheet), .001f);
         }
 
-        [TestCase("Cleave", "rusty_sword", StatType.GrantCleave, "v2_2_", 20f)]
         [TestCase("SpiritWolves", "bone_sceptre", StatType.GrantSpiritWolves, "v2_0_", 10f)]
         public void SingleTarget_CullingSkipsLifeOnlyForNonBossEstimates(string skill, string baseId, StatType grant, string prefix, float threshold)
         {
@@ -180,14 +179,14 @@ namespace PoeClone.Tests
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = SingleTarget(skill, weapon, sheet);
             Assert.IsTrue(weapon.SkillProgress.Allocate(grant, prefix + 5));
-            Assert.AreEqual(before, SingleTarget(skill, weapon, sheet), .001f, "Bosses cannot be culled");
+            Assert.AreEqual(before, SingleTarget(skill, weapon, sheet), .001f, "This execute does not affect bosses");
             Assert.AreEqual(before / (1 - threshold / 100), SingleTarget(skill, weapon, sheet, true), .001f);
         }
 
         [Test]
         public void SingleTarget_OpeningDamageDoesNotInflateSustainedDamage()
         {
-            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_2_", 2);
+            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 0);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = SingleTarget("Cleave", weapon, sheet);
             Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_2"));
@@ -236,7 +235,7 @@ namespace PoeClone.Tests
                     Assert.IsTrue(progress.Allocate(StatType.GrantCleave, id), name + " has stale or illegal node " + id);
                 Assert.AreEqual(0, progress.Available, "Recorded routes should spend their weapon points");
             }
-            CollectionAssert.AreEquivalent(new[] { "Flexible tree (no destinations)", "Explosive Finale", "Twin Rhythm", "Headsman's Blow" }, names);
+            CollectionAssert.AreEquivalent(WeaponSkillTrees.Routes(StatType.GrantCleave).Select(r => r.Name), names);
             foreach (var group in entries.GroupBy(e => (string)e.GetType().GetField("id").GetValue(e)))
             {
                 var ordered = group.OrderBy(e => (int)e.GetType().GetField("level").GetValue(e)).ToArray();
@@ -247,6 +246,63 @@ namespace PoeClone.Tests
                     Assert.Greater((float)builds.GetMethod("EstimatedDps").Invoke(null, new object[] { entry, false }), 0f);
                 }
             }
+        }
+
+        [Test]
+        public void ArenaCatalogue_GeneratesCurrentRoutesFromObsoleteSampleNodes()
+        {
+            var builds = Type.GetType("PoeClone.World.BalanceArenaBuilds, Assembly-CSharp", true);
+            var entryType = builds.GetNestedType("Entry");
+            var catalogueType = builds.GetNestedType("Catalogue");
+            var template = Activator.CreateInstance(entryType);
+            foreach (var pair in new[] { ("id", "Cleave/obsolete"), ("skill", "Cleave"), ("name", "Deleted route"),
+                ("family", "Melee"), ("weaponNodes", "deleted_node") }) entryType.GetField(pair.Item1).SetValue(template, pair.Item2);
+            entryType.GetField("level").SetValue(template, 34);
+            entryType.GetField("weaponRank").SetValue(template, 10);
+            var entries = Array.CreateInstance(entryType, 1);
+            entries.SetValue(template, 0);
+            var samples = Activator.CreateInstance(catalogueType);
+            catalogueType.GetField("builds").SetValue(samples, entries);
+            var generated = builds.GetMethod("Generate").Invoke(null, new[] { samples });
+            var actual = ((IEnumerable)catalogueType.GetField("builds").GetValue(generated)).Cast<object>().ToArray();
+            CollectionAssert.AreEquivalent(WeaponSkillTrees.Routes(StatType.GrantCleave).Select(r => r.Name),
+                actual.Select(e => (string)entryType.GetField("name").GetValue(e)));
+            foreach (var entry in actual)
+            {
+                var progress = new WeaponSkillProgress { level = 10 };
+                foreach (string id in ((string)entryType.GetField("weaponNodes").GetValue(entry)).Split(','))
+                    Assert.IsTrue(progress.Allocate(StatType.GrantCleave, id));
+                Assert.AreEqual(0, progress.Available);
+            }
+        }
+
+        [TestCase(0, false)]
+        [TestCase(0, true)]
+        [TestCase(1, false)]
+        [TestCase(1, true)]
+        public void Cleave_ComboVariantsCanTakeEitherOpeningEdgeEnding(int variant, bool echo)
+        {
+            var progress = new WeaponSkillProgress { level = 10 };
+            for (int i = 0; i < 6; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + variant + "_" + i));
+            foreach (int i in echo ? new[] { 2, 6, 7, 8 } : new[] { 2, 3, 4, 5 })
+                Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_2_" + i));
+            Assert.AreEqual(0, progress.Available);
+        }
+
+        [Test]
+        public void Cleave_HeadsmanExecutesBossesAndEchoHasComparableSustainedBenefit()
+        {
+            var headsman = DamageWeapon("rusty_sword", StatType.GrantCleave, "", 0);
+            var echo = DamageWeapon("rusty_sword", StatType.GrantCleave, "", 0);
+            foreach (int i in new[] { 2, 3, 4 }) Assert.IsTrue(headsman.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_" + i));
+            foreach (int i in new[] { 2, 6, 7 }) Assert.IsTrue(echo.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_" + i));
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float baseline = SingleTarget("Cleave", headsman, sheet);
+            Assert.IsTrue(headsman.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_5"));
+            Assert.IsTrue(echo.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_8"));
+            Assert.AreEqual(20f, new WeaponSkillBonuses(headsman).CullPercent(boss: true));
+            Assert.AreEqual(baseline * 1.25f, SingleTarget("Cleave", headsman, sheet), .001f);
+            Assert.AreEqual(SingleTarget("Cleave", headsman, sheet), SingleTarget("Cleave", echo, sheet), .001f);
         }
 
         [Test]

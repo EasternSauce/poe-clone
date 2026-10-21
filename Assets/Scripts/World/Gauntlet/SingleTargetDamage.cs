@@ -66,6 +66,7 @@ namespace PoeClone.World
             }
             // Each double-slash cut is mitigated individually, then both hits contribute.
             float rate = uses, hits = doubleSlash ? 2 : 1, multiplier;
+            if (skill.Id == SkillId.Cleave) hits *= 1 + tree.Get(E.CleaveEcho) / 100;
             if (skill.Summon)
             {
                 var kind = PlayerSkills.MinionKindOf(skill.Id);
@@ -135,10 +136,11 @@ namespace PoeClone.World
                 dotDps += AgainstEnemy(Mathf.Max(dealt * 5 / (3 * tree.DurationMultiplier) * treeIgnite, ownerBurn * ownerIgnite), DamageType.Fire, sheet.Level, sheet, tree, true);
             }
             // Culling skips the final fraction of life; use the strongest threshold, never add them.
-            // It is disabled on bosses in both hit paths, so the survey's default remains boss DPS.
-            if (includeNonBossCull)
+            float cull = tree.CullPercent(boss: !includeNonBossCull) / 100;
+            if (includeNonBossCull && !skill.Summon && sheet.Total(StatType.CullingStrike) > 0)
+                cull = Mathf.Max(cull, DefenceMath.CullThreshold);
+            if (cull > 0)
             {
-                float cull = Mathf.Max(tree.Get(E.Cull) / 100, !skill.Summon && sheet.Total(StatType.CullingStrike) > 0 ? DefenceMath.CullThreshold : 0);
                 float effective = 1 / Mathf.Max(.01f, 1 - Mathf.Clamp01(cull));
                 hitDps *= effective;
                 dotDps *= effective;

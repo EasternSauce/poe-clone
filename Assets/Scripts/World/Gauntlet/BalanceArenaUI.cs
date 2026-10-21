@@ -7,7 +7,7 @@ using PoeClone.UI;
 
 namespace PoeClone.World
 {
-    /// <summary>Browser entry to the actual sampled balance builds, with route-specific minimum levels.</summary>
+    /// <summary>Browser for live weapon-tree routes, with route-specific minimum levels.</summary>
     public sealed class BalanceArenaUI : MonoBehaviour
     {
         private GauntletMode mode;
@@ -68,7 +68,7 @@ namespace PoeClone.World
             UiKit.Frame(panel);
             Text title = Label(panel, "Balance Test Arena", new Vector2(30, -20), new Vector2(1060, 50), 36);
             UiKit.Heading(title);
-            Label(panel, "Play the sampled builds from the boss balance survey", new Vector2(30, -78), new Vector2(1060, 32), 20);
+            Label(panel, "Choose a weapon-tree route and test it in combat", new Vector2(30, -78), new Vector2(1060, 32), 20);
 
             lowerLevelButton = Button(panel, "−", new Vector2(40, -130), new Vector2(65, 48), () => ChangeLevel(-1));
             levelLabel = Label(panel, "", new Vector2(115, -130), new Vector2(200, 48), 24);
@@ -348,7 +348,7 @@ namespace PoeClone.World
             routeCountLabel.text = choices.Count + " routes in " + category + " level categories · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
                 (randomBuild ? "\nRandom builds use routes available at the chosen level." : "\nMinimum level " + MinimumLevel + ". Change build to lower the level further.") +
-                "\nDPS: successful full combos, full army + repeatable buffs; cull vs non-bosses. Excludes opening/kill buffs and downtime." +
+                "\nDPS: successful full combos, full army + repeatable buffs; executes where applicable. Excludes opening/kill buffs and downtime." +
                 "\nWorst 30% ground loot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
             LayoutRoutes();

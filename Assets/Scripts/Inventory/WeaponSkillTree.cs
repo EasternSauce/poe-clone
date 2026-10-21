@@ -15,7 +15,7 @@ namespace PoeClone.Inventory
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
-        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash
+        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveEcho
     }
 
     [Serializable]
@@ -120,6 +120,7 @@ namespace PoeClone.Inventory
         public float Get(WeaponSkillEffect effect) => values[(int)effect];
         public float MoreDamageMultiplier => moreDamage;
         public float ComboDamageMultiplier => comboMoreDamage;
+        public float CullPercent(bool boss) => Mathf.Max(Get(WeaponSkillEffect.BossCull), boss ? 0f : Get(WeaponSkillEffect.Cull));
         public float AreaMultiplier => DefenceMath.RadiusMultiplier(Get(WeaponSkillEffect.Area));
         public float RangeMultiplier => Mathf.Max(0.3f, 1f + Get(WeaponSkillEffect.Range) / 100f);
         public float ProjectileSpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.ProjectileSpeed) / 100f);

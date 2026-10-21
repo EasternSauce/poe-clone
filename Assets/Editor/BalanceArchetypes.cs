@@ -30,33 +30,12 @@ namespace PoeClone.EditorTools
                     result.Add(Create(skill, "support", SupportRole(skill.Id), new List<string>(), "Support"));
                     continue;
                 }
-                result.Add(Create(skill, "base", "Flexible tree (no destinations)", new List<string>(), "Baseline"));
-                var ends = tree.Where(n => n.Keystone).ToArray();
-                // Enumerate subsets rather than assuming two destinations fit. Conversion
-                // conflicts and the actual ten-point budget are checked by the allocation API.
-                for (int mask = 1; mask < (1 << ends.Length); mask++)
-                {
-                    var required = new List<string>();
-                    var names = new List<string>();
-                    for (int i = 0; i < ends.Length; i++)
-                        if ((mask & (1 << i)) != 0)
-                        {
-                            AddPath(skill.Grant, ends[i], required);
-                            names.Add(ends[i].Name);
-                        }
-                    var progress = new WeaponSkillProgress { level = 10 };
-                    if (required.Any(id => !progress.Allocate(skill.Grant, id))) continue;
-                    result.Add(Create(skill, mask.ToString(), string.Join(" + ", names), required,
-                        names.Count == 1 ? "Specialization" : "Hybrid"));
-                }
+                foreach (var route in WeaponSkillTrees.Routes(skill.Grant))
+                    result.Add(Create(skill, route.Id, route.Name, route.Nodes.ToList(),
+                        route.Nodes.Length == 0 ? "Baseline" :
+                        route.Nodes.Count(id => WeaponSkillTrees.Find(skill.Grant, id).Keystone) == 1 ? "Specialization" : "Hybrid"));
             }
             return result;
-        }
-
-        private static void AddPath(StatType grant, WeaponSkillNode node, List<string> path)
-        {
-            if (node.Parent != null) AddPath(grant, WeaponSkillTrees.Find(grant, node.Parent), path);
-            if (!path.Contains(node.Id)) path.Add(node.Id);
         }
 
         private static Archetype Create(SkillDefinition skill, string suffix, string name, List<string> path, string role)

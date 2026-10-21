@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using E = PoeClone.Inventory.WeaponSkillEffect;
 
@@ -14,6 +15,41 @@ namespace PoeClone.Inventory
             var nodes = For(grant);
             if (nodes != null) foreach (var node in nodes) if (node.Id == id) return node;
             return null;
+        }
+
+        public sealed class Route
+        {
+            public string Id, Name;
+            public string[] Nodes;
+        }
+
+        /// <summary>All legal destinations and combinations, shared by the picker and survey.</summary>
+        public static List<Route> Routes(StatType grant)
+        {
+            var result = new List<Route> { new Route { Id = "base", Name = "Flexible tree (no destinations)", Nodes = new string[0] } };
+            var ends = For(grant)?.Where(n => n.Keystone).ToArray();
+            if (ends == null) return result;
+            for (int mask = 1; mask < (1 << ends.Length); mask++)
+            {
+                var path = new List<string>();
+                var names = new List<string>();
+                for (int i = 0; i < ends.Length; i++)
+                    if ((mask & (1 << i)) != 0)
+                    {
+                        AddRoutePath(grant, ends[i], path);
+                        names.Add(ends[i].Name);
+                    }
+                var progress = new WeaponSkillProgress { level = 10 };
+                if (path.Any(id => !progress.Allocate(grant, id))) continue;
+                result.Add(new Route { Id = mask.ToString(), Name = string.Join(" + ", names), Nodes = path.ToArray() });
+            }
+            return result;
+        }
+
+        private static void AddRoutePath(StatType grant, WeaponSkillNode node, List<string> path)
+        {
+            if (node.Parent != null) AddRoutePath(grant, Find(grant, node.Parent), path);
+            if (!path.Contains(node.Id)) path.Add(node.Id);
         }
         private static WeaponSkillBonus B(E effect, float value) => new WeaponSkillBonus(effect, value);
         private static WeaponSkillBonus[] M(params WeaponSkillBonus[] bonuses) => bonuses;
@@ -44,8 +80,7 @@ namespace PoeClone.Inventory
                     new Vector2(207, 68), new Vector2(247, 103), new Vector2(292, 117),
                     new Vector2(212, -30), new Vector2(263, -65)
                 };
-                // Cleave has three independent six-point routes: two small nodes separate
-                // each notable from its keystone, and both combo variants cost twelve points.
+                // Cleave's two combo variants each need six independent points.
                 if (grant == StatType.GrantCleave) System.Array.Resize(ref shape, 6);
                 float angle = (rotation + lane * 120f) * Mathf.Deg2Rad;
                 for (int i = 0; i < shape.Length; i++)
@@ -61,6 +96,32 @@ namespace PoeClone.Inventory
                         Position = pos, Bonuses = i == 2 ? p.Major : i == 5 ? p.Final : i == 7 ? p.Alternative : p.Small
                     });
                 }
+            }
+            if (grant == StatType.GrantCleave)
+            {
+                // Opening Edge starts its own four-point fork. Either ending fits alongside
+                // a six-point combo variant, with two travel nodes after the notable.
+                nodes.RemoveAll(n => n.Id == "v2_2_0" || n.Id == "v2_2_1");
+                var opening = nodes.Find(n => n.Id == "v2_2_2");
+                opening.Parent = null;
+                Vector2 direction = opening.Position.normalized;
+                Vector2 side = new Vector2(-direction.y, direction.x);
+                opening.Position = direction * 70f;
+                opening.Depth = 0;
+                for (int i = 3; i <= 5; i++)
+                {
+                    var node = nodes.Find(n => n.Id == "v2_2_" + i);
+                    node.Depth = i - 2;
+                    node.Position = direction * (70f + (i - 2) * 65f) + side * ((i - 2) * 25f);
+                }
+                for (int i = 6; i <= 8; i++)
+                    nodes.Add(new WeaponSkillNode {
+                        Id = "v2_2_" + i, Parent = "v2_2_" + (i == 6 ? 2 : i - 1),
+                        Grant = grant, Depth = i - 5, Keystone = i == 8,
+                        Name = i == 8 ? "Echoing Steel" : "Executioner",
+                        Position = direction * (70f + (i - 5) * 65f) - side * ((i - 5) * 25f),
+                        Bonuses = i == 8 ? M(B(E.CleaveEcho, 25)) : M(B(E.Damage, 10))
+                    });
             }
             all.Add(grant, nodes);
         }
@@ -106,7 +167,7 @@ namespace PoeClone.Inventory
             Add(t, StatType.GrantCleave,
                 P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
                 P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.Cull, 20))));
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 20))));
             Add(t, StatType.GrantPulverize,
                 P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
                 P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
@@ -199,6 +260,8 @@ namespace PoeClone.Inventory
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.CleaveExplosion: return "Replaces the fourth slash with a slow, charged circular explosion\nDeals 450% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals 80% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
+                case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life, including bosses";
+                case E.CleaveEcho: return "Cleave hits have a " + b.Value.ToString("0.#") + "% chance to strike the same enemy again";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboKnockback: return "Combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks) knock non-boss enemies back " + b.Value.ToString("0.#") + " metres";

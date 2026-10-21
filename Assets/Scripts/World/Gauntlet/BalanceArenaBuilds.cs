@@ -8,7 +8,7 @@ using PoeClone.Skills;
 
 namespace PoeClone.World
 {
-    /// <summary>Survey builds with fresh ground-loot rolls selected from the weakest 30% per slot.</summary>
+    /// <summary>Live weapon routes with sampled passive/gear templates and fresh poor-loot rolls.</summary>
     public static class BalanceArenaBuilds
     {
         [Serializable] public sealed class Catalogue
@@ -22,14 +22,51 @@ namespace PoeClone.World
             public string id, skill, name, family, passives, weaponNodes, gear;
             public int level, sample, weaponRank;
             public GauntletBuild AsBuild() => new GauntletBuild {
-                Id = id, Name = skill + " · " + name, Summary = "Balance survey sample " + sample,
+                Id = id, Name = skill + " · " + name, Summary = "Weapon-tree route: " + name,
                 Melee = family == "Melee", MainHand = new string[0], Armour = "int",
                 CoreSkills = new StatType[0], Passives = Split(passives), WeaponNodes = Split(weaponNodes)
             };
         }
         private static Catalogue catalogue;
-        public static Catalogue Data => catalogue ?? (catalogue = JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text));
+        public static Catalogue Data => catalogue ?? (catalogue = Generate(
+            JsonUtility.FromJson<Catalogue>(Resources.Load<TextAsset>("BalanceArenaBuilds").text)));
         private static string[] Split(string text) => string.IsNullOrEmpty(text) ? new string[0] : text.Split(',');
+
+        /// <summary>The saved survey supplies level-appropriate templates, never route definitions.</summary>
+        public static Catalogue Generate(Catalogue samples)
+        {
+            var entries = new List<Entry>();
+            foreach (var group in samples.builds.GroupBy(e => e.skill))
+            {
+                var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), group.Key));
+                var tree = WeaponSkillTrees.For(skill.Grant);
+                foreach (var route in WeaponSkillTrees.Routes(skill.Grant))
+                    foreach (var level in group.GroupBy(e => e.level).OrderBy(g => g.Key))
+                    {
+                        var baseline = level.FirstOrDefault(e => e.id.EndsWith("/base", StringComparison.Ordinal)) ?? level.First();
+                        if (route.Nodes.Length > baseline.weaponRank) continue;
+                        var template = level.FirstOrDefault(e => e.name == route.Name) ?? baseline;
+                        var progress = new WeaponSkillProgress { level = baseline.weaponRank };
+                        foreach (string id in route.Nodes)
+                            if (!progress.Allocate(skill.Grant, id)) throw new InvalidOperationException("Arena: illegal live route " + route.Name);
+                        // Preserve useful sampled travel preferences, then fill from the live tree.
+                        // Never add an unselected keystone or silently change the advertised route.
+                        foreach (string id in Split(template.weaponNodes).Concat(tree?.Select(n => n.Id) ?? Enumerable.Empty<string>()))
+                        {
+                            var node = WeaponSkillTrees.Find(skill.Grant, id);
+                            if (node != null && !node.Keystone) progress.Allocate(skill.Grant, id);
+                        }
+                        entries.Add(new Entry {
+                            id = group.Key + "/" + route.Id, skill = group.Key, name = route.Name,
+                            family = template.family, level = level.Key, sample = template.sample,
+                            weaponRank = baseline.weaponRank, passives = template.passives, gear = template.gear,
+                            weaponNodes = string.Join(",", progress.nodes)
+                        });
+                    }
+            }
+            return new Catalogue { source = samples.source, generatedUtc = samples.generatedUtc, model = samples.model,
+                rareRollsPerSlot = samples.rareRollsPerSlot, builds = entries.ToArray() };
+        }
 
         public static string RouteEffects(Entry entry)
         {
