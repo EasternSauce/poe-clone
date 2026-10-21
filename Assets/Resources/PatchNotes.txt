@@ -1,3 +1,7 @@
+version: 2026-10-21-combo-halfway-lock
+- Buffered melee combo follow-ups now lock movement and facing only after half of the interval to the next attack has passed.
+- Moving during the first half cancels the opening attack, letting you break away before committing to the combo.
+
 version: 2026-10-21-cleave-second-hit-effects
 - Removed the explosion and extra impact sound from Cleave's second combo attack, including co-op and spectator views. Its normal slash sound and damage bonus remain.
 

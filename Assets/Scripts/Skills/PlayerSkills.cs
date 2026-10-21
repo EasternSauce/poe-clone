@@ -188,6 +188,7 @@ namespace PoeClone.Skills
             CancelPendingCast();
             EndWhirlwind();
             StopAllCoroutines();
+            meleeAction = null;
             if (controller != null)
                 controller.SetSkillCommit(false);
             if (attackAnimator != null)

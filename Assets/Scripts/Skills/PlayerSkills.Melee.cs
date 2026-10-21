@@ -26,9 +26,11 @@ namespace PoeClone.Skills
         private int meleeComboSwing;
         private int meleeComboMovement;
         private float meleeComboReadyAt;
+        private float meleeComboBraceAt;
         private float meleeComboInterval;
         private float meleeComboRestartAt;
         private bool meleeComboQueued;
+        private Coroutine meleeAction;
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
         private bool meleeCleaveAccent;
@@ -73,6 +75,17 @@ namespace PoeClone.Skills
             // A finisher cannot buffer another fast follow-up or keep the old facing locked.
             // PlayerCombat retains its normal cooldown before the next opening attack.
             if (meleeComboSwing == 0 || meleeFinisher) return false;
+            // Movement can still break the opener before the combo commits halfway through.
+            if (meleeComboSwing == 1 && Time.time < meleeComboBraceAt &&
+                controller.InputDirection().sqrMagnitude > 0.001f)
+            {
+                if (meleeAction != null) StopCoroutine(meleeAction);
+                meleeAction = null;
+                ResetMeleeCombo();
+                controller.SetSkillCommit(false);
+                if (attackAnimator != null) attackAnimator.CancelAttack();
+                return false;
+            }
             if (controller.MovementRevision != meleeComboMovement || MainWeapon != meleeComboWeapon ||
                 (!meleeComboQueued && !controller.IsSkillCommitted && Time.time > meleeComboReadyAt + ComboQueueWindow))
             {
@@ -80,8 +93,12 @@ namespace PoeClone.Skills
                 return false;
             }
             if (!meleeComboQueued && attackHeld && (freshPress || Time.time >= meleeComboReadyAt - ComboQueueWindow))
-            {
                 meleeComboQueued = true;
+
+            // Buffer early clicks without bracing until the second half of this link.
+            // Recheck queued input each frame so the lock starts even without another click.
+            if (meleeComboQueued && !controller.IsComboBraced && Time.time >= meleeComboBraceAt)
+            {
                 controller.SetComboBrace(true);
                 if (attackAnimator != null) attackAnimator.ComboBracing = true;
             }
@@ -116,6 +133,7 @@ namespace PoeClone.Skills
             meleeComboQueued = false;
             meleeComboWeapon = MainWeapon;
             meleeComboMovement = controller.MovementRevision;
+            meleeComboBraceAt = Time.time + interval * 0.5f;
             meleeComboReadyAt = Time.time + interval;
         }
 
@@ -165,6 +183,7 @@ namespace PoeClone.Skills
 
         private void FinishMeleeAction()
         {
+            meleeAction = null;
             if (meleeFinisher) ResetMeleeCombo();
             else if (meleeComboSwing > 0)
                 // The input window must survive the actual animation/recovery, including slow frames.
@@ -309,32 +328,32 @@ namespace PoeClone.Skills
                         rate /= CleaveFinisherSlowdown;
                         interval = Mathf.Max(interval, (CleaveWindup + CleaveRecovery) / rate);
                     }
-                    StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, CleaveWindup, CurrentWeapon(), rate,
                         () => Cleave(skill, level), CleaveRecovery));
                     break;
                 case SkillId.Pulverize:
-                    StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Pulverize(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Pulverize(skill, level)));
                     break;
                 case SkillId.Fissure:
-                    StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Fissure(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Fissure(skill, level)));
                     break;
                 case SkillId.Aftershock:
-                    StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Aftershock(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Aftershock(skill, level)));
                     break;
                 case SkillId.ReapingArc:
-                    StartCoroutine(CommittedStrike(skill.Id, 0.58f, CurrentWeapon(), rate, () => ReapingArc(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, 0.58f, CurrentWeapon(), rate, () => ReapingArc(skill, level)));
                     break;
                 case SkillId.LungingThrust:
-                    StartCoroutine(Lunge(skill, level, rate));
+                    meleeAction = StartCoroutine(Lunge(skill, level, rate));
                     break;
                 case SkillId.CrossSlash:
-                    StartCoroutine(CrossSlash(skill, level, rate));
+                    meleeAction = StartCoroutine(CrossSlash(skill, level, rate));
                     break;
                 case SkillId.FangStrike:
-                    StartCoroutine(CommittedStrike(skill.Id, 0.12f, WeaponType.Dagger, rate, () => FangStrike(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, 0.12f, WeaponType.Dagger, rate, () => FangStrike(skill, level)));
                     break;
                 case SkillId.VenomSlash:
-                    StartCoroutine(CommittedStrike(skill.Id, CrossCutStrike, WeaponType.Dagger, rate, () => VenomSlash(skill, level)));
+                    meleeAction = StartCoroutine(CommittedStrike(skill.Id, CrossCutStrike, WeaponType.Dagger, rate, () => VenomSlash(skill, level)));
                     break;
             }
             return true;
