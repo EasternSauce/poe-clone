@@ -270,8 +270,7 @@ namespace PoeClone.Player
             return weapon != null ? weapon.WeaponType : WeaponType.Unarmed;
         }
 
-        // How far an attack reaches: the weapon's range, longer for melee with increased Melee Range;
-        // for a staff with its spell, how far the spell flies.
+        // Abilities use their own reach. Only basic melee attacks use the Melee Range stat.
         private float Reach(WeaponType weaponType)
         {
             if (HasMainSkill)

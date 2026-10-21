@@ -1,3 +1,7 @@
+version: 2026-10-21-melee-area-scaling
+- Melee Range now affects only basic melee attacks. Removed its item rolls and passive-tree bonuses; existing item modifiers are removed when gear loads.
+- Melee ability ranges now scale only with increased area of effect. Their weapon-tree range bonuses are now area-of-effect bonuses, including Whirlwind, thrusts and Fissure.
+
 version: 2026-10-21-melee-mana-on-release
 - Melee attacks now spend mana only when their hit comes out. Cancelling during windup costs nothing, and multi-hit attacks still pay only once per attack.
 

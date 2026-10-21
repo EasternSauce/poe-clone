@@ -36,7 +36,7 @@ namespace PoeClone.Inventory
         ChillOnHit,                 // % chance for attacks to chill
         CullingStrike,              // 1: hits kill non-boss enemies left under 10% life
         LifeOnKill,                 // life gained for each enemy killed
-        MeleeRange,                 // % increased reach of melee attacks and Cleave
+        MeleeRange,                 // % increased reach of basic melee attacks only; no item or tree modifiers
 
         // Skills granted by gear (see SkillGrants): the value is the skill's level. A weapon's
         // staff's first spell becomes its attack. Saved by number like everything above: add at the end.
@@ -926,7 +926,7 @@ namespace PoeClone.Inventory
                 case StatType.CullingStrike: return "Culling Strike: kill enemies left below 10% Life";
                 case StatType.LifeOnKill: return "Gain " + n + " Life per enemy killed";
                 case StatType.LifeOnAttackHit: return "Gain " + n + " Life per enemy hit with an Attack";
-                case StatType.MeleeRange: return n + "% increased Melee Range";
+                case StatType.MeleeRange: return n + "% increased basic melee attack range";
                 case StatType.AllSpellLevels: return sign + n + " to Level of all Spells";
                 case StatType.FireSpellLevels: return sign + n + " to Level of all Fire Spells";
                 case StatType.ColdSpellLevels: return sign + n + " to Level of all Cold Spells";

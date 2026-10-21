@@ -488,7 +488,6 @@ namespace PoeClone.Inventory
             { StatType.ElementalPenetration, "of Ruin" },
             { StatType.ArmourPenetration, "of Breaching" },
             { StatType.AreaOfEffect, "of Expanse" },
-            { StatType.MeleeRange, "of Reach" },
             { StatType.CastSpeed, "of Talent" },
             { StatType.AllSpellLevels, "of Mastery" },
             { StatType.FireSpellLevels, "of Embers" },
@@ -1011,7 +1010,6 @@ namespace PoeClone.Inventory
                 case StatType.Armour:
                 case StatType.ArmourPenetration:
                 case StatType.BlockChance:
-                case StatType.MeleeRange:
                 case StatType.LifeLeech:
                 case StatType.GrantCleave:
                 case StatType.GrantWhirlwind:

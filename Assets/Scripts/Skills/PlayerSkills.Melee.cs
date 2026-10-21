@@ -252,16 +252,16 @@ namespace PoeClone.Skills
         {
             switch (ActiveMeleeSkill)
             {
-                case SkillId.Cleave: return CleaveBaseReach * MeleeRangeMultiplier * AreaMultiplier;
-                case SkillId.Pulverize: return SlamImpactDistance + 3.6f * AreaMultiplier * MeleeRangeMultiplier;
-                case SkillId.ReapingArc: return 4.6f * MeleeRangeMultiplier * AreaMultiplier;
-                case SkillId.LungingThrust: return 3f * MeleeRangeMultiplier + LungeStep * WeaponBonuses.RangeMultiplier;
+                case SkillId.Cleave: return CleaveBaseReach * AreaMultiplier;
+                case SkillId.Pulverize: return SlamImpactDistance + 3.6f * AreaMultiplier;
+                case SkillId.ReapingArc: return 4.6f * AreaMultiplier;
+                case SkillId.LungingThrust: return (3f + LungeStep) * AreaMultiplier;
                 case SkillId.Whirlwind: return WhirlReach();
-                case SkillId.Fissure: return FissureLength * MeleeRangeMultiplier;
-                case SkillId.Aftershock: return 8f * AreaMultiplier * Mathf.Sqrt(WeaponBonuses.RangeMultiplier);
-                case SkillId.CrossSlash: return CrossSlashBaseReach * MeleeRangeMultiplier * AreaMultiplier;
-                case SkillId.FangStrike: return 2.4f * MeleeRangeMultiplier;
-                case SkillId.VenomSlash: return VenomSlashReach * MeleeRangeMultiplier * AreaMultiplier;
+                case SkillId.Fissure: return FissureLength * AreaMultiplier;
+                case SkillId.Aftershock: return 8f * AreaMultiplier;
+                case SkillId.CrossSlash: return CrossSlashBaseReach * AreaMultiplier;
+                case SkillId.FangStrike: return 2.4f * AreaMultiplier;
+                case SkillId.VenomSlash: return VenomSlashReach * AreaMultiplier;
                 default: return CharacterAttackAnimator.AttackRange(CurrentWeapon());
             }
         }
@@ -395,7 +395,6 @@ namespace PoeClone.Skills
             }
         }
 
-        private float MeleeRangeMultiplier => (1f + Mathf.Max(0f, Stat(StatType.MeleeRange) + WeaponBonuses.Get(WeaponSkillEffect.Range)) / 100f);
         private float AreaMultiplier => DefenceMath.RadiusMultiplier(Stat(StatType.AreaOfEffect) + WeaponBonuses.Get(WeaponSkillEffect.Area));
 
         // ------------------------------------------------------------------ the moves
@@ -475,15 +474,15 @@ namespace PoeClone.Skills
             yield return MeleeWindup(0.34f / rate);
 
             // Closes the gap to what it's aimed at (up to LungeStep), never past it.
-            float reach = 3f * MeleeRangeMultiplier * ComboArea;
-            EnemyHealth target = MeleeAimedEnemy(reach + LungeStep);
-            float step = LungeStep * BonusesFor(skill.Id).RangeMultiplier;
+            float reach = 3f * AreaMultiplier * ComboArea;
+            float step = LungeStep * AreaMultiplier;
+            EnemyHealth target = MeleeAimedEnemy(reach + step);
             if (target != null)
             {
                 Vector3 to = target.transform.position - transform.position;
                 to.y = 0f;
                 Face(to);
-                step = Mathf.Clamp(to.magnitude - LungeStopShort, 0f, LungeStep * BonusesFor(skill.Id).RangeMultiplier);
+                step = Mathf.Clamp(to.magnitude - LungeStopShort, 0f, LungeStep * AreaMultiplier);
             }
             if (step > 0.05f)
                 controller.Dash(transform.forward, step, 0.16f / rate, meleeAttack: true);
@@ -526,7 +525,7 @@ namespace PoeClone.Skills
 
         private void Pulverize(SkillDefinition skill, int level)
         {
-            float radius = 3.6f * AreaMultiplier * ComboArea * MeleeRangeMultiplier;
+            float radius = 3.6f * AreaMultiplier * ComboArea;
             Vector3 impact = SlamPoint();
             SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f, type: SkillEffects.DamagePattern(skill));
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
@@ -538,7 +537,7 @@ namespace PoeClone.Skills
                 MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback);
         }
 
-        // How far a fissure runs (Melee Range lengthens it) and how wide it is (Area of Effect).
+        // Increased area scales both the fissure's length and width.
         private const float FissureLength = 9f;
         private const float FissureHalfWidth = 1f;
 
@@ -547,7 +546,7 @@ namespace PoeClone.Skills
         private void Fissure(SkillDefinition skill, int level)
         {
             float halfWidth = FissureHalfWidth * AreaMultiplier * ComboArea;
-            float length = FissureLength * MeleeRangeMultiplier * ComboArea;
+            float length = FissureLength * AreaMultiplier * ComboArea;
             Vector3 start = SlamPoint();
             Vector3 direction = transform.forward;
             PoeClone.CameraSystem.CameraFollow.Shake(0.08f, 0.14f);
@@ -584,7 +583,7 @@ namespace PoeClone.Skills
         private void Aftershock(SkillDefinition skill, int level)
         {
             int count = 3 + Mathf.RoundToInt(BonusesFor(skill.Id).Get(WeaponSkillEffect.ExtraWaves));
-            float[] radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier * ComboArea * Mathf.Sqrt(BonusesFor(skill.Id).RangeMultiplier), count);
+            float[] radii = AftershockRadii(AftershockFirstRadius * AreaMultiplier * ComboArea, count);
             var centers = new Vector3[count];
             centers[0] = SlamPoint();
             for (int k = 1; k < count; k++)
@@ -604,7 +603,7 @@ namespace PoeClone.Skills
 
         private void ReapingArc(SkillDefinition skill, int level)
         {
-            float reach = 4.6f * MeleeRangeMultiplier * AreaMultiplier * ComboArea;
+            float reach = 4.6f * AreaMultiplier * ComboArea;
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage;
             float knockback = ComboKnockback;
             foreach (EnemyHealth enemy in EnemiesWithin(transform.position, reach))
@@ -652,7 +651,7 @@ namespace PoeClone.Skills
             along.y = 0f;
             along.Normalize();
             float area = AreaMultiplier * ComboArea;
-            float reach = CrossSlashBaseReach * MeleeRangeMultiplier * area;
+            float reach = CrossSlashBaseReach * area;
             float halfWidth = CrossHalfWidth * area;
             Vector3 center = transform.position;
             Vector3 from = center - along * reach;
@@ -676,7 +675,7 @@ namespace PoeClone.Skills
 
         private void FangStrike(SkillDefinition skill, int level)
         {
-            float reach = 2.4f * MeleeRangeMultiplier * ComboArea;
+            float reach = 2.4f * AreaMultiplier * ComboArea;
             EnemyHealth target = MeleeAimedEnemy(reach);
             Record(skill, level, reach);
             foreach (EnemyHealth enemy in MeleeThrustTargets(target, reach, skill))
@@ -693,7 +692,7 @@ namespace PoeClone.Skills
 
         private void VenomSlash(SkillDefinition skill, int level)
         {
-            float reach = VenomSlashReach * MeleeRangeMultiplier * AreaMultiplier * ComboArea;
+            float reach = VenomSlashReach * AreaMultiplier * ComboArea;
             Vector3 center = transform.position;
             SkillEffects.Cone(center, transform.forward, reach, VenomSlashHalfAngle, skill.Color, 0.25f, SkillEffects.DamagePattern(skill));
             Record(skill, level, reach);

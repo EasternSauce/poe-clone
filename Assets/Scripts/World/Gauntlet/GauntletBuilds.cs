@@ -118,7 +118,7 @@ namespace PoeClone.World
             StatType.PercentLifeRegen, 1f, StatType.LifeOnKill, 0.6f, StatType.AvoidStun, 0.5f, StatType.DamageTaken, 1.6f,
             StatType.MaxMana, 0.4f, StatType.ManaRegen, 0.4f, StatType.ManaCostReduction, 0.5f,
             StatType.PhysicalDamage, 1.2f, StatType.AttackSpeed, 1.1f, StatType.AttackDamage, 1f, StatType.Damage, 0.9f,
-            StatType.MeleeRange, 0.6f, StatType.AreaOfEffect, 0.6f, StatType.MovementSpeed, 0.5f
+            StatType.AreaOfEffect, 0.6f, StatType.MovementSpeed, 0.5f
         }, extra);
 
         private static Dictionary<StatType, float> Summoner(params object[] extra) => Profile(new object[]

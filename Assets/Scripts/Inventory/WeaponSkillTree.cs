@@ -224,7 +224,8 @@ namespace PoeClone.Inventory
             int legacyLevel = 1;
             if (source != null) foreach (StatModifier m in source)
             {
-                if (IsLevelBonus(m.Stat)) continue;
+                // Retired range rolls are removed from all items, including saved and unique gear.
+                if (m.Stat == StatType.MeleeRange || IsLevelBonus(m.Stat)) continue;
                 if (IsSkillMechanic(m.Stat))
                 {
                     // Preserve some value on old gear without retaining skill transformations.

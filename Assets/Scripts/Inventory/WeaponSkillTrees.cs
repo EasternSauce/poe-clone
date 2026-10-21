@@ -101,43 +101,43 @@ namespace PoeClone.Inventory
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
                 P("Infected Shaft", U(E.ProjectileSpeed, 12), "Piercing Fangs", M(B(E.Pierce, 1)), "Contagious Volley", M(B(E.Projectiles, 2)), "Quick Fangs", B(E.Speed, 20)));
             Add(t, StatType.GrantCleave,
-                P("Broad Blade", U(E.Range, 10), "Wide Sweep", M(B(E.Area, 25)), "Horizon Cleaver", M(B(E.Range, 35)), "Reaching Edge", B(E.Area, 35)),
+                P("Broad Blade", U(E.Area, 10), "Wide Sweep", M(B(E.Area, 25)), "Horizon Cleaver", M(B(E.Area, 35)), "Reaching Edge", B(E.Area, 35)),
                 P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Overwhelming Blow", M(B(E.MoreDamage, 30)), "Tempered Steel", B(E.Speed, 18)),
                 P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.Cull, 20)), "Clean Cut", B(E.ArmourPenetration, 80)));
             Add(t, StatType.GrantPulverize,
                 P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
                 P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
-                P("Broken Bones", U(E.Range, 8), "Splintering Impact", M(B(E.Splash, 10)), "Bonecrusher", M(B(E.Splash, 35)), "Steady Blows", B(E.Speed, 20)));
+                P("Broken Bones", U(E.Area, 8), "Splintering Impact", M(B(E.Splash, 10)), "Bonecrusher", M(B(E.Splash, 35)), "Steady Blows", B(E.Speed, 20)));
             Add(t, StatType.GrantReapingArc,
-                P("Long Scythe", U(E.Range, 10), "Harvest", M(B(E.Range, 25)), "Reaper's Horizon", M(B(E.Range, 35)), "Wide Harvest", B(E.Area, 30)),
+                P("Long Scythe", U(E.Area, 10), "Harvest", M(B(E.Area, 25)), "Reaper's Horizon", M(B(E.Area, 35)), "Wide Harvest", B(E.Area, 30)),
                 P("Heavy Harvest", M(B(E.Damage, 10)), "Sundering Harvest", M(B(E.ArmourPenetration, 40)), "Merciless Harvest", M(B(E.MoreDamage, 30)), "Quickening", B(E.Speed, 18)),
                 P("First Cut", M(B(E.Damage, 10)), "Reaper's Mark", M(B(E.FirstStrike, 20)), "Death Sentence", M(B(E.FirstStrike, 40)), "Sharp Harvest", B(E.ArmourPenetration, 90)));
             Add(t, StatType.GrantLungingThrust,
-                P("Pursuit", U(E.Range, 10), "Long Point", M(B(E.Range, 25)), "Farstrider", M(B(E.Range, 40)), "Swift Entry", B(E.Speed, 18)),
+                P("Pursuit", U(E.Area, 10), "Long Point", M(B(E.Area, 25)), "Farstrider", M(B(E.Area, 40)), "Swift Entry", B(E.Speed, 18)),
                 P("Duelist", M(B(E.Damage, 10)), "Heartseeker", M(B(E.FirstStrike, 25)), "Perfect Thrust", M(B(E.FirstStrike, 35)), "Vital Point", B(E.ArmourPenetration, 100)),
                 P("Impaler", U(E.ArmourPenetration, 20), "Skewering Point", M(B(E.Splash, 15)), "Through and Through", M(B(E.Splash, 25)), "Decisive Thrust", B(E.MoreDamage, 25)));
             Add(t, StatType.GrantWhirlwind,
-                P("Wide Orbit", U(E.Area, 10), "Cyclone", M(B(E.Area, 25)), "Eye of the Storm", M(B(E.Area, 35)), "Long Blades", B(E.Range, 35)),
+                P("Wide Orbit", U(E.Area, 10), "Cyclone", M(B(E.Area, 25)), "Eye of the Storm", M(B(E.Area, 35)), "Long Blades", B(E.Area, 35)),
                 P("Rising Tempo", M(B(E.Speed, 5)), "Razor Vortex", M(B(E.Speed, 12)), "Dervish", M(B(E.Speed, 20)), "Unbroken Spin", B(E.Cost, -25), B(E.Damage, 15)),
-                P("Sustenance", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Blood Funnel", M(B(E.LifeOnHit, 2)), "Sanguine Storm", M(B(E.LifeOnHit, 3)), "Reaching Steel", B(E.Range, 30)));
+                P("Sustenance", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Blood Funnel", M(B(E.LifeOnHit, 2)), "Sanguine Storm", M(B(E.LifeOnHit, 3)), "Reaching Steel", B(E.Area, 30)));
             Add(t, StatType.GrantFissure,
-                P("Fault Line", U(E.Range, 10), "Deep Fault", M(B(E.Range, 25)), "Continental Rift", M(B(E.Range, 40)), "Wide Fault", B(E.Area, 30)),
+                P("Fault Line", U(E.Area, 10), "Deep Fault", M(B(E.Area, 25)), "Continental Rift", M(B(E.Area, 40)), "Wide Fault", B(E.Area, 30)),
                 P("Molten Core", U(E.Duration, 15), "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 10)), "Volcanic Rupture", M(B(E.Ignite, 20), B(E.Area, 25), B(E.MoreDamage, -15)), "Lingering Heat", B(E.Duration, 40)),
                 P("Tectonic Force", U(E.ArmourPenetration, 12), "Deep Pressure", M(B(E.Damage, 35)), "Bedrock Breaker", M(B(E.ArmourPenetration, 52)), "Opening Fault", B(E.FirstStrike, 40)));
             Add(t, StatType.GrantAftershock,
-                P("Rolling Thunder", U(E.Range, 10), "Fourth Tremor", M(B(E.ExtraWaves, 1)), "Unending Quake", M(B(E.ExtraWaves, 1), B(E.MoreDamage, -15)), "Long Ripples", B(E.Range, 35)),
+                P("Rolling Thunder", U(E.Area, 10), "Fourth Tremor", M(B(E.ExtraWaves, 1)), "Unending Quake", M(B(E.ExtraWaves, 1), B(E.MoreDamage, -15)), "Long Ripples", B(E.Area, 35)),
                 P("Epicentre", M(B(E.Damage, 10)), "Focused Shock", M(B(E.ArmourPenetration, 60)), "Ground Zero", M(B(E.FirstStrike, 35)), "Tremor Force", B(E.Damage, 25)),
                 P("Shockwave", U(E.Area, 10), "Wider Ripples", M(B(E.Area, 25)), "Tidal Earth", M(B(E.Area, 35)), "Seismic Onset", B(E.FirstStrike, 35)));
             Add(t, StatType.GrantCrossSlash,
-                P("Long Blades", U(E.Range, 10), "Extended Cross", M(B(E.Range, 25)), "Crossroads", M(B(E.Area, 35)), "Far Cuts", B(E.Range, 35)),
+                P("Long Blades", U(E.Area, 10), "Extended Cross", M(B(E.Area, 25)), "Crossroads", M(B(E.Area, 35)), "Far Cuts", B(E.Area, 35)),
                 P("Flashing Steel", M(B(E.Speed, 5)), "Swift Cuts", M(B(E.Speed, 12)), "Bladedance", M(B(E.Speed, 20), B(E.MoreDamage, 10)), "Heavy Blades", B(E.MoreDamage, 25)),
                 P("Death Cross", U(E.ArmourPenetration, 20), "Opening Cut", M(B(E.FirstStrike, 20)), "Fatal Intersection", M(B(E.FirstStrike, 40)), "Deep Cuts", B(E.ArmourPenetration, 100)));
             Add(t, StatType.GrantFangStrike,
                 P("Venom", U(E.Duration, 15), "Deep Fangs", M(B(E.Poison, 20), B(E.MoreDamage, 10)), "Deathbite", M(B(E.Poison, 35)), "Lasting Bite", B(E.Duration, 40)),
                 P("Adder", M(B(E.Speed, 5)), "Quick Bite", M(B(E.Speed, 12), B(E.MoreDamage, 10)), "Viper's Dance", M(B(E.Speed, 20)), "Siphoning Fangs", B(E.LifeOnHit, 4)),
-                P("Puncture", U(E.ArmourPenetration, 20), "Vital Strike", M(B(E.FirstStrike, 25), B(E.MoreDamage, 10)), "Assassination", M(B(E.Cull, 10)), "Long Fangs", B(E.Range, 35)));
+                P("Puncture", U(E.ArmourPenetration, 20), "Vital Strike", M(B(E.FirstStrike, 25), B(E.MoreDamage, 10)), "Assassination", M(B(E.Cull, 10)), "Long Fangs", B(E.Area, 35)));
             Add(t, StatType.GrantVenomSlash,
-                P("Poison Fan", U(E.Range, 10), "Wide Infection", M(B(E.Area, 25)), "Pestilent Sweep", M(B(E.Range, 35)), "Spreading Cut", B(E.Area, 35)),
+                P("Poison Fan", U(E.Area, 10), "Wide Infection", M(B(E.Area, 25)), "Pestilent Sweep", M(B(E.Area, 35)), "Spreading Cut", B(E.Area, 35)),
                 P("Virulent Edge", U(E.Duration, 15), "Septic Blade", M(B(E.Poison, 25)), "Black Venom", M(B(E.Poison, 45)), "Persistent Rot", B(E.Duration, 40)),
                 P("Miasmic Blade", M(B(E.Damage, 10)), "Toxic Wake", M(B(E.Cloud, 20)), "Choking Slash", M(B(E.Cloud, 30)), "Contagious Cuts", B(E.Speed, 20)));
             Add(t, StatType.GrantRaiseSkeletons,
@@ -200,7 +200,7 @@ namespace PoeClone.Inventory
                 case E.MageCastSpeedAfterSummon: return More(b.Value, "skeleton mage cast speed if you have summoned a minion in the last 4 seconds");
                 case E.Speed: return Percent(b.Value, grant == StatType.GrantSkeletonMages ? "minion cast speed" : minion ? "minion attack speed" : attack ? "attack speed" : "cast speed");
                 case E.Area: return Percent(b.Value, "area of effect" + (grant == StatType.GrantRainOfArrows ? " per arrow impact" : ""));
-                case E.Range: return Percent(b.Value, attack && !minion && !SkillGrants.IsBowSkill(grant) ? "melee range" : "range");
+                case E.Range: return Percent(b.Value, "range");
                 case E.Projectiles: return n + (grant == StatType.GrantRainOfArrows ? " arrows per salvo" : minion ? " minion projectiles" : " projectiles");
                 case E.Chains: return n + " chains";
                 case E.Pierce: return "Pierces " + b.Value + " additional enemies";

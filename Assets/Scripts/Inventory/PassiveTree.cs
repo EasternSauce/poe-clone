@@ -192,7 +192,7 @@ namespace PoeClone.Inventory
             // Right arm: offence.
             N("m6", "Heavy Hands", 1.2f, 0.3f, Road());
             N("m7", "Power", 1.5f, 0.45f, Road());
-            Nt("m8", "Brute Force", 1.85f, 0.55f, Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10), Mod(StatType.MeleeRange, 15), Mod(StatType.ArmourPenetration, 8));
+            Nt("m8", "Brute Force", 1.85f, 0.55f, Mod(StatType.PhysicalDamage, 6), Mod(StatType.Strength, 10), Mod(StatType.ArmourPenetration, 8));
             N("junction_m8", "", 1.85f, 0.55f, Road());
             Chain("m2", "m6", "m7", "junction_m8");
 
@@ -202,7 +202,7 @@ namespace PoeClone.Inventory
 
             // The wheel: a ring of six round Bloodbath, reached from either arm or the middle.
             string[] wheel = Wheel("m_w", 2.45f, 0f, 0.42f, 6);
-            Nt("m_bloodbath", "Bloodbath", 2.45f, 0f, Mod(StatType.AreaOfEffect, 15), Mod(StatType.MeleeRange, 10), Mod(StatType.LifeLeech, 1));
+            Nt("m_bloodbath", "Bloodbath", 2.45f, 0f, Mod(StatType.AreaOfEffect, 15), Mod(StatType.LifeLeech, 1));
             N("junction_m_bloodbath", "", 2.45f, 0f, Road());
             Chain(wheel[0], "junction_m_bloodbath", wheel[3]);
             Chain("m9", wheel[0]);

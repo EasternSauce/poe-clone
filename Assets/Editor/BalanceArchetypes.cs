@@ -114,7 +114,7 @@ namespace PoeClone.EditorTools
                 s == StatType.PhysicalDamage || s == StatType.AttackSpeed || s == StatType.CriticalChance || s == StatType.CriticalMultiplier ||
                 s == StatType.LifeLeech || s == StatType.LifeOnAttackHit || s == StatType.ArmourPenetration || s == StatType.PoisonOnHit ||
                 s == StatType.VenomCloudOnHit)) return 1f;
-            if (a.family == "Melee" && (s == StatType.MoreMeleeDamage || s == StatType.MeleeRange)) return 1f;
+            if (a.family == "Melee" && s == StatType.MoreMeleeDamage) return 1f;
             if (a.family == "Bow" && (s == StatType.BowDamage || s == StatType.MoreBowDamage || s == StatType.PointBlank)) return 1f;
             if (!attack && (s == StatType.SpellDamage || s == StatType.MoreSpellDamage || s == StatType.CastSpeed || s == StatType.SpellLeech)) return 1f;
             if (s == StatType.AreaOfEffect || s == StatType.ElementalPenetration) return 1f;

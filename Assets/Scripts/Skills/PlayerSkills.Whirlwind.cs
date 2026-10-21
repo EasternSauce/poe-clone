@@ -160,8 +160,7 @@ namespace PoeClone.Skills
 
         private float WhirlReach()
         {
-            return WhirlBaseReach * MeleeRangeMultiplier *
-                   SkillArea(SkillId.Whirlwind) * WhirlAreaScale;
+            return WhirlBaseReach * SkillArea(SkillId.Whirlwind) * WhirlAreaScale;
         }
 
         private void WhirlHit(SkillDefinition skill, int level, float reach)
