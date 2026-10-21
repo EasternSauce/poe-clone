@@ -323,8 +323,15 @@ namespace PoeClone.Player
             if (HasMainSkill && (SkillSet.IsCasting || SkillSet.CooldownLeft(SkillSet.MainSkill.Value) > 0f))
                 return;
 
-            GetComponent<PlayerStats>()?.EndArrivalProtection();
             WeaponType weaponType = CurrentWeaponType();
+            // Walking wins over a new melee opener. Otherwise held attack restarts the
+            // swing on the same frame movement cancels it, rooting the player forever.
+            if (!HasMainSkill && !CharacterAttackAnimator.IsRanged(weaponType) &&
+                (SkillSet == null || SkillSet.ActiveMeleeSkill != PoeClone.Skills.SkillId.Whirlwind) &&
+                controller != null && !controller.IsComboLocked && controller.InputDirection().sqrMagnitude > 0.001f)
+                return;
+
+            GetComponent<PlayerStats>()?.EndArrivalProtection();
 
             // Attacking means the player has changed their mind about walking to an item.
             if (controller != null)

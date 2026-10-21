@@ -1,3 +1,6 @@
+version: 2026-10-21-walking-melee-priority
+- Holding movement and attack together now keeps you walking instead of repeatedly starting and cancelling a melee opener. Melee attacks can start once movement is released; committed combos still finish normally.
+
 version: 2026-10-21-melee-area-scaling
 - Melee Range now affects only basic melee attacks. Removed its item rolls and passive-tree bonuses; existing item modifiers are removed when gear loads.
 - Melee ability ranges now scale only with increased area of effect. Their weapon-tree range bonuses are now area-of-effect bonuses, including Whirlwind, thrusts and Fissure.
