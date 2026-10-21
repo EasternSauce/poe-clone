@@ -1,3 +1,8 @@
+version: 2026-10-21-cleave-default-combo-balance
+- Default Cleave now deals 100% damage on each of its four hits, removing the 35% damage bonuses on hits two and four. This also reduces damage for builds relying on Serrated Edge and Headsman's Blow without a combo specialization.
+- Explosive Finale retains its existing hit damage, and Twin Rhythm retains 115% damage per cut.
+- Shortened the culling passive description.
+
 version: 2026-10-21-cleave-specialization-balance
 - Twin Rhythm's individual cuts now deal 115% of normal hit damage, up from 80%, keeping its slower rhythm and pause between pairs.
 - Headsman's Blow now executes below 15% life. Serrated Edge now inflicts 10% of each hit's damage as bleeding over three seconds.

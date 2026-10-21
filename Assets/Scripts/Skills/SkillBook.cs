@@ -184,7 +184,7 @@ namespace PoeClone.Skills
             {
                 Id = SkillId.Cleave, Name = "Cleave", Short = "CLV", Grant = StatType.GrantCleave, RollsOn = "swords and axes",
                 ManaCosts = MeleeCosts, Color = new Color(0.85f, 0.75f, 0.55f),
-                Description = "Sweep a 120-degree arc for 110% weapon damage. Four-hit combo: the second and fourth hits deal 35% more damage, and the fourth has 15% greater reach. Weapon-tree keystones can replace this with an explosive, stunning fourth hit or a two-part double-slash combo. 15% slower attack rate. Swords and axes only."
+                Description = "Sweep a 120-degree arc for 110% weapon damage. Four-hit combo: each hit deals the same damage, and the fourth has 15% greater reach. Weapon-tree keystones can replace this with an explosive, stunning fourth hit or a two-part double-slash combo. 15% slower attack rate. Swords and axes only."
             },
             new SkillDefinition
             {

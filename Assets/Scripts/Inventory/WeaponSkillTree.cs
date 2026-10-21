@@ -171,9 +171,15 @@ namespace PoeClone.Inventory
             if (length == 0 || step <= 0) return 1f;
             // Each Twin Rhythm part contains two separately delivered cuts.
             if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (step % length == 0 ? 1.1f : 1f);
+            // Ordinary Cleave has four even hits; Explosive Finale owns the heavier accents.
+            if (grant == StatType.GrantCleave)
+            {
+                if (step % length == 0) return (explosiveCleave ? CleaveExplosionDamage : 1f) * finisherMore;
+                return explosiveCleave && step % length == 2 ? 1.35f : 1f;
+            }
             if (step % length == 0)
-                return (grant == StatType.GrantCleave ? (explosiveCleave ? CleaveExplosionDamage : 1.35f) : 1.75f) * finisherMore;
-            return grant == StatType.GrantCleave && step % length == 2 ? 1.35f : 1f;
+                return 1.75f * finisherMore;
+            return 1f;
         }
 
         /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>

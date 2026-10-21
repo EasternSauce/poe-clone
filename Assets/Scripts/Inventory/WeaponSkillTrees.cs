@@ -255,7 +255,7 @@ namespace PoeClone.Inventory
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.CleaveExplosion: return "Replaces the fourth slash with a circular explosion at the sword's ground impact\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals " + (WeaponSkillRules.CleaveDoubleSlashDamage * 100f).ToString("0.#") + "% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
-                case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life, including bosses";
+                case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life";
                 case E.CleaveBleed: return "Every Cleave hit inflicts bleeding for " + b.Value.ToString("0.#") + "% of its damage over " + WeaponSkillRules.CleaveBleedSeconds.ToString("0.#") + " seconds\nBleeds from separate hits stack";
                 case E.ComboDamage: return More(b.Value, "damage with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
                 case E.ComboArea: return Percent(b.Value, "area of effect with combo finishers (every " + WeaponSkillRules.ComboLength(grant) + " attacks)");
