@@ -1,3 +1,6 @@
+version: 2026-10-21-melee-mana-on-release
+- Melee attacks now spend mana only when their hit comes out. Cancelling during windup costs nothing, and multi-hit attacks still pay only once per attack.
+
 version: 2026-10-21-cleave-explosion-area
 - Cleave's fourth-hit explosion now expands along the ground to match its full circular damage radius, including range and area bonuses, in local, co-op and spectator views.
 

@@ -32,6 +32,7 @@ namespace PoeClone.Skills
         private bool meleeComboQueued;
         private Coroutine meleeAction;
         private bool meleeAttackDelivered;
+        private float meleeManaCost;
         private ItemData meleeComboWeapon;
         private bool meleeFinisher;
         private bool meleeCleaveAccent;
@@ -288,7 +289,7 @@ namespace PoeClone.Skills
         }
 
         /// <summary>
-        /// The attack, with the weapon's melee skill: pays for one use and starts it (Whirlwind:
+        /// The attack, with the weapon's melee skill: checks affordability and pays on release (Whirlwind:
         /// starts spinning, for as long as the attack is held). False without one, or without the
         /// mana for it (the plain swing is used instead). <paramref name="interval"/>: seconds until
         /// the next attack may start.
@@ -300,13 +301,15 @@ namespace PoeClone.Skills
             if (id == null || stats == null || controller.IsDashing || controller.IsSkillCommitted || IsWhirling)
                 return false;
             int level = ActiveAttackLevel;
-            if (!stats.TrySpendMana(CostOf(id.Value, level)))
+            SkillDefinition skill = SkillBook.Get(id.Value);
+            float cost = CostOf(id.Value, level);
+            bool affordable = skill.Channelled ? stats.TrySpendMana(cost) : stats.CanAffordSkill(cost);
+            if (!affordable)
             {
                 ResetMeleeCombo();
                 return false;
             }
 
-            SkillDefinition skill = SkillBook.Get(id.Value);
             controller.CancelWalk();
             if (skill.Channelled)
             {
@@ -322,6 +325,7 @@ namespace PoeClone.Skills
             float comboInterval = interval / comboSpeed;
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * comboSpeed;
             BeginMeleeCombo(skill, comboInterval);
+            meleeManaCost = cost;
             meleeComboInterval = interval;
             switch (skill.Id)
             {
@@ -415,6 +419,24 @@ namespace PoeClone.Skills
             }
         }
 
+        // Multi-hit attacks pay once, when their first hit actually releases.
+        private bool TryReleaseMeleeAttack()
+        {
+            if (meleeAttackDelivered) return true;
+            if (stats.TrySpendMana(meleeManaCost))
+            {
+                meleeAttackDelivered = true;
+                return true;
+            }
+
+            // Another skill may have spent the available resource during the windup.
+            meleeAction = null;
+            ResetMeleeCombo();
+            controller.SetSkillCommit(false);
+            GetComponent<PlayerCombat>().CancelMeleeAttack(false);
+            return false;
+        }
+
         private IEnumerator CommittedStrike(SkillId skill, float windup, WeaponType animationWeapon, float rate,
             Action release, float recovery = StrikeRecovery)
         {
@@ -435,8 +457,8 @@ namespace PoeClone.Skills
             }
             yield return MeleeWindup(windup / rate);
             ClearCleaveFinisherPreview();
+            if (!TryReleaseMeleeAttack()) yield break;
             PlayMeleeSound(skill);
-            meleeAttackDelivered = true;
             release();
             yield return new WaitForSeconds(recovery / rate);
             FinishMeleeAction();
@@ -467,8 +489,8 @@ namespace PoeClone.Skills
                 controller.Dash(transform.forward, step, 0.16f / rate, meleeAttack: true);
             yield return new WaitForSeconds(0.16f / rate);
 
+            if (!TryReleaseMeleeAttack()) yield break;
             PlayMeleeSound(skill.Id);
-            meleeAttackDelivered = true;
             LungingThrust(skill, level, reach, target);
             yield return new WaitForSeconds(0.16f / rate);
             FinishMeleeAction();
@@ -489,8 +511,8 @@ namespace PoeClone.Skills
                 PlaySkillAnimation(skill.Id, weapon, rate, mirrored: cut == 1);
                 if (cut == 0) yield return MeleeWindup(CrossCutStrike / rate);
                 else yield return new WaitForSeconds(CrossCutStrike / rate);
+                if (!TryReleaseMeleeAttack()) yield break;
                 PlayMeleeSound(skill.Id, accent: cut == 0);
-                meleeAttackDelivered = true;
                 CrossCut(skill, level, Quaternion.Euler(0f, cut == 0 ? 45f : -45f, 0f) * transform.forward);
                 yield return new WaitForSeconds((cut == 0 ? CrossCutGap : CrossCutRecovery) / rate);
             }
