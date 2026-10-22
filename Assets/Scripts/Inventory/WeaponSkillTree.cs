@@ -21,7 +21,7 @@ namespace PoeClone.Inventory
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 4;
+        public int version = 5;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -37,7 +37,7 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantCleave ? 4 : 2;
+            int requiredVersion = grant == StatType.GrantCleave ? 5 : 2;
             if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);

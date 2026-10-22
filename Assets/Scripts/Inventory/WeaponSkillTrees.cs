@@ -5,7 +5,7 @@ using E = PoeClone.Inventory.WeaponSkillEffect;
 
 namespace PoeClone.Inventory
 {
-    /// <summary>Skill-local specializations: three branching trunks, plus a finisher route for melee swings.</summary>
+    /// <summary>Skill-local specialization paths and melee finisher routes.</summary>
     public static class WeaponSkillTrees
     {
         private static readonly Dictionary<StatType, List<WeaponSkillNode>> trees = Build();
@@ -80,8 +80,6 @@ namespace PoeClone.Inventory
                     new Vector2(207, 68), new Vector2(247, 103), new Vector2(292, 117),
                     new Vector2(212, -30), new Vector2(263, -65)
                 };
-                // Cleave's two combo variants each need six independent points.
-                if (grant == StatType.GrantCleave) System.Array.Resize(ref shape, 6);
                 float angle = (rotation + lane * 120f) * Mathf.Deg2Rad;
                 for (int i = 0; i < shape.Length; i++)
                 {
@@ -97,29 +95,38 @@ namespace PoeClone.Inventory
                     });
                 }
             }
-            if (grant == StatType.GrantCleave)
-            {
-                // Every notable follows two small nodes. The Executioner endings fork
-                // after Opening Edge and each take six points from the tree's start.
-                var opening = nodes.Find(n => n.Id == "v2_2_2");
-                Vector2 direction = opening.Position.normalized;
-                Vector2 side = new Vector2(-direction.y, direction.x);
-                for (int i = 3; i <= 5; i++)
-                {
-                    var node = nodes.Find(n => n.Id == "v2_2_" + i);
-                    node.Position = opening.Position + direction * ((i - 2) * 65f) + side * ((i - 2) * 25f);
-                }
-                for (int i = 6; i <= 8; i++)
-                    nodes.Add(new WeaponSkillNode {
-                        Id = "v2_2_" + i, Parent = "v2_2_" + (i == 6 ? 2 : i - 1),
-                        Grant = grant, Depth = i - 3, Keystone = i == 8,
-                        Name = i == 8 ? "Serrated Edge" : "Executioner",
-                        Position = opening.Position + direction * ((i - 5) * 65f) - side * ((i - 5) * 25f),
-                        Bonuses = i == 8 ? M(B(E.CleaveBleed, 10)) : M(B(E.Damage, 10))
-                    });
-            }
             all.Add(grant, nodes);
         }
+        private static void AddCleave(Dictionary<StatType, List<WeaponSkillNode>> all)
+        {
+            Path[] paths = {
+                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
+                P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))),
+                P("Serrated Steel", M(B(E.Damage, 10)), "Opening Wound", M(B(E.FirstStrike, 20)), "Serrated Edge", M(B(E.CleaveBleed, 10)))
+            };
+            var nodes = new List<WeaponSkillNode>();
+            for (int lane = 0; lane < paths.Length; lane++)
+            {
+                Path path = paths[lane];
+                int length = lane < 2 ? 6 : 4;
+                float angle = (45f + lane * 90f) * Mathf.Deg2Rad;
+                Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                for (int i = 0; i < length; i++)
+                {
+                    bool end = i == length - 1;
+                    nodes.Add(new WeaponSkillNode {
+                        Id = "v2_" + lane + "_" + i, Parent = i == 0 ? null : "v2_" + lane + "_" + (i - 1),
+                        Grant = StatType.GrantCleave, Depth = i, Notable = i == 2, Keystone = end,
+                        Name = end ? path.End : i == 2 ? path.Notable : path.Name,
+                        Bonuses = end ? path.Final : i == 2 ? path.Major : path.Small,
+                        Position = direction * (70f + i * 65f)
+                    });
+                }
+            }
+            all.Add(StatType.GrantCleave, nodes);
+        }
+
         private static Dictionary<StatType, List<WeaponSkillNode>> Build()
         {
             var t = new Dictionary<StatType, List<WeaponSkillNode>>();
@@ -159,10 +166,7 @@ namespace PoeClone.Inventory
                 P("Venom Glands", U(E.Duration, 15), "Deep Venom", M(B(E.Poison, 55)), "Black Blood", M(B(E.Poison, 35)), "Lingering Venom", B(E.Duration, 40)),
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
                 P("Infected Shaft", U(E.ProjectileSpeed, 12), "Piercing Fangs", M(B(E.Pierce, 1)), "Contagious Volley", M(B(E.Projectiles, 2)), "Quick Fangs", B(E.Speed, 20)));
-            Add(t, StatType.GrantCleave,
-                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
-                P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))));
+            AddCleave(t);
             Add(t, StatType.GrantPulverize,
                 P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
                 P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40)),
