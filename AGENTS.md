@@ -50,6 +50,10 @@ Sound loudness lives in the audio files. To make a sound louder or quieter, re-r
 
 # Cleanup around changes
 
+Only create Markdown (`.md`) files with the user's explicit permission. Keep
+analysis and reports in the conversation unless the user explicitly authorizes
+a Markdown file.
+
 Weapon skill trees must start with small nodes. Place at least two small nodes
 before each notable; never put a notable at or next to the start.
 
