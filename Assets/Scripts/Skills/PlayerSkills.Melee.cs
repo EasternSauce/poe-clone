@@ -123,12 +123,11 @@ namespace PoeClone.Skills
             meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing,
                 explosiveCleave: WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f, doubleSlash: CleaveDoubleSlash);
             float maxStep = meleeFinisher && !CleaveDoubleSlash ? 1.65f : 1.1f;
-            meleeStepDistance = continuing ? maxStep : 0f;
+            meleeStepDistance = maxStep;
             Vector3? cursorDirection = null;
             if (!TouchMode.Active)
             {
                 // Sample each slash independently; never push through a close cursor or target.
-                meleeStepDistance = 0f;
                 if (PlayerCombat.CursorAimPoint(transform.position, out Vector3 cursor))
                 {
                     Vector3 toCursor = cursor - transform.position;

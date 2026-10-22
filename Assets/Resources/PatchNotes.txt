@@ -1,3 +1,9 @@
+version: 2026-10-22-melee-passives-and-arena-rarity
+- Opening melee slashes now step forward on touch controls and when cursor aiming is unavailable, matching follow-up slashes. Cursor-directed attacks still stop short of close targets.
+- Every 20-wave arena run includes four magic packs and four rare-led groups, with their normal rarity bonuses and outlines.
+- Removed all non-keystone damage-reduction passives. Juggernaut now grants only +30 maximum life, +50 armour and +5% block chance.
+- Iron Skin and Thick Hide no longer grant elemental resistances. Bloodbath grants -5%, Iron Reflexes -10%, and Unwavering Stance -5% to fire, cold and lightning resistances, trading elemental protection for strong melee benefits.
+
 version: 2026-10-22-bow-audio-preload
 - Bow attack and impact sound effects preload and decode before gameplay, preventing delayed playback on Web builds.
 

@@ -40,6 +40,7 @@ namespace PoeClone.World
             public string Label;
             public List<int> Kinds;
             public bool Elite;  // the first kind is an elite
+            public EnemyRarity Rarity;  // magic packs, or a rare leader with normal escorts
         }
 
         // Rooms: the arena round the origin, the start room south of it, a corridor between.
@@ -274,7 +275,11 @@ namespace PoeClone.World
                 {
                     int size = plan.Next(ArenaMinMonsters, ArenaMaxMonsters + 1);
                     e.Elite = roll < 0.15;
-                    e.Label = (e.Elite ? "elite group" : "mixed group") + " (" + size + ")";
+                    // Four magic packs and four rare leaders in every twenty-wave run.
+                    e.Rarity = k % 5 == 2 ? EnemyRarity.Magic : k % 5 == 4 ? EnemyRarity.Rare : EnemyRarity.Normal;
+                    string group = e.Rarity == EnemyRarity.Magic ? "magic pack" :
+                        e.Rarity == EnemyRarity.Rare ? "rare-led group" : "mixed group";
+                    e.Label = (e.Elite ? "elite " : "") + group + " (" + size + ")";
                     for (int i = 0; i < size; i++)
                         e.Kinds.Add(e.Elite && i == 0
                             ? EnemyKinds.IndexOf(EliteKinds[plan.Next(EliteKinds.Length)]) : RandomNormal(plan));
@@ -458,16 +463,18 @@ namespace PoeClone.World
             for (int i = 0; i < e.Kinds.Count; i++)
             {
                 int kindIndex = e.Kinds[i];
+                EnemyRarity rarity = e.Rarity == EnemyRarity.Rare && i > 0 ? EnemyRarity.Normal : e.Rarity;
                 EnemyKind kind = EnemyKinds.Get(kindIndex);
-                Vector3 at = Automated ? FrozenSpot(origin, i, e.Kinds.Count, kind.Scale) : ArenaSpot();
+                float spawnScale = kind.WithRarity(rarity).Scale;
+                Vector3 at = Automated ? FrozenSpot(origin, i, e.Kinds.Count, spawnScale) : ArenaSpot();
                 at.y = 1.1f * kind.Scale;
                 Quaternion facing = Quaternion.LookRotation(Flat(origin - at));
                 GameObject go = Instantiate(enemyPrefab, at, facing, transform);
-                EnemyKinds.Apply(go, kindIndex, Level);
+                EnemyKinds.Apply(go, kindIndex, Level, rarity);
                 EnemyHealth health = go.GetComponent<EnemyHealth>();
                 bool elite = e.Elite && i == 0;
-                Recorder.Expect(health, elite ? "elite" : "normal");
-                record.enemies.Add(kind.Name);
+                Recorder.Expect(health, rarity == EnemyRarity.Rare ? "rare" : rarity == EnemyRarity.Magic ? "magic" : elite ? "elite" : "normal");
+                record.enemies.Add(health.DisplayName);
                 if (Automated) Freeze(go);
                 else go.GetComponent<EnemyController>()?.Alert();
             }

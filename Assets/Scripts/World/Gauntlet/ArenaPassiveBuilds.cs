@@ -17,7 +17,7 @@ namespace PoeClone.World
             },
             Weights = new Dictionary<StatType, float> {
                 { StatType.IncreasedLife, 2f }, { StatType.MaxLife, 2f },
-                { StatType.DamageTaken, 2f }, { StatType.Armour, 1.5f },
+                { StatType.Armour, 1.5f },
                 { StatType.LifeLeech, 1.5f }, { StatType.LifeOnAttackHit, 1.5f },
                 { StatType.PhysicalDamage, 1.5f }, { StatType.AttackDamage, 1.5f },
                 { StatType.AttackSpeed, 1.5f }, { StatType.Strength, 1f },
@@ -62,7 +62,7 @@ namespace PoeClone.World
         private static readonly GauntletBuild minion = new GauntletBuild {
             Id = "arena_minion", Name = "Necromancer with defensive support",
             // Buy the major minion rewards first, then finish every node in the region
-            // before leaving it for life, resistances, regeneration and damage reduction.
+            // before leaving it for life, resistances, regeneration and armour.
             Passives = new[] {
                 "n_ward", "n_lord", "k_legion", "k_herald", "k_horde",
                 "k_soulbond", "k_spiritpact", "k_command", "k_tether"
@@ -74,7 +74,7 @@ namespace PoeClone.World
                 }).ToArray(),
             Weights = new Dictionary<StatType, float> {
                 { StatType.IncreasedLife, 2f }, { StatType.MaxLife, 2f },
-                { StatType.DamageTaken, 2f }, { StatType.Armour, 1f },
+                { StatType.Armour, 1f },
                 { StatType.FireResistance, 1.5f }, { StatType.ColdResistance, 1.5f },
                 { StatType.LightningResistance, 1.5f }, { StatType.PercentLifeRegen, 1.5f },
                 { StatType.LifeRegen, 1f }, { StatType.BlockChance, 1f }

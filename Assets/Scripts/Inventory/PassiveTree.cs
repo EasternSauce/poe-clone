@@ -183,9 +183,9 @@ namespace PoeClone.Inventory
             Chain("m1", "m2");
 
             // Left arm: defence.
-            N("m3", "Iron Skin", 1.2f, -0.3f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
-            N("m4", "Thick Hide", 1.5f, -0.45f, Road(), Mod(StatType.FireResistance, 5), Mod(StatType.ColdResistance, 5), Mod(StatType.LightningResistance, 5));
-            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5), Mod(StatType.AvoidStun, 8), Mod(StatType.PercentLifeRegen, 0.5f), Mod(StatType.DamageTaken, -5), Mod(StatType.FireResistance, 10), Mod(StatType.ColdResistance, 10), Mod(StatType.LightningResistance, 10), Mod(StatType.EffigyArmour, 150));
+            N("m3", "Iron Skin", 1.2f, -0.3f, Road());
+            N("m4", "Thick Hide", 1.5f, -0.45f, Road());
+            Nt("m5", "Juggernaut", 1.85f, -0.55f, Mod(StatType.MaxLife, 30), Mod(StatType.Armour, 50), Mod(StatType.BlockChance, 5));
             N("junction_m5", "", 1.85f, -0.55f, Road());
             Chain("m2", "m3", "m4", "junction_m5");
 
@@ -202,14 +202,14 @@ namespace PoeClone.Inventory
 
             // The wheel: a ring of six round Bloodbath, reached from either arm or the middle.
             string[] wheel = Wheel("m_w", 2.45f, 0f, 0.42f, 6);
-            Nt("m_bloodbath", "Bloodbath", 2.45f, 0f, Mod(StatType.AreaOfEffect, 15), Mod(StatType.LifeLeech, 1));
+            Nt("m_bloodbath", "Bloodbath", 2.45f, 0f, Mod(StatType.AreaOfEffect, 15), Mod(StatType.LifeLeech, 1), Mod(StatType.FireResistance, -5), Mod(StatType.ColdResistance, -5), Mod(StatType.LightningResistance, -5));
             N("junction_m_bloodbath", "", 2.45f, 0f, Road());
             Chain(wheel[0], "junction_m_bloodbath", wheel[3]);
             Chain("m9", wheel[0]);
             Chain("junction_m5", wheel[5]);
             Chain("junction_m8", wheel[1]);
 
-            Ks("k_unbreakable", "Iron Reflexes", 3.3f, 0f, Mod(StatType.IronReflexes, 1));
+            Ks("k_unbreakable", "Iron Reflexes", 3.3f, 0f, Mod(StatType.IronReflexes, 1), Mod(StatType.FireResistance, -10), Mod(StatType.ColdResistance, -10), Mod(StatType.LightningResistance, -10));
             Chain(wheel[3], "k_unbreakable");
 
             Ks("k_executioner", "Executioner", 2.4f, -0.8f, Mod(StatType.CullingStrike, 1));
@@ -250,7 +250,7 @@ namespace PoeClone.Inventory
             Nt("f_berserk", "Berserker", 2.25f, -0.7f, Mod(StatType.AttackDamage, 16), Mod(StatType.LifeLeech, 1));
             N("junction_f_berserk", "", 2.25f, -0.7f, Road());
             Chain("f_b1", "junction_f_berserk");
-            Ks("k_pain", "Unwavering Stance", 2.65f, -1.0f, Mod(StatType.UnwaveringStance, 1));
+            Ks("k_pain", "Unwavering Stance", 2.65f, -1.0f, Mod(StatType.UnwaveringStance, 1), Mod(StatType.FireResistance, -5), Mod(StatType.ColdResistance, -5), Mod(StatType.LightningResistance, -5));
             Chain("f_b1", "k_pain");
 
             Nt("f_frenzy", "Frenzy", 2.25f, 0.7f, Mod(StatType.OnslaughtOnKill, 15), Mod(StatType.AttackSpeed, 6));
@@ -468,9 +468,9 @@ namespace PoeClone.Inventory
             OptionalBranch("m_life", "Stout Heart", "m2", 0.88f, -0.75f, true);
             OptionalBranch("m_life_guard", "Steel Heart", "m4", 1.7f, -1.05f, false);
             OptionalBranch("m_life_outer", "Mighty Physique", "m_w4", 2.7f, 0.85f, true, StatType.Strength);
-            // Might is the tank side: its life notables also regenerate and soften hits.
-            AddMods("m_life_heart", Mod(StatType.PercentLifeRegen, 0.3f), Mod(StatType.DamageTaken, -4));
-            AddMods("m_life_guard", Mod(StatType.PercentLifeRegen, 0.4f), Mod(StatType.DamageTaken, -2));
+            // Might supports life and regeneration; armour handles physical mitigation.
+            AddMods("m_life_heart", Mod(StatType.PercentLifeRegen, 0.3f));
+            AddMods("m_life_guard", Mod(StatType.PercentLifeRegen, 0.4f));
             Sector(PassiveBranch.Fury, 270f);
             OptionalBranch("f_life_mid", "Battle Brawn", "f_a2", 1.5f, 0.7f, false, StatType.Strength);
             OptionalBranch("f_life_outer", "Combat Agility", "f_b2", 2.45f, 0.45f, true, StatType.Dexterity);
