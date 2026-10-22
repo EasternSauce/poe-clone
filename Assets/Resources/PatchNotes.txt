@@ -1,3 +1,7 @@
+version: 2026-10-22-cleave-combo-defense-removed
+- Cleave no longer grants damage reduction while attacking or bracing between combo swings. This applies to hits, damage over time and direct damage, including all Cleave specializations.
+- Fixed arena result exports failing for build IDs containing a slash.
+
 version: 2026-10-22-life-leech-freeze
 - Fixed a freeze when life-leech effects expired with an extremely small amount of recovery remaining.
 

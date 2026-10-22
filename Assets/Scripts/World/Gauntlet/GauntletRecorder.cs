@@ -526,7 +526,10 @@ namespace PoeClone.World
 #if UNITY_EDITOR
             Directory.CreateDirectory(ResultsFolder);
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-            string stem = Path.Combine(ResultsFolder, stamp + "_" + Data.mode + "_" + Data.buildId + "_L" + Data.level);
+            string fileName = stamp + "_" + Data.mode + "_" + Data.buildId + "_L" + Data.level;
+            foreach (char invalid in Path.GetInvalidFileNameChars())
+                fileName = fileName.Replace(invalid, '_');
+            string stem = Path.Combine(ResultsFolder, fileName);
             File.WriteAllText(stem + ".json", JsonUtility.ToJson(Data, true));
             File.WriteAllText(stem + ".txt", Summary());
             string csv = Path.Combine(ResultsFolder, "gauntlet_runs.csv");
