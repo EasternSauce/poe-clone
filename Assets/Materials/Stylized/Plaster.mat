@@ -103,12 +103,15 @@ Material:
     - _GlossyReflections: 0
     - _LivingWater: 0
     - _Metallic: 0
+    - _ObjectTexture: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimIntensity: 0.16
     - _RimPower: 3.5
+    - _RockMoss: 0
+    - _RockSurface: 0
     - _ScreenSpaceReflections: 1
     - _ScreenSpaceReflectionsContributeTransparent: 1
     - _SerpentScales: 0
@@ -120,7 +123,8 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
-    - _TexInfluence: 1
+    - _TexInfluence: 0
+    - _TreeWind: 0
     - _TriplanarTileSize: 0.5
     - _WaterOcean: 0
     - _WorkflowMode: 1

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: EnemySkinAnatomy
-  m_Shader: {fileID: 4800000, guid: 4b2ea96e815a185468a0f01e270674ef, type: 3}
+  m_Shader: {fileID: 4800000, guid: c7b0ff7ca56b52848adc7d9183213693, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,12 +37,28 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AmbientBoost: 0.35
     - _BumpScale: 0.2
     - _DetailTiling: 8
     - _FiberStrength: 0
+    - _LivingWater: 0
+    - _ObjectTexture: 0
+    - _RimIntensity: 0.16
+    - _RimPower: 3.5
+    - _RockMoss: 0
+    - _RockSurface: 0
+    - _SerpentScales: 0
+    - _ShadowBandSmooth: 0.08
+    - _ShadowBandThreshold: 0.5
     - _Smoothness: 0.32
     - _Subsurface: 0.18
+    - _TexInfluence: 0
+    - _TreeWind: 0
+    - _TriplanarTileSize: 2
+    - _WaterOcean: 0
     m_Colors:
     - _BaseColor: {r: 0.5411765, g: 0.6039216, b: 0.47058803, a: 1}
+    - _RimColor: {r: 0.8164706, g: 0.84156865, b: 0.78823525, a: 1}
+    - _ShadowColor: {r: 0.27058825, g: 0.3019608, b: 0.2917646, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

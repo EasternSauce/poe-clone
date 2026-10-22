@@ -114,15 +114,20 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _LivingWater: 0
     - _Metallic: 0
+    - _ObjectTexture: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _RimIntensity: 0.16
     - _RimPower: 3.5
+    - _RockMoss: 0
+    - _RockSurface: 0
     - _ScreenSpaceReflections: 1
     - _ScreenSpaceReflectionsContributeTransparent: 1
+    - _SerpentScales: 0
     - _ShadowBandSmooth: 0.08
     - _ShadowBandThreshold: 0.5
     - _Smoothness: 0.1
@@ -132,16 +137,18 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _TexInfluence: 1
+    - _TreeWind: 0
     - _TriplanarTileSize: 0.9
+    - _WaterOcean: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.30196074, g: 0.30980387, b: 0.33725485, a: 1}
+    - _BaseColor: {r: 0.3019607, g: 0.30980384, b: 0.33725482, a: 1}
     - _Color: {r: 0.30196077, g: 0.3098039, b: 0.33725488, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _RimColor: {r: 0.7207843, g: 0.72392154, b: 0.73490196, a: 1}
-    - _ShadowColor: {r: 0.15098037, g: 0.15490194, b: 0.20909801, a: 1}
+    - _ShadowColor: {r: 0.15098035, g: 0.15490192, b: 0.209098, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
