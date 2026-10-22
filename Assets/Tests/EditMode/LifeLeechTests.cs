@@ -78,6 +78,25 @@ namespace PoeClone.Tests
             Assert.That(leech.Tick(1f, 1000f), Is.Zero);
         }
 
+        [TestCase(false)]
+        [TestCase(true)]
+        [Timeout(2000)]
+        public void SubnormalEffectExpiresWithoutStallingOtherRecovery(bool tinyEffectLast)
+        {
+            const float maximumLife = 831f;
+            const float seconds = 0.005498082377016544f;
+            var leech = new LifeLeech();
+            if (!tinyEffectLast) leech.Add(7f * float.Epsilon, maximumLife);
+            leech.Add(0.5338872075080872f, maximumLife);
+            if (tinyEffectLast) leech.Add(7f * float.Epsilon, maximumLife);
+
+            Assert.That(leech.Tick(seconds, maximumLife),
+                Is.EqualTo(maximumLife * LifeLeech.RatePerEffect * seconds).Within(0.000001f));
+            Assert.That(leech.Tick(1f, maximumLife),
+                Is.EqualTo(0.5338872075080872f - maximumLife * LifeLeech.RatePerEffect * seconds).Within(0.000001f));
+            Assert.That(leech.Tick(1f, maximumLife), Is.Zero);
+        }
+
         [Test]
         public void FrameSizeDoesNotChangeRecoveryAcrossExpirations()
         {

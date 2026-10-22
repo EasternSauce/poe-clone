@@ -32,13 +32,24 @@ namespace PoeClone.Inventory
             while (seconds > 0f && remaining.Count > 0)
             {
                 float step = seconds;
-                foreach (float amount in remaining)
-                    step = Math.Min(step, amount / rate);
+                int expiring = -1;
+                for (int i = 0; i < remaining.Count; i++)
+                {
+                    float untilExpiry = remaining[i] / rate;
+                    if (untilExpiry <= step)
+                    {
+                        step = untilExpiry;
+                        expiring = i;
+                    }
+                }
 
                 recovered += Math.Min(rate * remaining.Count, maximumLife * MaximumTotalRate) * step;
                 for (int i = remaining.Count - 1; i >= 0; i--)
                 {
-                    if (remaining[i] / rate <= step)
+                    // Mono can compare the division at higher precision than the stored
+                    // step. Always retire the selected effect, even if step rounded to zero.
+                    // Each iteration therefore finishes the frame or removes an effect.
+                    if (i == expiring || remaining[i] / rate <= step)
                         remaining.RemoveAt(i);
                     else
                         remaining[i] -= rate * step;
