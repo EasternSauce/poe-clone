@@ -103,7 +103,8 @@ namespace PoeClone.Inventory
             for (int lane = 0; lane < paths.Length; lane++)
             {
                 Path path = paths[lane];
-                int length = lane < 2 ? 6 : 4;
+                // Leave at least one small node between the notable and its keystone.
+                int length = lane < 2 ? 6 : 5;
                 float angle = (45f + lane * 90f) * Mathf.Deg2Rad;
                 Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 for (int i = 0; i < length; i++)

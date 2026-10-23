@@ -1,3 +1,7 @@
+version: 2026-10-23-melee-tree-keystone-spacing
+- Cleave and Pulverize always have small nodes separating their notables from keystones. Their short branches now have five nodes, including a small damage node after the notable; long branches remain six nodes.
+- Existing Cleave and Pulverize allocations are refunded while preserving weapon skill level and experience.
+
 version: 2026-10-23-pulverize-shards-and-precision
 - Replaced Shattered Armour with Bonecrusher: Pulverize kills release six fast bone projectiles, each dealing 10% of the slain enemy's maximum life as Physical damage. Four scatter towards nearby enemies with a loose spread; two scatter freely. Shards stop at their first hit and cannot trigger more shards.
 - Bonecrusher has a new layered bone-crack and shard-release sound on the sound board. Splintering Force grants 10% increased damage and 20% increased projectile speed.
