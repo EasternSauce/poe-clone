@@ -1,3 +1,6 @@
+version: 2026-10-23-cleave-finisher-stun-removed
+- Explosive Finale's fourth hit no longer applies a guaranteed 2-second stun. It uses the normal damage-based enemy stagger rules. Updated Cleave descriptions; Worldshaker retains its stun.
+
 version: 2026-10-23-leech-recovery-restored
 - Restored full attack and spell life leech recovery: 2% maximum life per second per effect, up to 10% maximum life per hit, with a shared 20% maximum-life-per-second cap. Item and character leech values again show their full amounts.
 

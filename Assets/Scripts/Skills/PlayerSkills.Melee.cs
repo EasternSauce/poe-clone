@@ -190,7 +190,7 @@ namespace PoeClone.Skills
         private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback, float hitDamageMultiplier = 1f)
         {
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill,
-                stunningHit: skill == SkillId.Cleave && CleaveExplosiveFinisher || skill == SkillId.Pulverize && PulverizeWorldshaker,
+                stunningHit: skill == SkillId.Pulverize && PulverizeWorldshaker,
                 hitDamageMultiplier: hitDamageMultiplier);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);
