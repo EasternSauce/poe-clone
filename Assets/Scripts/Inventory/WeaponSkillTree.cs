@@ -154,7 +154,9 @@ namespace PoeClone.Inventory
         public static float WhirlwindHitsPerSecond(WeaponType weapon, float attackRate) =>
             (10f / 3f) * SlotRules.BaseAttacksPerSecond(weapon) * attackRate;
 
-        public const float CleaveExplosionDamage = 5.5f;
+        // Preserve the 8.85-hit combo total, distributed in a 1:1:1:1.5 ratio.
+        public const float CleaveExplosiveSlashDamage = 8.85f / 4.5f;
+        public const float CleaveExplosionDamage = CleaveExplosiveSlashDamage * 1.5f;
         public const float CleaveDoubleSlashDamage = 1.15f;
         public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.2f;
@@ -212,11 +214,11 @@ namespace PoeClone.Inventory
             if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (step % length == 0 ? 1.1f : 1f);
             if (grant == StatType.GrantPulverize)
                 return twinHammer ? PulverizeTwinHammerDamage : worldshaker && step % length == 0 ? PulverizeWorldshakerDamage : 1f;
-            // Ordinary Cleave has four even hits; Explosive Finale owns the heavier accents.
+            // Explosive Finale spreads its damage evenly across slashes, with a 50% stronger finisher.
             if (grant == StatType.GrantCleave)
             {
                 if (step % length == 0) return (explosiveCleave ? CleaveExplosionDamage : 1f) * finisherMore;
-                return explosiveCleave && step % length == 2 ? 1.35f : 1f;
+                return explosiveCleave ? CleaveExplosiveSlashDamage : 1f;
             }
             if (step % length == 0)
                 return 1.75f * finisherMore;

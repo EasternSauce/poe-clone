@@ -1,3 +1,6 @@
+version: 2026-10-23-explosive-finale-damage-spread
+- Explosive Finale now spreads combo damage in a 1:1:1:1.5 ratio: the first three slashes each deal 196.7% of normal hit damage and the fourth-hit explosion deals 295%. Total combo damage is unchanged; the tooltip shows both values.
+
 version: 2026-10-23-melee-tree-keystone-spacing
 - Cleave and Pulverize always have small nodes separating their notables from keystones. Their short branches have four nodes: small, notable, small, keystone. Long branches remain six nodes with the notable third.
 - Existing Cleave and Pulverize allocations are refunded while preserving weapon skill level and experience.
