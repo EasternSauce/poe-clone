@@ -97,14 +97,8 @@ namespace PoeClone.Inventory
             }
             all.Add(grant, nodes);
         }
-        private static void AddCleave(Dictionary<StatType, List<WeaponSkillNode>> all)
+        private static void AddFourBranches(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, Path[] paths)
         {
-            Path[] paths = {
-                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
-                P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))),
-                P("Serrated Steel", M(B(E.Damage, 10)), "Opening Wound", M(B(E.FirstStrike, 20)), "Serrated Edge", M(B(E.CleaveBleed, 10)))
-            };
             var nodes = new List<WeaponSkillNode>();
             for (int lane = 0; lane < paths.Length; lane++)
             {
@@ -117,14 +111,14 @@ namespace PoeClone.Inventory
                     bool end = i == length - 1;
                     nodes.Add(new WeaponSkillNode {
                         Id = "v2_" + lane + "_" + i, Parent = i == 0 ? null : "v2_" + lane + "_" + (i - 1),
-                        Grant = StatType.GrantCleave, Depth = i, Notable = i == 2, Keystone = end,
+                        Grant = grant, Depth = i, Notable = i == 2, Keystone = end,
                         Name = end ? path.End : i == 2 ? path.Notable : path.Name,
                         Bonuses = end ? path.Final : i == 2 ? path.Major : path.Small,
                         Position = direction * (70f + i * 65f)
                     });
                 }
             }
-            all.Add(StatType.GrantCleave, nodes);
+            all.Add(grant, nodes);
         }
 
         private static Dictionary<StatType, List<WeaponSkillNode>> Build()
@@ -166,11 +160,18 @@ namespace PoeClone.Inventory
                 P("Venom Glands", U(E.Duration, 15), "Deep Venom", M(B(E.Poison, 55)), "Black Blood", M(B(E.Poison, 35)), "Lingering Venom", B(E.Duration, 40)),
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
                 P("Infected Shaft", U(E.ProjectileSpeed, 12), "Piercing Fangs", M(B(E.Pierce, 1)), "Contagious Volley", M(B(E.Projectiles, 2)), "Quick Fangs", B(E.Speed, 20)));
-            AddCleave(t);
-            Add(t, StatType.GrantPulverize,
-                P("Earthbreaker", U(E.Area, 8), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.Area, 65), B(E.MoreDamage, -15)), "Heavy Impact", B(E.Damage, 35)),
-                P("Crushing Force", U(E.ArmourPenetration, 10), "Weight of Stone", M(B(E.ArmourPenetration, 30), B(E.Damage, 10)), "Anvil", M(B(E.FirstStrike, 40), B(E.ArmourPenetration, 30)), "Cracked Armour", B(E.ArmourPenetration, 40), B(E.Damage, 10)),
-                P("Broken Bones", U(E.Area, 8), "Splintering Impact", M(B(E.Splash, 10)), "Bonecrusher", M(B(E.Splash, 35)), "Steady Blows", B(E.Speed, 20)));
+            AddFourBranches(t, StatType.GrantCleave, new[] {
+                P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
+                P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))),
+                P("Serrated Steel", M(B(E.Damage, 10)), "Opening Wound", M(B(E.FirstStrike, 20)), "Serrated Edge", M(B(E.CleaveBleed, 10)))
+            });
+            AddFourBranches(t, StatType.GrantPulverize, new[] {
+                P("Earthbreaker", M(B(E.Damage, 10)), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.PulverizeWorldshaker, 1))),
+                P("Crushing Rhythm", M(B(E.Damage, 10)), "Steady Blows", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Hammer", M(B(E.PulverizeTwinHammer, 1))),
+                P("Armourbreaker", M(B(E.Damage, 10)), "Weight of Stone", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Shattered Armour", M(B(E.ArmourShred, 10))),
+                P("Unyielding", M(B(E.Damage, 10)), "Firm Footing", M(B(E.PulverizeWindupDefence, 10)), "Unstoppable Force", M(B(E.PulverizeUnstoppable, 1)))
+            });
             Add(t, StatType.GrantReapingArc,
                 P("Long Scythe", U(E.Area, 10), "Harvest", M(B(E.Area, 25)), "Reaper's Horizon", M(B(E.Area, 35)), "Wide Harvest", B(E.Area, 30)),
                 P("Heavy Harvest", M(B(E.Damage, 10)), "Sundering Harvest", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Merciless Harvest", M(B(E.MoreDamage, 30)), "Quickening", B(E.Speed, 18)),
@@ -224,7 +225,7 @@ namespace PoeClone.Inventory
                 P("Serpent Scales", U(E.MinionLife, 12), "Hardened Scales", M(B(E.MinionArmour, 100), B(E.MinionResists, 75)), "Persistent Brood", M(B(E.MinionDuration, 60), B(E.Minions, 1), B(E.MoreDamage, -15)), "Regrowth", B(E.MinionRegen, 3)),
                 P("Striking Serpents", U(E.MinionMoveSpeed, 15), "Quick Fangs", M(B(E.Speed, 15)), "Toxic Trail", M(B(E.Cloud, 25)), "Serpent Swarm", B(E.Minions, 1), B(E.MoreDamage, -15)));
             foreach (StatType grant in SkillGrants.MeleeSkills)
-                if (grant != StatType.GrantCleave && WeaponSkillRules.ComboLength(grant) > 0 && t.TryGetValue(grant, out var meleeNodes))
+                if (grant != StatType.GrantCleave && grant != StatType.GrantPulverize && WeaponSkillRules.ComboLength(grant) > 0 && t.TryGetValue(grant, out var meleeNodes))
                     AddComboBranch(meleeNodes, grant);
             return t;
         }
@@ -257,6 +258,11 @@ namespace PoeClone.Inventory
             {
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
+                case E.PulverizeWorldshaker: return "Replaces the third slam with Worldshaker\nDeals 300% of normal hit damage with 35% greater radius and a 40% longer windup\nStuns non-boss enemies hit for 2 seconds";
+                case E.PulverizeTwinHammer: return "Replaces Pulverize with two alternating slams, each dealing 130% of normal hit damage\n50% faster combo links and 25% shorter recovery between combos";
+                case E.ArmourShred: return "Hits reduce enemy armour by 10% for 4 seconds, stacking up to 3 times\nHits refresh all stacks; works against bosses and benefits all attackers";
+                case E.PulverizeWindupDefence: return "Take 10% less damage during Pulverize's windup";
+                case E.PulverizeUnstoppable: return "Cannot be stunned or knocked back during Pulverize's windup\nEach slam that damages an enemy restores 2% of maximum life, once per slam";
                 case E.CleaveExplosion: return "Replaces the fourth slash with a circular explosion at the sword's ground impact\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals " + (WeaponSkillRules.CleaveDoubleSlashDamage * 100f).ToString("0.#") + "% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life";

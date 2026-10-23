@@ -15,13 +15,14 @@ namespace PoeClone.Inventory
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
-        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveBleed
+        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveBleed,
+        PulverizeWorldshaker, PulverizeTwinHammer, ArmourShred, PulverizeWindupDefence, PulverizeUnstoppable
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 5;
+        public int version = 6;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -37,7 +38,7 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantCleave ? 5 : 2;
+            int requiredVersion = grant == StatType.GrantPulverize ? 6 : grant == StatType.GrantCleave ? 5 : 2;
             if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
@@ -156,25 +157,35 @@ namespace PoeClone.Inventory
         public const float CleaveExplosionDuration = 1.2f;
         // Additional time between pairs, measured in normal weapon attack intervals.
         public const float CleaveDoubleSlashPause = 0.35f;
-        public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false) =>
-            grant == StatType.GrantCleave ? (doubleSlash ? 1.7f : 2.25f) : 4f;
+        public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false) =>
+            grant == StatType.GrantCleave ? (doubleSlash ? 1.7f : 2.25f) : grant == StatType.GrantPulverize && twinHammer ? 6f : 4f;
+        public static float ComboRecoveryMultiplier(StatType grant, bool twinHammer = false) =>
+            grant == StatType.GrantPulverize && twinHammer ? 0.75f : 1f;
+        public const float PulverizeWorldshakerDamage = 3f;
+        public const float PulverizeTwinHammerDamage = 1.3f;
+        public const float PulverizeWorldshakerDuration = 1.4f;
+        public const float ArmourShredSeconds = 4f;
+        public const int ArmourShredMaxStacks = 3;
+        public static float ShreddedArmourMultiplier(int stacks) => 1f - 0.1f * Mathf.Clamp(stacks, 0, ArmourShredMaxStacks);
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
-        public static float ComboSustainedSpeed(StatType grant, bool doubleSlash = false)
+        public static float ComboSustainedSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false)
         {
-            int length = ComboLength(grant, doubleSlash);
-            float linkInterval = 1f / ComboFollowupSpeed(grant, doubleSlash);
+            int length = ComboLength(grant, doubleSlash, twinHammer);
+            float linkInterval = 1f / ComboFollowupSpeed(grant, doubleSlash, twinHammer);
             if (grant == StatType.GrantCleave && doubleSlash) linkInterval += CleaveDoubleSlashPause;
-            return length > 0 ? length / (1f + (length - 1f) * linkInterval) : 1f;
+            return length > 0 ? length / (ComboRecoveryMultiplier(grant, twinHammer) * (1f + (length - 1f) * linkInterval)) : 1f;
         }
 
         /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
-        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f, bool explosiveCleave = false, bool doubleSlash = false)
+        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f, bool explosiveCleave = false, bool doubleSlash = false, bool worldshaker = false, bool twinHammer = false)
         {
-            int length = ComboLength(grant, doubleSlash);
+            int length = ComboLength(grant, doubleSlash, twinHammer);
             if (length == 0 || step <= 0) return 1f;
             // Each Twin Rhythm part contains two separately delivered cuts.
             if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (step % length == 0 ? 1.1f : 1f);
+            if (grant == StatType.GrantPulverize)
+                return twinHammer ? PulverizeTwinHammerDamage : worldshaker && step % length == 0 ? PulverizeWorldshakerDamage : 1f;
             // Ordinary Cleave has four even hits; Explosive Finale owns the heavier accents.
             if (grant == StatType.GrantCleave)
             {
@@ -187,9 +198,9 @@ namespace PoeClone.Inventory
         }
 
         /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>
-        public static int ComboLength(StatType grant, bool doubleSlash = false)
+        public static int ComboLength(StatType grant, bool doubleSlash = false, bool twinHammer = false)
         {
-            if (grant == StatType.GrantCleave && doubleSlash) return 2;
+            if (grant == StatType.GrantCleave && doubleSlash || grant == StatType.GrantPulverize && twinHammer) return 2;
             switch (grant)
             {
                 case StatType.GrantPulverize:

@@ -11,7 +11,7 @@ using PoeClone.Inventory;
 namespace PoeClone.Tests
 {
     /// <summary>Reflection keeps the runtime test assembly independent of Assembly-CSharp-Editor.
-    /// These tests never enter Play mode or construct a player or enemy.</summary>
+    /// These tests stay in Edit mode; temporary test objects are always destroyed.</summary>
     public class OfflineBalanceTests
     {
         private static Type EditorType(string name) => AppDomain.CurrentDomain.GetAssemblies()
@@ -52,7 +52,7 @@ namespace PoeClone.Tests
         }
 
         [TestCase("Cleave", 1.175f)]
-        [TestCase("Pulverize", 1.25f)]
+        [TestCase("Pulverize", 1f)]
         [TestCase("Fissure", 1.25f)]
         [TestCase("Aftershock", 1.25f)]
         [TestCase("ReapingArc", 1.25f)]
@@ -354,24 +354,137 @@ namespace PoeClone.Tests
             Assert.AreEqual(1f, (float)Call("ChanceUptime", 100f, 1f, 3f));
         }
 
-        [TestCase(false), TestCase(true)]
-        public void Pulverize_PenetrationKeystonesImproveRating_WithoutFullyBypassingArmour(bool sideRoute)
+        [Test]
+        public void Pulverize_FourBranchesHaveTwoSmallNodesBeforeEveryNotable()
+        {
+            foreach (var grant in new[] { StatType.GrantPulverize, StatType.GrantCleave })
+            {
+                var nodes = WeaponSkillTrees.For(grant);
+                Assert.AreEqual(20, nodes.Count);
+                Assert.AreEqual(4, nodes.Count(n => n.Keystone));
+                for (int lane = 0; lane < 4; lane++)
+                {
+                    var path = nodes.Where(n => n.Id.StartsWith("v2_" + lane + "_")).OrderBy(n => n.Depth).ToArray();
+                    Assert.AreEqual(lane < 2 ? 6 : 4, path.Length);
+                    Assert.IsNull(path[0].Parent);
+                    Assert.IsFalse(path[0].Notable || path[1].Notable);
+                    Assert.IsTrue(path[2].Notable);
+                    Assert.IsTrue(path.Last().Keystone);
+                    Assert.IsFalse(path.Any(n => n.Id.StartsWith("combo_")));
+                }
+            }
+            foreach (int longLane in new[] { 0, 1 })
+                foreach (int shortLane in new[] { 2, 3 })
+                {
+                    var progress = new WeaponSkillProgress { level = 10 };
+                    foreach (int lane in new[] { longLane, shortLane })
+                        for (int i = 0; i < (lane < 2 ? 6 : 4); i++)
+                            Assert.IsTrue(progress.Allocate(StatType.GrantPulverize, "v2_" + lane + "_" + i));
+                    Assert.AreEqual(0, progress.Available);
+                }
+            var limited = new WeaponSkillProgress { level = 10 };
+            for (int i = 0; i < 6; i++) Assert.IsTrue(limited.Allocate(StatType.GrantPulverize, "v2_0_" + i));
+            for (int i = 0; i < 4; i++) Assert.IsTrue(limited.Allocate(StatType.GrantPulverize, "v2_1_" + i));
+            Assert.IsFalse(limited.Allocate(StatType.GrantPulverize, "v2_1_4"));
+        }
+
+        [Test]
+        public void Pulverize_ReworkRefundsOldAllocationsWithoutLosingProgress()
+        {
+            var progress = new WeaponSkillProgress { version = 5, level = 7, experience = 123,
+                nodes = new List<string> { "v2_0_0", "v2_0_1", "v2_0_2" } };
+            progress.Sanitize(StatType.GrantPulverize);
+            Assert.AreEqual(6, progress.version);
+            Assert.AreEqual(7, progress.level);
+            Assert.AreEqual(123, progress.experience);
+            Assert.AreEqual(7, progress.Available);
+            Assert.IsTrue(progress.Allocate(StatType.GrantPulverize, "v2_3_0"));
+            progress.Sanitize(StatType.GrantPulverize);
+            Assert.AreEqual(1, progress.nodes.Count, "Updated saves keep their allocations");
+        }
+
+        [Test]
+        public void Pulverize_SpecializationsOwnTheirDamageAndCadence()
         {
             const StatType grant = StatType.GrantPulverize;
-            var progress = new WeaponSkillProgress { level = 10 };
-            float Penetration() => progress.nodes.Select(id => WeaponSkillTrees.Find(grant, id))
-                .SelectMany(n => n.Bonuses).Where(b => b.Effect == WeaponSkillEffect.ArmourPenetration).Sum(b => b.Value);
-            foreach (string id in new[] { "v2_1_0", "v2_1_1", "v2_1_2" }) Assert.IsTrue(progress.Allocate(grant, id));
-            Assert.Less(Penetration(), 100f, "The notable must leave room for the keystones to matter");
-            foreach (string id in sideRoute ? new[] { "v2_1_6" } : new[] { "v2_1_3", "v2_1_4" })
-                Assert.IsTrue(progress.Allocate(grant, id));
-            Assert.Less(Penetration(), 100f, "Travel alone must not cap penetration");
-            string terminal = sideRoute ? "v2_1_7" : "v2_1_5";
-            Assert.IsTrue(WeaponSkillTrees.Find(grant, terminal).Keystone);
-            Assert.IsTrue(progress.Allocate(grant, terminal));
-            Assert.AreEqual(100f, Penetration(), .001f);
-            Assert.AreEqual(0.625f, DefenceMath.ArmourIgnored(Penetration()), .001f,
-                "A full route must leave armour relevant and further penetration useful");
+            Assert.AreEqual(3, WeaponSkillRules.ComboLength(grant));
+            for (int step = 1; step <= 3; step++)
+            {
+                Assert.AreEqual(1f, WeaponSkillRules.ComboHitMultiplier(grant, step));
+                Assert.AreEqual(step == 3 ? 3f : 1f, WeaponSkillRules.ComboHitMultiplier(grant, step, worldshaker: true));
+            }
+            Assert.AreEqual(2, WeaponSkillRules.ComboLength(grant, twinHammer: true));
+            Assert.AreEqual(1.3f, WeaponSkillRules.ComboHitMultiplier(grant, 1, twinHammer: true));
+            Assert.AreEqual(1.3f, WeaponSkillRules.ComboHitMultiplier(grant, 2, twinHammer: true));
+            Assert.AreEqual(0.75f, WeaponSkillRules.ComboRecoveryMultiplier(grant, true));
+            Assert.Greater(WeaponSkillRules.ComboSustainedSpeed(grant, twinHammer: true), WeaponSkillRules.ComboSustainedSpeed(grant));
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            foreach (int lane in new[] { 0, 1 })
+            {
+                var weapon = DamageWeapon("iron_mace", grant, "v2_" + lane + "_", 5);
+                float before = ComboDps("Pulverize", weapon, sheet).hit;
+                Assert.IsTrue(weapon.SkillProgress.Allocate(grant, "v2_" + lane + "_5"));
+                Assert.Greater(ComboDps("Pulverize", weapon, sheet).hit, before);
+            }
+        }
+
+        [Test]
+        public void Pulverize_ArmourShredCapsRefreshesAndExpires()
+        {
+            var type = Type.GetType("PoeClone.Enemies.EnemyHealth, Assembly-CSharp", true);
+            var target = new UnityEngine.GameObject("Armour shred test");
+            try
+            {
+                var enemy = target.AddComponent(type);
+                var kinds = Type.GetType("PoeClone.Enemies.EnemyKinds, Assembly-CSharp", true);
+                var roster = (Array)kinds.GetField("All").GetValue(null);
+                type.GetMethod("Configure").Invoke(enemy, new object[] { 0, roster.GetValue(0), 1 });
+                var apply = type.GetMethod("ApplyArmourShred");
+                var stacks = type.GetProperty("ArmourShredStacks");
+                for (int i = 1; i <= 5; i++)
+                {
+                    apply.Invoke(enemy, null);
+                    Assert.AreEqual(Math.Min(i, 3), stacks.GetValue(enemy));
+                }
+                Assert.AreEqual(.7f, WeaponSkillRules.ShreddedArmourMultiplier(5), .0001f);
+                type.GetField("armourShredUntil", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(enemy, -1f);
+                Assert.AreEqual(0, stacks.GetValue(enemy));
+                apply.Invoke(enemy, null);
+                Assert.AreEqual(1, stacks.GetValue(enemy));
+                float deadline = (float)type.GetField("armourShredUntil", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(enemy);
+                Assert.Greater(deadline, UnityEngine.Time.time);
+                var hit = type.GetMethods().Single(m => m.Name == "TakeDamage" && m.GetParameters().Length > 4);
+                var parameters = hit.GetParameters();
+                var args = parameters.Select(parameter => parameter.HasDefaultValue ? parameter.DefaultValue :
+                    parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null).ToArray();
+                args[0] = 1f;
+                args[1] = Enum.Parse(parameters[1].ParameterType, "Physical");
+                args[Array.FindIndex(parameters, parameter => parameter.Name == "shredArmour")] = true;
+                args[Array.FindIndex(parameters, parameter => parameter.Name == "stunningHit")] = true;
+                args[Array.FindIndex(parameters, parameter => parameter.Name == "playImpactSound")] = false;
+                Assert.Greater((float)hit.Invoke(enemy, args), 0f);
+                Assert.AreEqual(2, stacks.GetValue(enemy), "Damaging hits apply the authoritative armour debuff");
+                var staggerType = Type.GetType("PoeClone.Combat.Stagger, Assembly-CSharp", true);
+                var stagger = target.GetComponent(staggerType);
+                Assert.IsNotNull(stagger);
+                Assert.IsTrue((bool)staggerType.GetProperty("IsStaggered").GetValue(stagger));
+                float until = (float)staggerType.GetField("stunnedUntil", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(stagger);
+                Assert.Greater(until, UnityEngine.Time.time + 1.9f);
+                int triggers = (int)staggerType.GetProperty("TriggerCount").GetValue(stagger);
+                for (int i = 0; i < roster.Length; i++)
+                {
+                    object kind = roster.GetValue(i);
+                    if (!(bool)kind.GetType().GetField("IsBoss").GetValue(kind)) continue;
+                    type.GetMethod("Configure").Invoke(enemy, new object[] { i, kind, 1 });
+                    hit.Invoke(enemy, args);
+                    Assert.AreEqual(triggers, staggerType.GetProperty("TriggerCount").GetValue(stagger), "Bosses cannot be stunned by Worldshaker");
+                    break;
+                }
+                float normal = DefenceMath.EnemyArmourReduction(200f, 1, 40f);
+                float shredded = DefenceMath.EnemyArmourReduction(200f * WeaponSkillRules.ShreddedArmourMultiplier(3), 1, 40f);
+                Assert.Less(shredded, normal, "Shredding and penetration work together");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(target); }
         }
 
         [Test]

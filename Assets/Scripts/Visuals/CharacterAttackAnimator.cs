@@ -392,6 +392,19 @@ namespace PoeClone.Visuals
             Range = 2.7f
         };
 
+        private static readonly AttackProfile PulverizeMaceMirroredProfile = new AttackProfile
+        {
+            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.6f, SideLift = 45f,
+            WindupOffset = new Pose(-165f, 25f, -20f, 80f),
+            StrikeOffset = new Pose(-30f, -15f, 10f, 0f), Range = 2.5f
+        };
+        private static readonly AttackProfile PulverizeMaulMirroredProfile = new AttackProfile
+        {
+            Duration = 0.9f, StrikeTime = 0.8f, SwingStart = 0.58f, TwoHandGrip = true,
+            WindupOffset = new Pose(-165f, 25f, -20f, 0f),
+            StrikeOffset = new Pose(-2f, -15f, 10f, 0f), Range = 2.7f
+        };
+
         private static readonly AttackProfile ReapingAxeProfile = new AttackProfile
         {
             Duration = 0.82f, StrikeTime = 0.71f, SwingStart = 0.46f,
@@ -616,7 +629,9 @@ namespace PoeClone.Visuals
             StaffSwingProfile,
             CleaveBackhandProfile,
             CleaveGreatBackhandProfile,
-            CleaveGroundStabProfile
+            CleaveGroundStabProfile,
+            PulverizeMaceMirroredProfile,
+            PulverizeMaulMirroredProfile
         };
 
         /// <summary>Whether the profile with this id shoots (an arrow) rather than hits.</summary>
@@ -779,6 +794,10 @@ namespace PoeClone.Visuals
                         : (mirrored ? CleaveBackhandProfile : CleaveSkillProfile));
                     break;
                 case SkillId.Pulverize:
+                    Play(weaponType == WeaponType.Maul
+                        ? (mirrored ? PulverizeMaulMirroredProfile : PulverizeMaulProfile)
+                        : (mirrored ? PulverizeMaceMirroredProfile : PulverizeMaceProfile));
+                    break;
                 case SkillId.Fissure:
                 case SkillId.Aftershock: Play(weaponType == WeaponType.Maul ? PulverizeMaulProfile : PulverizeMaceProfile); break;
                 case SkillId.CrossSlash:

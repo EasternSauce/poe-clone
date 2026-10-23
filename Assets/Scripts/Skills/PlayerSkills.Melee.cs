@@ -38,10 +38,15 @@ namespace PoeClone.Skills
         private bool meleeCleaveAccent;
         private bool CleaveDoubleSlash => ActiveMeleeSkill == SkillId.Cleave && WeaponBonuses.Get(WeaponSkillEffect.CleaveDoubleSlash) > 0f;
         private bool CleaveExplosiveFinisher => ActiveMeleeSkill == SkillId.Cleave && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f;
-        private bool MeleeImpactFinisher => meleeFinisher && (ActiveMeleeSkill != SkillId.Cleave || CleaveExplosiveFinisher);
+        private bool PulverizeTwinHammer => ActiveMeleeSkill == SkillId.Pulverize && WeaponBonuses.Get(WeaponSkillEffect.PulverizeTwinHammer) > 0f;
+        private bool PulverizeWorldshaker => ActiveMeleeSkill == SkillId.Pulverize && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.PulverizeWorldshaker) > 0f;
+        public bool PulverizeWindingUp => ActiveMeleeSkill == SkillId.Pulverize && meleeComboSwing > 0 && controller != null && controller.IsSkillCommitted && !meleeAttackDelivered;
+        public bool PulverizeUnstoppable => PulverizeWindingUp && WeaponBonuses.Get(WeaponSkillEffect.PulverizeUnstoppable) > 0f;
+        public float PulverizeWindupTakenMultiplier => PulverizeWindingUp ? 1f - WeaponBonuses.Get(WeaponSkillEffect.PulverizeWindupDefence) / 100f : 1f;
+        private bool MeleeImpactFinisher => meleeFinisher && (ActiveMeleeSkill == SkillId.Cleave ? CleaveExplosiveFinisher : ActiveMeleeSkill == SkillId.Pulverize ? PulverizeWorldshaker : true);
         private float meleeComboDamage = 1f;
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
-        private float ComboArea => !meleeFinisher || CleaveDoubleSlash ? 1f : ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher
+        private float ComboArea => ActiveMeleeSkill == SkillId.Pulverize ? (PulverizeWorldshaker ? 1.35f : 1f) : !meleeFinisher || CleaveDoubleSlash ? 1f : ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher
             ? 1.15f : 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
@@ -49,17 +54,18 @@ namespace PoeClone.Skills
             (!CleaveDoubleSlash || meleeComboSwing == 0 || meleeFinisher || Time.time >= meleeComboReadyAt);
         private float meleeStepDistance;
         private const float CursorSlashStandOff = 1.5f;
-        private GroundTelegraph.Decal cleaveFinisherPreview;
+        private GroundTelegraph.Decal meleeFinisherPreview;
+        private float FinisherPreviewRadius => ActiveMeleeSkill == SkillId.Pulverize ? 3.6f * AreaMultiplier * ComboArea : MeleeSkillReach() * ComboArea;
 
-        private void ClearCleaveFinisherPreview()
+        private void ClearMeleeFinisherPreview()
         {
-            if (cleaveFinisherPreview.Root != null) Destroy(cleaveFinisherPreview.Root);
-            cleaveFinisherPreview = default;
+            if (meleeFinisherPreview.Root != null) Destroy(meleeFinisherPreview.Root);
+            meleeFinisherPreview = default;
         }
 
         public void ResetMeleeCombo()
         {
-            ClearCleaveFinisherPreview();
+            ClearMeleeFinisherPreview();
             // Breaking a delivered Cleave starts a full recovery; an unreleased swing is free to cancel.
             // Completed finishers retain the normal cooldown already owned by PlayerCombat.
             if (meleeComboSwing > 0 && meleeAttackDelivered && !meleeFinisher && !CleaveDoubleSlash && meleeComboWeapon?.MainSkillGrant == StatType.GrantCleave)
@@ -117,11 +123,11 @@ namespace PoeClone.Skills
             bool continuing = QueueMeleeFollowup(false) && Time.time >= meleeComboReadyAt;
             if (attackAnimator != null) attackAnimator.ComboBracing = false;
             meleeComboSwing = continuing ? meleeComboSwing + 1 : 1;
-            int length = WeaponSkillRules.ComboLength(skill.Grant, CleaveDoubleSlash);
+            int length = WeaponSkillRules.ComboLength(skill.Grant, CleaveDoubleSlash, PulverizeTwinHammer);
             meleeFinisher = length > 0 && meleeComboSwing % length == 0;
             meleeCleaveAccent = skill.Id == SkillId.Cleave && !CleaveDoubleSlash && meleeComboSwing % length == 2;
             meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing,
-                explosiveCleave: WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f, doubleSlash: CleaveDoubleSlash);
+                explosiveCleave: WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f, doubleSlash: CleaveDoubleSlash, worldshaker: WeaponBonuses.Get(WeaponSkillEffect.PulverizeWorldshaker) > 0f, twinHammer: PulverizeTwinHammer);
             float maxStep = meleeFinisher && !CleaveDoubleSlash ? 1.65f : 1.1f;
             meleeStepDistance = maxStep;
             Vector3? cursorDirection = null;
@@ -160,10 +166,10 @@ namespace PoeClone.Skills
                 float next = distance * progress;
                 controller.MoveAttackStep(transform.forward * (next - stepped));
                 stepped = next;
-                if (cleaveFinisherPreview.Root != null)
+                if (meleeFinisherPreview.Root != null)
                 {
-                    cleaveFinisherPreview.Follow(SlamPoint() + transform.forward * (distance - stepped), MeleeSkillReach() * ComboArea);
-                    cleaveFinisherPreview.SetProgress(elapsed / Mathf.Max(0.001f, seconds));
+                    meleeFinisherPreview.Follow(SlamPoint() + transform.forward * (distance - stepped), FinisherPreviewRadius);
+                    meleeFinisherPreview.SetProgress(elapsed / Mathf.Max(0.001f, seconds));
                 }
                 yield return null;
             }
@@ -186,11 +192,8 @@ namespace PoeClone.Skills
 
         private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback)
         {
-            float lifeBefore = enemy != null ? enemy.CurrentHealth : 0f;
-            Hit(enemy, damage, color, attack: true, melee: true, skillId: skill);
-            if (skill == SkillId.Cleave && CleaveExplosiveFinisher && enemy != null && !enemy.IsDead &&
-                enemy.CurrentHealth < lifeBefore && !EnemyKinds.Get(enemy.KindIndex).IsBoss)
-                enemy.GetComponent<PoeClone.Combat.Stagger>()?.Stun(2f);
+            Hit(enemy, damage, color, attack: true, melee: true, skillId: skill,
+                stunningHit: skill == SkillId.Cleave && CleaveExplosiveFinisher || skill == SkillId.Pulverize && PulverizeWorldshaker);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);
         }
@@ -329,9 +332,9 @@ namespace PoeClone.Skills
                 return true;
             }
 
-            interval = MeleeInterval(id.Value);
+            interval = MeleeInterval(id.Value) * WeaponSkillRules.ComboRecoveryMultiplier(skill.Grant, PulverizeTwinHammer);
             // Keep the normal cooldown between combos; fit each pose and hit into its fast link.
-            float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant, CleaveDoubleSlash);
+            float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant, CleaveDoubleSlash, PulverizeTwinHammer);
             float comboInterval = interval / comboSpeed;
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * comboSpeed;
             BeginMeleeCombo(skill, comboInterval);
@@ -352,6 +355,8 @@ namespace PoeClone.Skills
                         () => Cleave(skill, level), CleaveRecovery));
                     break;
                 case SkillId.Pulverize:
+                    rate = (SlamWindup + StrikeRecovery) / comboInterval;
+                    if (PulverizeWorldshaker) rate /= WeaponSkillRules.PulverizeWorldshakerDuration;
                     meleeAction = StartCoroutine(CommittedStrike(skill.Id, SlamWindup, CurrentWeapon(), rate, () => Pulverize(skill, level)));
                     break;
                 case SkillId.Fissure:
@@ -455,22 +460,22 @@ namespace PoeClone.Skills
             Action release, float recovery = StrikeRecovery)
         {
             controller.SetSkillCommit(true);
-            PlaySkillAnimation(skill, animationWeapon, rate, mirrored: skill == SkillId.Cleave && meleeComboSwing % 2 == 0);
-            if (skill == SkillId.Cleave && CleaveExplosiveFinisher)
+            PlaySkillAnimation(skill, animationWeapon, rate, mirrored: (skill == SkillId.Cleave || PulverizeTwinHammer) && meleeComboSwing % 2 == 0);
+            if (skill == SkillId.Cleave && CleaveExplosiveFinisher || skill == SkillId.Pulverize && PulverizeWorldshaker)
             {
-                ClearCleaveFinisherPreview();
+                ClearMeleeFinisherPreview();
                 Color markerColor = new Color(0.65f, 0.25f, 1f);
-                cleaveFinisherPreview = GroundTelegraph.ImpactDisc(
+                meleeFinisherPreview = GroundTelegraph.ImpactDisc(
                     SlamPoint() + transform.forward * meleeStepDistance, transform.forward,
-                    MeleeSkillReach() * ComboArea, CleaveFinisherHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
-                cleaveFinisherPreview.Root.name = "Cleave finisher area";
-                cleaveFinisherPreview.Block.SetFloat("_Impact", 0f);
-                cleaveFinisherPreview.Block.SetColor("_WarnColor", Color.Lerp(Color.black, markerColor, 0.2f));
-                cleaveFinisherPreview.Block.SetColor("_FillColor", markerColor);
-                cleaveFinisherPreview.SetProgress(0f);
+                    FinisherPreviewRadius, CleaveFinisherHalfAngle, markerColor, SkillEffects.DamagePattern(SkillBook.Get(skill)));
+                meleeFinisherPreview.Root.name = skill + " finisher area";
+                meleeFinisherPreview.Block.SetFloat("_Impact", 0f);
+                meleeFinisherPreview.Block.SetColor("_WarnColor", Color.Lerp(Color.black, markerColor, 0.2f));
+                meleeFinisherPreview.Block.SetColor("_FillColor", markerColor);
+                meleeFinisherPreview.SetProgress(0f);
             }
             yield return MeleeWindup(windup / rate);
-            ClearCleaveFinisherPreview();
+            ClearMeleeFinisherPreview();
             if (!TryReleaseMeleeAttack()) yield break;
             PlayMeleeSound(skill);
             release();
@@ -570,8 +575,16 @@ namespace PoeClone.Skills
             Record(skill, level, radius, at: impact);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage;
             float knockback = ComboKnockback;
+            bool damagedEnemy = false;
             foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
+            {
+                float before = enemy.CurrentHealth;
                 MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback);
+                bool damaged = enemy.CurrentHealth < before;
+                damagedEnemy |= damaged;
+            }
+            if (damagedEnemy && WeaponBonuses.Get(WeaponSkillEffect.PulverizeUnstoppable) > 0f)
+                stats.Heal(stats.MaxHealth * 0.02f);
         }
 
         // Increased area scales both the fissure's length and width.

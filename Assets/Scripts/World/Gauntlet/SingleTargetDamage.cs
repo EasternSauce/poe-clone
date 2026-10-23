@@ -23,9 +23,9 @@ namespace PoeClone.World
             skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
         public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull = false)
         {
-            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant, tree.Get(E.CleaveDoubleSlash) > 0f));
+            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant, tree.Get(E.CleaveDoubleSlash) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f));
             hitDps = dotDps = uses = 0f;
-            // Mitigate each hit before averaging: armour absorbs a smaller share of heavy blows.
+            // Average complete combos with each specialization's damage and cadence.
             // Repeat complete successful combos, including the normal interval after each finisher.
             for (int step = 1; step <= steps; step++)
             {
@@ -45,11 +45,11 @@ namespace PoeClone.World
             if (skill.Channelled) uses = WeaponSkillRules.WhirlwindHitsPerSecond(weapon.WeaponType, speed);
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
             if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
-                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, doubleSlash: tree.Get(E.CleaveDoubleSlash) > 0f);
+                uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, doubleSlash: tree.Get(E.CleaveDoubleSlash) > 0f, twinHammer: tree.Get(E.PulverizeTwinHammer) > 0f);
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
             bool doubleSlash = skill.Id == SkillId.Cleave && tree.Get(E.CleaveDoubleSlash) > 0f;
             float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier,
-                tree.Get(E.CleaveExplosion) > 0f, doubleSlash);
+                tree.Get(E.CleaveExplosion) > 0f, doubleSlash, tree.Get(E.PulverizeWorldshaker) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f);
             baseHit *= combo;
             var element = WeaponSkillHit.Element(tree, BaseElement(skill));
             bool attack = skill.MeleeAttack || skill.Bow;
@@ -164,7 +164,10 @@ namespace PoeClone.World
                 float penetration = minion ? 0 : physical ? sheet.Total(StatType.ArmourPenetration) + tree.Get(E.ArmourPenetration) :
                     type == DamageType.Poison ? sheet.Total(StatType.PoisonPenetration) : sheet.Total(StatType.ElementalPenetration) +
                     sheet.Total(type == DamageType.Fire ? StatType.FirePenetration : type == DamageType.Cold ? StatType.ColdPenetration : StatType.LightningPenetration);
-                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level), resistance, penetration, physical, level);
+                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level) *
+                    // Sustained stationary damage assumes the three-hit armour debuff is maintained.
+                    (tree.Get(E.ArmourShred) > 0f ? WeaponSkillRules.ShreddedArmourMultiplier(WeaponSkillRules.ArmourShredMaxStacks) : 1f),
+                    resistance, penetration, physical, level);
             }
             return total / benchmarkBosses.Length;
         }

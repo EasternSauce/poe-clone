@@ -127,6 +127,8 @@ namespace PoeClone.Enemies
             public float ElementalPenetration;
             public bool ThroughExposedHead;
             public bool IgnoreArmour;
+            public bool ShredArmour;
+            public bool StunningHit;
             public bool Flinch;
             public bool HasOrigin;
             public Vector3 Origin;
@@ -169,6 +171,8 @@ namespace PoeClone.Enemies
             if (bleeding != null) StopCoroutine(bleeding);
             bleeding = null;
             bleeds.Clear();
+            armourShredStacks = 0;
+            armourShredUntil = -1f;
         }
 
         private void Awake()
@@ -232,7 +236,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true, bool ignoreArmour = false)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true, bool ignoreArmour = false, bool shredArmour = false, bool stunningHit = false)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -247,7 +251,7 @@ namespace PoeClone.Enemies
                     Amount = amount, RollSeed = rollSeed != 0 ? rollSeed : EventRandom.NextSeed(),
                     Type = type, ArmourPenetration = armourPenetration,
                     ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
-                    Flinch = flinch, HasOrigin = hitOrigin.HasValue, IgnoreArmour = ignoreArmour,
+                    Flinch = flinch, HasOrigin = hitOrigin.HasValue, IgnoreArmour = ignoreArmour, ShredArmour = shredArmour, StunningHit = stunningHit,
                     Origin = hitOrigin ?? Vector3.zero
                 }) ?? 0;
             }
@@ -284,9 +288,11 @@ namespace PoeClone.Enemies
                 default:
                     if (!ignoreArmour)
                         amount *= 1f - DefenceMath.EnemyArmourReduction(
-                            kind.Armour * EnemyKinds.ArmourScale(MonsterLevel), MonsterLevel, armourPenetration);
+                            kind.Armour * EnemyKinds.ArmourScale(MonsterLevel) * WeaponSkillRules.ShreddedArmourMultiplier(ArmourShredStacks), MonsterLevel, armourPenetration);
                     break;
             }
+            // The hit earns its stack after mitigation; later hits and all attackers benefit.
+            if (shredArmour && amount > 0f) ApplyArmourShred();
             DamageApplied?.Invoke(amount);
             if (IsRemote)
             {
@@ -313,6 +319,11 @@ namespace PoeClone.Enemies
                 return amount;
             }
 
+            if (stunningHit && !kind.IsBoss && !Reassembling)
+            {
+                var stun = GetComponent<Stagger>() ?? gameObject.AddComponent<Stagger>();
+                stun.Stun(2f);
+            }
             if (!flinch || Reassembling)
                 return amount;
 
@@ -350,6 +361,17 @@ namespace PoeClone.Enemies
         }
 
         // ------------------------------------------------------------------ ailments (player passives)
+
+        private int armourShredStacks;
+        private float armourShredUntil = -1f;
+        public int ArmourShredStacks => Time.time < armourShredUntil ? armourShredStacks : 0;
+
+        public void ApplyArmourShred()
+        {
+            if (dead || IsTrainingDummy) return;
+            armourShredStacks = Mathf.Min(WeaponSkillRules.ArmourShredMaxStacks, ArmourShredStacks + 1);
+            armourShredUntil = Time.time + WeaponSkillRules.ArmourShredSeconds;
+        }
 
         private float shockedUntil = -1f;
         private float burnPerSecond;
