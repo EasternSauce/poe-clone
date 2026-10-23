@@ -354,6 +354,7 @@ namespace PoeClone.World
 
         private List<StatLine> Sheet()
         {
+            if (player == null || inventory == null) return new List<StatLine>(Data.characterAtStart);
             var list = new List<StatLine>
             {
                 new StatLine { stat = "Level", value = player.Level },
@@ -379,6 +380,7 @@ namespace PoeClone.World
 
         private List<string> Passives()
         {
+            if (player == null) return new List<string>(Data.passivesAtStart);
             var list = new List<string>();
             PlayerPassives passives = player.GetComponent<PlayerPassives>();
             if (passives == null) return list;
@@ -397,6 +399,7 @@ namespace PoeClone.World
 
         private List<GearRecord> Gear(List<GauntletLoadout.SlotPick> picks)
         {
+            if (inventory == null) return new List<GearRecord>(Data.gearAtStart);
             var list = new List<GearRecord>();
             foreach (EquipSlot slot in SlotRules.AllSlots)
             {
@@ -478,7 +481,7 @@ namespace PoeClone.World
             Data.encounterDps = encounterTime > 0f ? encounterLife / encounterTime : 0f;
 
             ManaSummary m = Data.mana;
-            m.maxManaAtEnd = player.MaxMana;
+            m.maxManaAtEnd = player != null ? player.MaxMana : m.maxManaAtStart;
             float combat = Mathf.Max(0.01f, Data.combatSeconds);
             m.manaSpentPerCombatSecond = m.manaSpent / combat;
             m.poolPercentPerCombatSecond = m.maxManaAtStart > 0f ? 100f * m.manaSpentPerCombatSecond / m.maxManaAtStart : 0f;

@@ -564,26 +564,27 @@ namespace PoeClone.World
         }
 
         /// <summary>Ends the run and writes the results (also when Play stops early).</summary>
-        public void Finish(bool completed)
+        public void Finish(bool completed, bool showResults = true)
         {
             if (Recorder == null || phase == Phase.Done) return;
             phase = Phase.Done;
             StopAllCoroutines();
-            GetComponent<GauntletBot>()?.Stop();
+            var bot = GetComponent<GauntletBot>();
+            if (bot != null) bot.Stop();
             Recorder.Finish(completed, kit != null ? kit.Picks : null);
             Recorder.Detach();
             ResultPath = Recorder.Write();
             Status = completed ? "finished" : "stopped early";
             Debug.Log("Gauntlet " + Status + ": " + ResultPath);
             if (doorBlock != null) Destroy(doorBlock);
-            ui?.ShowResults(Recorder.Summary(), ResultPath);
+            if (showResults && ui != null) ui.ShowResults(Recorder.Summary(), ResultPath);
         }
 
         private void OnDestroy()
         {
             // Play stopped mid-run: keep what was measured.
             if (Recorder != null && phase != Phase.Done && phase != Phase.Setup)
-                Finish(false);
+                Finish(false, showResults: false);
             if (Instance == this) Instance = null;
             InventoryUI.ExtraSlotButton = null;
         }

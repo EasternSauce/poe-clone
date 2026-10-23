@@ -6,9 +6,10 @@ namespace PoeClone.Inventory
     /// <summary>Independent hit recovery effects sharing one life recovery rate limit.</summary>
     public sealed class LifeLeech
     {
-        public const float RatePerEffect = 0.02f;
-        public const float MaximumTotalRate = 0.20f;
-        public const float MaximumPerEffect = 0.10f;
+        public const float Effectiveness = 0.5f;
+        public const float RatePerEffect = 0.02f * Effectiveness;
+        public const float MaximumTotalRate = 0.20f * Effectiveness;
+        public const float MaximumPerEffect = 0.10f * Effectiveness;
 
         private readonly List<float> remaining = new List<float>();
 
@@ -17,7 +18,7 @@ namespace PoeClone.Inventory
         public void Add(float amount, float maximumLife)
         {
             if (amount > 0f && maximumLife > 0f)
-                remaining.Add(Math.Min(amount, maximumLife * MaximumPerEffect));
+                remaining.Add(Math.Min(amount * Effectiveness, maximumLife * MaximumPerEffect));
         }
 
         public float Tick(float seconds, float maximumLife)

@@ -1,3 +1,7 @@
+version: 2026-10-23-leech-effectiveness-and-gauntlet-cleanup
+- Life leech is 50% as effective for attacks and spells: half the life recovered from each hit, 1% maximum life recovered per second per effect, a 5% maximum-life limit per hit, and a shared 10% maximum-life-per-second recovery cap. Tooltips and character stats show the effective leech values.
+- Fixed a console error when stopping a gauntlet run after the player was destroyed. Reports fall back to starting character snapshots when end-of-run components are no longer available.
+
 version: 2026-10-23-cleave-explosion-area
 - Reduced Explosive Finale's fourth-hit explosion area by 40% (about 22.5% smaller radius). Its hit detection, impact effects and ground preview use the same reduced radius.
 
