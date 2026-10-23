@@ -691,6 +691,7 @@ namespace PoeClone.UI
                 var inventory = skills.GetComponent<PlayerInventory>();
                 int count = inventory != null ? inventory.Potions(potion == 1) : 0;
                 return "<size=20><b>" + (potion == 1 ? "Health Potion" : "Mana Potion") + "</b></size>\n" +
+                       (potion == 1 ? "Heals 40% of maximum life" : "Restores 40% of maximum mana") + " over 5 seconds\n" +
                        count + " carried\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Click to change this button.</color>";
             }
             int level = skills.LevelAt(slot);

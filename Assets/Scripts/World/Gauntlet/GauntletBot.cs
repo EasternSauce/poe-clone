@@ -152,7 +152,7 @@ namespace PoeClone.World
 
         private void Potions()
         {
-            // A mana potion restores half the pool: drink once it won't be wasted.
+            // Mana potions restore 40% of the pool over 5 seconds; drink before running dry.
             if (!player.UsesBloodMagic && player.CurrentMana < player.MaxMana * 0.45f)
             {
                 if (inventory.ManaPotions == 0)

@@ -10,8 +10,8 @@ namespace PoeClone.Player
     /// <summary>
     /// Health and mana potions: they sit in the inventory's two potion slots (counts kept by
     /// <see cref="PlayerInventory"/>, never bag items, never sold), drunk with assigned bar keys, the two touch
-    /// buttons, or a click on the slot. A health potion heals 40% of life over a couple of seconds;
-    /// a mana potion gives back half the mana pool at once. Enemies drop them on the ground (see
+    /// buttons, or a click on the slot. Health and mana potions restore 40% of their maximum pool
+    /// over 5 seconds. Enemies drop them on the ground (see
     /// KillRewards), and the merchant sells them. Self-added by <see cref="PlayerController"/>.
     /// </summary>
     public class PlayerPotions : MonoBehaviour
@@ -50,6 +50,7 @@ namespace PoeClone.Player
         }
         public const int MaxPotions = PlayerInventory.MaxPotions;
         private const float DrinkCooldown = 1f;
+        private const float RecoveryDuration = 5f;
 
         private PlayerStats stats;
         private PlayerInventory inventory;
@@ -165,7 +166,7 @@ namespace PoeClone.Player
 
             healthReadyAt = Time.time + DrinkCooldown;
             float recovery = inventory.Stats.Total(StatType.HealthPotionRecovery);
-            stats.HealOverTime(stats.MaxHealth * 0.4f * (1f + Mathf.Max(0f, recovery) / 100f), 2.5f);
+            stats.HealOverTime(stats.MaxHealth * 0.4f * (1f + Mathf.Max(0f, recovery) / 100f), RecoveryDuration);
             if (inventory.Stats.Total(StatType.OnslaughtOnHealthPotion) > 0f)
             {
                 PlayerController controller = GetComponent<PlayerController>();
@@ -182,7 +183,7 @@ namespace PoeClone.Player
                 return false;
 
             manaReadyAt = Time.time + DrinkCooldown;
-            stats.RestoreMana(stats.MaxMana * 0.5f);
+            stats.RestoreManaOverTime(stats.MaxMana * 0.4f, RecoveryDuration);
             Feedback(new Color(0.3f, 0.45f, 1f));
             return true;
         }

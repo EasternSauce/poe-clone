@@ -43,7 +43,11 @@ namespace PoeClone.Player
         private bool dead;
         private readonly LifeLeech lifeLeech = new LifeLeech();
 
-        private void OnDisable() => lifeLeech.Clear();
+        private void OnDisable()
+        {
+            lifeLeech.Clear();
+            manaOverTimeLeft = 0f;
+        }
 
         private enum RespawnPhase { None, Countdown, AwaitingRevive }
         private RespawnPhase respawnPhase = RespawnPhase.None;
@@ -218,6 +222,7 @@ namespace PoeClone.Player
                 float percentRegen = sheet != null && regenerates ? sheet.Total(StatType.PercentLifeRegen) : 0f;
                 Heal(DefenceMath.LifeRegenPerSecond(MaxHealth, lifeRegen, percentRegen) * Time.deltaTime);
 
+                TickManaRecovery(Time.deltaTime);
                 if (healOverTimeLeft > 0f)
                 {
                     float step = Mathf.Min(healOverTimeLeft, healOverTimeRate * Time.deltaTime);
@@ -328,6 +333,8 @@ namespace PoeClone.Player
         /// </summary>
         private float healOverTimeLeft;
         private float healOverTimeRate;
+        private float manaOverTimeLeft;
+        private float manaOverTimeRate;
 
         public bool UsesBloodMagic => inventory != null && inventory.Stats != null &&
             inventory.Stats.Total(StatType.BloodMagic) > 0f;
@@ -361,11 +368,27 @@ namespace PoeClone.Player
             return true;
         }
 
-        /// <summary>Gives back mana (potions), up to the maximum.</summary>
+        /// <summary>Gives back mana instantly, up to the maximum.</summary>
         public void RestoreMana(float amount)
         {
             if (!dead && amount > 0f)
                 currentMana = Mathf.Min(MaxMana, currentMana + amount);
+        }
+
+        /// <summary>Restores mana over time, combining remaining recovery like health potions.</summary>
+        public void RestoreManaOverTime(float amount, float seconds)
+        {
+            if (dead || amount <= 0f) return;
+            manaOverTimeLeft += amount;
+            manaOverTimeRate = manaOverTimeLeft / Mathf.Max(0.1f, seconds);
+        }
+
+        private void TickManaRecovery(float seconds)
+        {
+            if (dead || manaOverTimeLeft <= 0f || seconds <= 0f) return;
+            float step = Mathf.Min(manaOverTimeLeft, manaOverTimeRate * seconds);
+            manaOverTimeLeft -= step;
+            RestoreMana(step);
         }
 
         /// <summary>Heals this much over this many seconds (stacks onto any heal already running).</summary>
@@ -542,6 +565,7 @@ namespace PoeClone.Player
         private void Die()
         {
             dead = true;
+            manaOverTimeLeft = 0f;
             lifeLeech.Clear();
             currentHealth = 0f;
             poison.Clear();

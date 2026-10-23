@@ -1128,7 +1128,7 @@ private Vector2 CellSize(int w, int h)
         private static string PotionTooltip(bool health, int count)
         {
             string name = health ? "Health Potion" : "Mana Potion";
-            string what = health ? "Heals 40% of your life\nover 2.5 seconds" : "Restores half your mana\nat once";
+            string what = health ? "Heals 40% of your life\nover 5 seconds" : "Restores 40% of maximum mana\nover 5 seconds";
             return "<b>" + name + "</b>\n<color=#" + UiKit.Hex(UiKit.DimText) + ">Potion   " + count + " / " + PlayerInventory.MaxPotions +
                    "</color>\n\n<color=#" + UiKit.Hex(UiKit.MagicBlue) + ">" + what + "</color>\n\n<color=#" + UiKit.Hex(UiKit.DimText) +
                    ">Click or press " + (health ? "1" : "2") + " to drink.\nOnly potions go here.</color>";
