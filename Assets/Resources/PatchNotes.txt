@@ -1,3 +1,6 @@
+version: 2026-10-23-cleave-explosion-area
+- Reduced Explosive Finale's fourth-hit explosion area by 40% (about 22.5% smaller radius). Its hit detection, impact effects and ground preview use the same reduced radius.
+
 version: 2026-10-23-cleave-damage-and-finisher-speed
 - Halved Cleave base damage from 55% to 27.5% weapon damage across all specializations, including Explosive Finale, Twin Rhythm and resulting bleeds.
 - Explosive Finale's fourth attack now takes 30% longer than before, preserving its 1:1:1:1.5 combo damage ratio.

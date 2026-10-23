@@ -44,7 +44,7 @@ namespace PoeClone.Skills
         private float meleeComboDamage = 1f;
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
         private float ComboArea => ActiveMeleeSkill == SkillId.Pulverize ? (PulverizeWorldshaker ? 1.35f : 1f) : !meleeFinisher || CleaveDoubleSlash ? 1f : ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher
-            ? 1.15f : 1.35f * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
+            ? 1.15f : (CleaveExplosiveFinisher ? WeaponSkillRules.CleaveExplosionRadiusMultiplier : 1.35f) * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt &&

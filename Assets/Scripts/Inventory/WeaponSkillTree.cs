@@ -160,6 +160,7 @@ namespace PoeClone.Inventory
         public const float CleaveDoubleSlashDamage = 1.15f;
         public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.56f;
+        public static readonly float CleaveExplosionRadiusMultiplier = 1.35f * Mathf.Sqrt(0.6f);
         // Additional time between pairs, measured in normal weapon attack intervals.
         public const float CleaveDoubleSlashPause = 0.35f;
         public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false) =>
