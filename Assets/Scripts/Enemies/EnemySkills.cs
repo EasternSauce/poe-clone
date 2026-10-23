@@ -678,7 +678,7 @@ namespace PoeClone.Enemies
             const float seconds = 0.22f;
             for (float t = 0f; t < seconds; t += (Time.deltaTime * kind.AbilitySpeed))
             {
-                if (player == null || player.IsDead || !playerBody.enabled || (player.GetComponent<PoeClone.Skills.PlayerSkills>()?.PulverizeUnstoppable ?? false)) yield break;
+                if (player == null || player.IsDead || !playerBody.enabled) yield break;
                 Vector3 from = player.transform.position;
                 Vector3 to = from + direction * (ShriekKnockback / seconds) * (Time.deltaTime * kind.AbilitySpeed);
                 to = World.GroundObstacleMotion.Clamp(playerBody, from, to);

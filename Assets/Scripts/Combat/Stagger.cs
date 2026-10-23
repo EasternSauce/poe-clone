@@ -26,11 +26,8 @@ namespace PoeClone.Combat
         /// <summary>Staggers so far. Only ever increases, so a periodic observer (spectator replication) can't miss one.</summary>
         public int TriggerCount { get; private set; }
 
-        private bool Unstoppable => GetComponent<PoeClone.Skills.PlayerSkills>()?.PulverizeUnstoppable ?? false;
-
         public void Trigger()
         {
-            if (Unstoppable) return;
             TriggerCount++;
             timer = 0f;
             IsStaggered = true;
@@ -46,7 +43,7 @@ namespace PoeClone.Combat
         /// <summary>A timed stun survives subsequent ordinary hit reactions.</summary>
         public void Stun(float seconds)
         {
-            if (seconds <= 0f || Unstoppable) return;
+            if (seconds <= 0f) return;
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
             Trigger();
         }

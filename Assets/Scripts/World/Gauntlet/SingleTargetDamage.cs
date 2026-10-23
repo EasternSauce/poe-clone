@@ -100,7 +100,9 @@ namespace PoeClone.World
             // Minion hits do not trigger the owner's CurseOnHit stat (Minion.Deal).
             float curse = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.CurseOnHit), rate * hits, 4);
             float taken = (1 + .25f * shock) * (1 + .15f * curse);
-            float dealt = AgainstEnemy(baseHit * multiplier * taken, element, sheet.Level, sheet, tree, skill.Summon);
+            // The stationary benchmark assumes the target is in the bright centre; on-kill shards are excluded.
+            float perfect = skill.Id == SkillId.Pulverize && tree.Get(E.PulverizePerfectImpact) > 0f ? 1.3f : 1f;
+            float dealt = AgainstEnemy(baseHit * multiplier * taken * perfect, element, sheet.Level, sheet, tree, skill.Summon);
             hitDps = dealt * rate * hits;
             // Bleeding stores the tree's percentage of each final hit; armour and damage modifiers
             // have already applied, and each hit contributes an independent stack.
@@ -164,9 +166,7 @@ namespace PoeClone.World
                 float penetration = minion ? 0 : physical ? sheet.Total(StatType.ArmourPenetration) + tree.Get(E.ArmourPenetration) :
                     type == DamageType.Poison ? sheet.Total(StatType.PoisonPenetration) : sheet.Total(StatType.ElementalPenetration) +
                     sheet.Total(type == DamageType.Fire ? StatType.FirePenetration : type == DamageType.Cold ? StatType.ColdPenetration : StatType.LightningPenetration);
-                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level) *
-                    // Sustained stationary damage assumes the three-hit armour debuff is maintained.
-                    (tree.Get(E.ArmourShred) > 0f ? WeaponSkillRules.ShreddedArmourMultiplier(WeaponSkillRules.ArmourShredMaxStacks) : 1f),
+                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level),
                     resistance, penetration, physical, level);
             }
             return total / benchmarkBosses.Length;

@@ -394,7 +394,7 @@ namespace PoeClone.Tests
             var progress = new WeaponSkillProgress { version = 5, level = 7, experience = 123,
                 nodes = new List<string> { "v2_0_0", "v2_0_1", "v2_0_2" } };
             progress.Sanitize(StatType.GrantPulverize);
-            Assert.AreEqual(6, progress.version);
+            Assert.AreEqual(7, progress.version);
             Assert.AreEqual(7, progress.level);
             Assert.AreEqual(123, progress.experience);
             Assert.AreEqual(7, progress.Available);
@@ -429,41 +429,25 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void Pulverize_ArmourShredCapsRefreshesAndExpires()
+        public void Pulverize_FinishersStunNormalEnemiesButNotBosses()
         {
             var type = Type.GetType("PoeClone.Enemies.EnemyHealth, Assembly-CSharp", true);
-            var target = new UnityEngine.GameObject("Armour shred test");
+            var target = new UnityEngine.GameObject("Finisher stun test");
             try
             {
                 var enemy = target.AddComponent(type);
                 var kinds = Type.GetType("PoeClone.Enemies.EnemyKinds, Assembly-CSharp", true);
                 var roster = (Array)kinds.GetField("All").GetValue(null);
                 type.GetMethod("Configure").Invoke(enemy, new object[] { 0, roster.GetValue(0), 1 });
-                var apply = type.GetMethod("ApplyArmourShred");
-                var stacks = type.GetProperty("ArmourShredStacks");
-                for (int i = 1; i <= 5; i++)
-                {
-                    apply.Invoke(enemy, null);
-                    Assert.AreEqual(Math.Min(i, 3), stacks.GetValue(enemy));
-                }
-                Assert.AreEqual(.7f, WeaponSkillRules.ShreddedArmourMultiplier(5), .0001f);
-                type.GetField("armourShredUntil", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(enemy, -1f);
-                Assert.AreEqual(0, stacks.GetValue(enemy));
-                apply.Invoke(enemy, null);
-                Assert.AreEqual(1, stacks.GetValue(enemy));
-                float deadline = (float)type.GetField("armourShredUntil", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(enemy);
-                Assert.Greater(deadline, UnityEngine.Time.time);
                 var hit = type.GetMethods().Single(m => m.Name == "TakeDamage" && m.GetParameters().Length > 4);
                 var parameters = hit.GetParameters();
                 var args = parameters.Select(parameter => parameter.HasDefaultValue ? parameter.DefaultValue :
                     parameter.ParameterType.IsValueType ? Activator.CreateInstance(parameter.ParameterType) : null).ToArray();
                 args[0] = 1f;
                 args[1] = Enum.Parse(parameters[1].ParameterType, "Physical");
-                args[Array.FindIndex(parameters, parameter => parameter.Name == "shredArmour")] = true;
                 args[Array.FindIndex(parameters, parameter => parameter.Name == "stunningHit")] = true;
                 args[Array.FindIndex(parameters, parameter => parameter.Name == "playImpactSound")] = false;
                 Assert.Greater((float)hit.Invoke(enemy, args), 0f);
-                Assert.AreEqual(2, stacks.GetValue(enemy), "Damaging hits apply the authoritative armour debuff");
                 var staggerType = Type.GetType("PoeClone.Combat.Stagger, Assembly-CSharp", true);
                 var stagger = target.GetComponent(staggerType);
                 Assert.IsNotNull(stagger);
@@ -480,11 +464,62 @@ namespace PoeClone.Tests
                     Assert.AreEqual(triggers, staggerType.GetProperty("TriggerCount").GetValue(stagger), "Bosses cannot be stunned by Worldshaker");
                     break;
                 }
-                float normal = DefenceMath.EnemyArmourReduction(200f, 1, 40f);
-                float shredded = DefenceMath.EnemyArmourReduction(200f * WeaponSkillRules.ShreddedArmourMultiplier(3), 1, 40f);
-                Assert.Less(shredded, normal, "Shredding and penetration work together");
             }
             finally { UnityEngine.Object.DestroyImmediate(target); }
+        }
+
+        [Test]
+        public void Pulverize_PerfectImpactRewardsOnlyTheInnerHalfAndUpdatesDps()
+        {
+            Assert.AreEqual(1.3f, WeaponSkillRules.PerfectImpactMultiplier(0f, 4f));
+            Assert.AreEqual(1.3f, WeaponSkillRules.PerfectImpactMultiplier(2f, 4f));
+            Assert.AreEqual(1f, WeaponSkillRules.PerfectImpactMultiplier(2.001f, 4f));
+            Assert.AreEqual(1f, WeaponSkillRules.PerfectImpactMultiplier(0f, 0f));
+            Assert.AreEqual(1.3f, WeaponSkillRules.PerfectImpactMultiplier(2.7f, 5.4f));
+            const StatType grant = StatType.GrantPulverize;
+            var weapon = DamageWeapon("iron_mace", grant, "v2_3_", 3);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float before = ComboDps("Pulverize", weapon, sheet).hit;
+            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, "v2_3_3"));
+            Assert.AreEqual(before * 1.3f, ComboDps("Pulverize", weapon, sheet).hit, .001f);
+            Assert.AreEqual("Bonecrusher", WeaponSkillTrees.Find(grant, "v2_2_3").Name);
+            Assert.AreEqual("Perfect Impact", WeaponSkillTrees.Find(grant, "v2_3_3").Name);
+        }
+
+        [Test]
+        public void Pulverize_BonecrusherBiasesFourShardsAndKeepsFreeScatter()
+        {
+            var origin = UnityEngine.Vector3.zero;
+            var targets = new[] { UnityEngine.Vector3.forward * 4f, UnityEngine.Vector3.back * 3f };
+            var directions = WeaponSkillRules.BonecrusherDirections(origin, targets, 72);
+            var repeated = WeaponSkillRules.BonecrusherDirections(origin, targets, 72);
+            CollectionAssert.AreEqual(directions, repeated);
+            Assert.AreEqual(6, directions.Length);
+            for (int i = 0; i < 4; i++)
+            {
+                float angle = Math.Min(UnityEngine.Vector3.Angle(directions[i], targets[0]), UnityEngine.Vector3.Angle(directions[i], targets[1]));
+                Assert.LessOrEqual(angle, 10.01f);
+            }
+            int freelyScattered = 0;
+            for (int seed = 0; seed < 20; seed++)
+            {
+                var scatter = WeaponSkillRules.BonecrusherDirections(origin, targets, seed);
+                for (int i = 4; i < 6; i++)
+                    if (UnityEngine.Vector3.Angle(scatter[i], targets[0]) > 15f && UnityEngine.Vector3.Angle(scatter[i], targets[1]) > 15f)
+                        freelyScattered++;
+            }
+            Assert.Greater(freelyScattered, 20);
+            foreach (var direction in WeaponSkillRules.BonecrusherDirections(origin, new UnityEngine.Vector3[0], 72))
+            {
+                Assert.AreEqual(1f, direction.magnitude, .0001f);
+                Assert.AreEqual(0f, direction.y, .0001f);
+            }
+            // The on-kill specialization contributes no fictitious sustained boss DPS.
+            var weapon = DamageWeapon("iron_mace", StatType.GrantPulverize, "v2_2_", 3);
+            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
+            float before = ComboDps("Pulverize", weapon, sheet).hit;
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantPulverize, "v2_2_3"));
+            Assert.AreEqual(before, ComboDps("Pulverize", weapon, sheet).hit, .001f);
         }
 
         [Test]

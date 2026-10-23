@@ -265,6 +265,9 @@ namespace PoeClone.Network
             Vector3 at = new Vector3(v[0], v[1], v[2]);
             switch ((Party.EffectKind)e.n)
             {
+                case Party.EffectKind.BoneShards when v.Length >= 16:
+                    PoeClone.Skills.BonecrusherShards.PlayVisual(at, v);
+                    break;
                 case Party.EffectKind.Circle when v.Length >= 6:
                     StartCoroutine(GroundTelegraph.Run(at, v[3], v[4], (DamageType)(int)v[5], null));
                     break;
@@ -294,10 +297,10 @@ namespace PoeClone.Network
             e.dt = (int)hit.Type;
             e.ap = hit.ArmourPenetration;
             e.ep = hit.ElementalPenetration;
+            e.bc = hit.BonecrusherSpeed;
             e.f = (hit.ThroughExposedHead ? CoopProtocol.FlagHead : 0) |
                   (hit.Flinch ? CoopProtocol.FlagFlinch : 0) | (hit.HasOrigin ? CoopProtocol.FlagOrigin : 0) |
                   (hit.IgnoreArmour ? CoopProtocol.FlagIgnoreArmour : 0) |
-                  (hit.ShredArmour ? CoopProtocol.FlagShredArmour : 0) |
                   (hit.StunningHit ? CoopProtocol.FlagStunningHit : 0);
             SetAt(e, hit.Origin);
             string json = JsonUtility.ToJson(e);
@@ -563,7 +566,7 @@ namespace PoeClone.Network
                 flinch: (e.f & CoopProtocol.FlagFlinch) != 0,
                 hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null,
                 rollSeed: e.sd, ignoreArmour: (e.f & CoopProtocol.FlagIgnoreArmour) != 0,
-                shredArmour: (e.f & CoopProtocol.FlagShredArmour) != 0,
+                bonecrusherSpeed: e.bc,
                 stunningHit: (e.f & CoopProtocol.FlagStunningHit) != 0);
         }
 

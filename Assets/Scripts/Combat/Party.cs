@@ -87,7 +87,8 @@ namespace PoeClone.Combat
             Line,     // start xyz, direction xz, length, width, wind-up, damage type
             Glob,     // from xyz, to xyz, flight, size, radius, seconds
             Snake,    // at xyz, facing xz, height, seconds
-            Dive      // from xyz, to xyz, height, width, flight
+            Dive,     // from xyz, to xyz, height, width, flight
+            BoneShards // at xyz, projectile speed multiplier, six direction xz pairs
         }
 
         /// <summary>Host: the act boss drew one of its warnings or threw something (kind, its numbers).</summary>

@@ -169,8 +169,8 @@ namespace PoeClone.Inventory
             AddFourBranches(t, StatType.GrantPulverize, new[] {
                 P("Earthbreaker", M(B(E.Damage, 10)), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.PulverizeWorldshaker, 1))),
                 P("Crushing Rhythm", M(B(E.Damage, 10)), "Steady Blows", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Hammer", M(B(E.PulverizeTwinHammer, 1))),
-                P("Armourbreaker", M(B(E.Damage, 10)), "Weight of Stone", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Shattered Armour", M(B(E.ArmourShred, 10))),
-                P("Unyielding", M(B(E.Damage, 10)), "Firm Footing", M(B(E.PulverizeWindupDefence, 10)), "Unstoppable Force", M(B(E.PulverizeUnstoppable, 1)))
+                P("Splintering Blows", M(B(E.Damage, 10)), "Splintering Force", M(B(E.Damage, 10), B(E.ProjectileSpeed, 20)), "Bonecrusher", M(B(E.PulverizeBonecrusher, 1))),
+                P("Crushing Precision", M(B(E.Damage, 10)), "Heavy Head", M(B(E.Damage, 15)), "Perfect Impact", M(B(E.PulverizePerfectImpact, 1)))
             });
             Add(t, StatType.GrantReapingArc,
                 P("Long Scythe", U(E.Area, 10), "Harvest", M(B(E.Area, 25)), "Reaper's Horizon", M(B(E.Area, 35)), "Wide Harvest", B(E.Area, 30)),
@@ -260,9 +260,8 @@ namespace PoeClone.Inventory
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.PulverizeWorldshaker: return "Replaces the third slam with Worldshaker\nDeals 300% of normal hit damage with 35% greater radius and a 40% longer windup\nStuns non-boss enemies hit for 2 seconds";
                 case E.PulverizeTwinHammer: return "Replaces Pulverize with two alternating slams, each dealing 130% of normal hit damage\n50% faster combo links and 25% shorter recovery between combos";
-                case E.ArmourShred: return "Hits reduce enemy armour by 10% for 4 seconds, stacking up to 3 times\nHits refresh all stacks; works against bosses and benefits all attackers";
-                case E.PulverizeWindupDefence: return "Take 10% less damage during Pulverize's windup";
-                case E.PulverizeUnstoppable: return "Cannot be stunned or knocked back during Pulverize's windup\nEach slam that damages an enemy restores 2% of maximum life, once per slam";
+                case E.PulverizeBonecrusher: return "Enemies killed by Pulverize release 6 fast bone shards\nEach shard deals 10% of the slain enemy's maximum life as Physical damage and hits once\nFour shards scatter towards nearby enemies; two scatter freely\nShard kills cannot release more shards";
+                case E.PulverizePerfectImpact: return "Pulverize hits deal 30% more damage within the inner half of the slam's radius\nThe brighter impact centre marks this zone";
                 case E.CleaveExplosion: return "Replaces the fourth slash with a circular explosion at the sword's ground impact\nDeals " + (WeaponSkillRules.CleaveExplosionDamage * 100f).ToString("0.#") + "% of normal hit damage with 35% greater reach\nStuns non-boss enemies hit for 2 seconds";
                 case E.CleaveDoubleSlash: return "Replaces Cleave with a two-part combo: double slash, then double slash\nEach slash deals " + (WeaponSkillRules.CleaveDoubleSlashDamage * 100f).ToString("0.#") + "% of normal hit damage; the second pair deals 10% more\nEach cut has its own alternating swing and hit";
                 case E.BossCull: return "Hits execute enemies below " + b.Value.ToString("0.#") + "% life";

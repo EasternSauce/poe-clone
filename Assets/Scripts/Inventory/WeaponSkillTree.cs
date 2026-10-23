@@ -16,13 +16,16 @@ namespace PoeClone.Inventory
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
         ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveBleed,
-        PulverizeWorldshaker, PulverizeTwinHammer, ArmourShred, PulverizeWindupDefence, PulverizeUnstoppable
+        PulverizeWorldshaker, PulverizeTwinHammer,
+        // Retain retired effect IDs so later values stay stable.
+        LegacyArmourShred, LegacyPulverizeWindupDefence, LegacyPulverizeUnstoppable,
+        PulverizeBonecrusher, PulverizePerfectImpact
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 6;
+        public int version = 7;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -38,7 +41,7 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantPulverize ? 6 : grant == StatType.GrantCleave ? 5 : 2;
+            int requiredVersion = grant == StatType.GrantPulverize ? 7 : grant == StatType.GrantCleave ? 5 : 2;
             if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
@@ -164,9 +167,32 @@ namespace PoeClone.Inventory
         public const float PulverizeWorldshakerDamage = 3f;
         public const float PulverizeTwinHammerDamage = 1.3f;
         public const float PulverizeWorldshakerDuration = 1.4f;
-        public const float ArmourShredSeconds = 4f;
-        public const int ArmourShredMaxStacks = 3;
-        public static float ShreddedArmourMultiplier(int stacks) => 1f - 0.1f * Mathf.Clamp(stacks, 0, ArmourShredMaxStacks);
+        public const int BonecrusherShardCount = 6;
+        public const float BonecrusherRange = 10f;
+        public const float BonecrusherLifeFraction = 0.1f;
+        public static float PerfectImpactMultiplier(float distance, float radius) =>
+            radius > 0f && distance >= 0f && distance <= radius * 0.5f ? 1.3f : 1f;
+
+        /// <summary>Four target-biased shards with angular spread, plus two free-scattering shards.</summary>
+        public static Vector3[] BonecrusherDirections(Vector3 origin, IReadOnlyList<Vector3> targets, int seed)
+        {
+            var random = new System.Random(seed);
+            var directions = new Vector3[BonecrusherShardCount];
+            int start = targets.Count > 0 ? random.Next(targets.Count) : 0;
+            for (int i = 0; i < directions.Length; i++)
+            {
+                float angle = (float)random.NextDouble() * 360f;
+                if (i < 4 && targets.Count > 0)
+                {
+                    Vector3 to = targets[(start + i) % targets.Count] - origin;
+                    to.y = 0f;
+                    if (to.sqrMagnitude > 0.001f)
+                        angle = Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg + (float)random.NextDouble() * 20f - 10f;
+                }
+                directions[i] = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+            }
+            return directions;
+        }
 
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
         public static float ComboSustainedSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false)

@@ -40,9 +40,6 @@ namespace PoeClone.Skills
         private bool CleaveExplosiveFinisher => ActiveMeleeSkill == SkillId.Cleave && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f;
         private bool PulverizeTwinHammer => ActiveMeleeSkill == SkillId.Pulverize && WeaponBonuses.Get(WeaponSkillEffect.PulverizeTwinHammer) > 0f;
         private bool PulverizeWorldshaker => ActiveMeleeSkill == SkillId.Pulverize && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.PulverizeWorldshaker) > 0f;
-        public bool PulverizeWindingUp => ActiveMeleeSkill == SkillId.Pulverize && meleeComboSwing > 0 && controller != null && controller.IsSkillCommitted && !meleeAttackDelivered;
-        public bool PulverizeUnstoppable => PulverizeWindingUp && WeaponBonuses.Get(WeaponSkillEffect.PulverizeUnstoppable) > 0f;
-        public float PulverizeWindupTakenMultiplier => PulverizeWindingUp ? 1f - WeaponBonuses.Get(WeaponSkillEffect.PulverizeWindupDefence) / 100f : 1f;
         private bool MeleeImpactFinisher => meleeFinisher && (ActiveMeleeSkill == SkillId.Cleave ? CleaveExplosiveFinisher : ActiveMeleeSkill == SkillId.Pulverize ? PulverizeWorldshaker : true);
         private float meleeComboDamage = 1f;
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
@@ -190,10 +187,11 @@ namespace PoeClone.Skills
             ? EnemyInDirection(transform.forward, reach)
             : AimedEnemy(reach) ?? EnemyInDirection(transform.forward, reach);
 
-        private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback)
+        private void MeleeHit(EnemyHealth enemy, float damage, Color color, SkillId skill, float knockback, float hitDamageMultiplier = 1f)
         {
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill,
-                stunningHit: skill == SkillId.Cleave && CleaveExplosiveFinisher || skill == SkillId.Pulverize && PulverizeWorldshaker);
+                stunningHit: skill == SkillId.Cleave && CleaveExplosiveFinisher || skill == SkillId.Pulverize && PulverizeWorldshaker,
+                hitDamageMultiplier: hitDamageMultiplier);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);
         }
@@ -572,19 +570,18 @@ namespace PoeClone.Skills
             SkillEffects.Shockwave(impact, radius, skill.Color, 0.42f, type: SkillEffects.DamagePattern(skill));
             // Match the impact treatment of a basic maul slam: ground burst plus a brief camera jolt.
             PoeClone.CameraSystem.CameraFollow.Shake(0.12f, 0.18f);
-            Record(skill, level, radius, at: impact);
+            bool perfect = WeaponBonuses.Get(WeaponSkillEffect.PulverizePerfectImpact) > 0f;
+            if (perfect) SkillEffects.PerfectImpact(impact, radius);
+            Record(skill, level, radius, count: perfect ? 1 : 0, at: impact);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * ComboDamage;
             float knockback = ComboKnockback;
-            bool damagedEnemy = false;
             foreach (EnemyHealth enemy in EnemiesWithin(impact, radius))
             {
-                float before = enemy.CurrentHealth;
-                MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback);
-                bool damaged = enemy.CurrentHealth < before;
-                damagedEnemy |= damaged;
+                Vector3 offset = enemy.transform.position - impact;
+                offset.y = 0f;
+                float multiplier = perfect ? WeaponSkillRules.PerfectImpactMultiplier(offset.magnitude, radius) : 1f;
+                MeleeHit(enemy, damage, CombatText.PhysicalColor, skill.Id, knockback, multiplier);
             }
-            if (damagedEnemy && WeaponBonuses.Get(WeaponSkillEffect.PulverizeUnstoppable) > 0f)
-                stats.Heal(stats.MaxHealth * 0.02f);
         }
 
         // Increased area scales both the fissure's length and width.

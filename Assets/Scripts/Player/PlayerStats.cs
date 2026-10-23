@@ -479,15 +479,8 @@ namespace PoeClone.Player
 
         public void TakeDamage(float amount) => ApplyDamage(amount, EventRandom.NextSeed());
 
-        public float ComboTakenMultiplier
-        {
-            get
-            {
-                var skills = GetComponent<PoeClone.Skills.PlayerSkills>();
-                float combo = controller != null && controller.IsComboLocked && skills?.ActiveMeleeSkill != PoeClone.Skills.SkillId.Cleave ? 0.7f : 1f;
-                return combo * (skills != null ? skills.PulverizeWindupTakenMultiplier : 1f);
-            }
-        }
+        public float ComboTakenMultiplier => controller != null && controller.IsComboLocked &&
+            GetComponent<PoeClone.Skills.PlayerSkills>()?.ActiveMeleeSkill != PoeClone.Skills.SkillId.Cleave ? 0.7f : 1f;
 
         private void ApplyDamage(float amount, int rollSeed, bool comboReduced = false)
         {

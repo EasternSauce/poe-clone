@@ -48,7 +48,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f, string impactSound = null, bool stunningHit = false)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f, string impactSound = null, bool stunningHit = false, float hitDamageMultiplier = 1f)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -122,8 +122,12 @@ namespace PoeClone.Player
                 else if (type == DamageType.Lightning) elementalPenetration += sheet.Total(StatType.LightningPenetration);
                 else if (type == DamageType.Poison) elementalPenetration += sheet.Total(StatType.PoisonPenetration);
             }
+            // Perfect Impact improves hits, leaving independently calculated ailments unchanged.
+            damage *= hitDamageMultiplier;
+            float bonecrusherSpeed = !secondary && tree != null && tree.Get(WeaponSkillEffect.PulverizeBonecrusher) > 0f
+                ? tree.ProjectileSpeedMultiplier : 0f;
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
-                flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed, impactSound: impactSound, shredArmour: !secondary && tree != null && tree.Get(WeaponSkillEffect.ArmourShred) > 0f, stunningHit: stunningHit);
+                flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed, impactSound: impactSound, bonecrusherSpeed: bonecrusherSpeed, stunningHit: stunningHit);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
             if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
@@ -193,7 +197,7 @@ namespace PoeClone.Player
             if (!enemy.IsDead && sheet.Total(StatType.CullingStrike) > 0f && !EnemyKinds.Get(enemy.KindIndex).IsBoss &&
                 enemy.CurrentHealth < enemy.MaxHealth * DefenceMath.CullThreshold)
             {
-                enemy.TakeDamage(enemy.CurrentHealth + 1f);
+                enemy.TakeDamage(enemy.CurrentHealth + 1f, DamageType.Physical, 0f, 0f, ignoreArmour: true, bonecrusherSpeed: bonecrusherSpeed);
                 CombatText.Show(at + Vector3.up * 2.2f * scale, "Culled", CombatText.AvoidColor, 0.8f);
             }
 

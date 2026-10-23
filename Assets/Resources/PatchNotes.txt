@@ -1,3 +1,10 @@
+version: 2026-10-23-pulverize-shards-and-precision
+- Replaced Shattered Armour with Bonecrusher: Pulverize kills release six fast bone projectiles, each dealing 10% of the slain enemy's maximum life as Physical damage. Four scatter towards nearby enemies with a loose spread; two scatter freely. Shards stop at their first hit and cannot trigger more shards.
+- Bonecrusher has a new layered bone-crack and shard-release sound on the sound board. Splintering Force grants 10% increased damage and 20% increased projectile speed.
+- Replaced Unstoppable Force with Perfect Impact: hits inside the inner half of Pulverize's radius deal 30% more hit damage. A brighter centre shows the bonus zone. Heavy Head grants 15% increased damage.
+- Removed Pulverize's armour-stripping, windup damage reduction, stun/knockback immunity and on-hit healing from the retired branches. Existing Pulverize allocations are refunded while preserving skill level and experience.
+- Both short branches work with Worldshaker and Twin Hammer. Damage estimates include Perfect Impact's centre bonus and exclude Bonecrusher's on-kill shards against a lone boss. Co-op shares shard directions and the new proc sound.
+
 version: 2026-10-23-pulverize-four-branches
 - Pulverize now has four independent branches: six nodes each for Worldshaker and Twin Hammer, and four nodes each for Shattered Armour and Unstoppable Force. Every branch starts with two small damage nodes before its notable.
 - The base three-slam combo now deals equal damage on every hit. Worldshaker turns the third slam into a marked, slower impact dealing 300% of normal hit damage with 35% greater radius and a 2-second stun against non-bosses.

@@ -2059,6 +2059,17 @@ MonoBehaviour:
     suggestions: []
     selected: {fileID: 0}
     muted: 0
+  - id: combat.pulverize.bonecrusher
+    label: Bonecrusher shard release
+    group: Combat
+    description: Bone crack and fast shard release on a Pulverize kill.
+    soundGroupId: sound.combat.pulverize.bonecrusher
+    aliases: []
+    sharedIds: []
+    defaults: []
+    suggestions: []
+    selected: {fileID: 0}
+    muted: 0
   soundGroups:
   - id: sound.player.swing
     purpose: Melee swings
@@ -2709,3 +2720,9 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 9aad72c54e074d5592934c0faebdf726, type: 3}
     cooldown: 0
     topPriority: 1
+  - id: sound.combat.pulverize.bonecrusher
+    purpose: Bonecrusher shard release
+    clips:
+    - {fileID: 8300000, guid: f3cd4da436854dcb8fe93316885960ca, type: 3}
+    cooldown: 0.06
+    topPriority: 0

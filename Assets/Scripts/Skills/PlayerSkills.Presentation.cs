@@ -107,6 +107,7 @@ namespace PoeClone.Skills
                 case SkillId.FrostNova:
                 case SkillId.Pulverize:
                     SkillEffects.Shockwave(cast.At, cast.Size, skill.Color, 0.4f, type: SkillEffects.DamagePattern(skill));
+                    if (cast.Count > 0) SkillEffects.PerfectImpact(cast.At, cast.Size);
                     break;
 
                 case SkillId.Cleave:

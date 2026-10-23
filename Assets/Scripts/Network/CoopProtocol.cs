@@ -39,7 +39,6 @@ namespace PoeClone.Network
         // CoopEvent.f bits.
         public const int FlagHead = 1;
         public const int FlagIgnoreArmour = 256;
-        public const int FlagShredArmour = 512;
         public const int FlagStunningHit = 1024;
         public const int FlagFlinch = 4;
         public const int FlagOrigin = 8;
@@ -62,6 +61,7 @@ namespace PoeClone.Network
         public int dt;        // DamageType
         public float ap;      // armour / elemental penetration
         public float ep;
+        public float bc;      // Bonecrusher projectile speed multiplier (0 disables the on-kill proc)
         public int f;         // CoopProtocol.Flag* bits
         public int n;         // attack: Party.AttackKind; effect: Party.EffectKind
         public int ek;        // enemy kind (attack, kill, skill, boss move, ambush)

@@ -30,6 +30,9 @@ namespace PoeClone.Skills
             Cone(center, Vector3.forward, radius, 180f, color, seconds, type);
         }
 
+        public static void PerfectImpact(Vector3 center, float radius) =>
+            Shockwave(center + Vector3.up * 0.02f, radius * 0.5f, new Color(1f, 0.94f, 0.65f), 0.45f);
+
         /// <summary>A textured wedge matching a directional attack's reach and half angle.</summary>
         public static void Cone(Vector3 center, Vector3 facing, float radius, float halfAngle, Color color,
             float seconds = 0.35f, DamageType type = DamageType.Physical)

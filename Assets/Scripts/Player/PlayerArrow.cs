@@ -18,6 +18,8 @@ namespace PoeClone.Player
     public class PlayerArrow : MonoBehaviour
     {
         private const float Speed = 26f;
+        private float speed = Speed;
+        private bool boneShard;
         public const float BowRangeMultiplier = 1.5f;
         private const float Radius = 0.3f;
         // Enemies are hit from further off than walls are: a shot that visibly grazes one counts.
@@ -269,15 +271,39 @@ namespace PoeClone.Player
             return shard;
         }
 
-        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null, Color? arrowColor = null)
+        public static PlayerArrow LaunchBoneShard(Vector3 at, Vector3 direction, float damage, float speedMultiplier, bool harmless = false)
         {
-            Vector3 forward = direction ?? shooter.forward;
+            var shard = Create(null, WeaponSkillRules.BonecrusherRange, damage, harmless, direction: direction,
+                spawnPosition: at + Vector3.up * 0.8f, bone: true);
+            shard.boneShard = true;
+            shard.isAttack = false;
+            shard.speed = 36f * Mathf.Max(0.25f, speedMultiplier);
+            shard.textColor = CombatText.PhysicalColor;
+            return shard;
+        }
+
+        private static PlayerArrow Create(Transform shooter, float range, float damage, bool harmless, Color? orb = null, Vector3? direction = null, Color? arrowColor = null, Vector3? spawnPosition = null, bool bone = false)
+        {
+            Vector3 forward = direction ?? (shooter != null ? shooter.forward : Vector3.forward);
             forward.y = 0f;
             forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
 
             var root = new GameObject(orb.HasValue ? "Player Bolt" : "Player Arrow");
-            root.transform.SetPositionAndRotation(Origin(shooter), Quaternion.LookRotation(forward));
-            if (orb.HasValue)
+            root.transform.SetPositionAndRotation(spawnPosition ?? Origin(shooter), Quaternion.LookRotation(forward));
+            if (bone)
+            {
+                root.name = "Bonecrusher shard";
+                Color ivory = new Color(0.92f, 0.86f, 0.7f);
+                var shaft = RuntimePrimitives.Create(PrimitiveType.Cube, root.transform, ivory);
+                shaft.transform.localScale = new Vector3(0.1f, 0.1f, 0.55f);
+                for (int i = -1; i <= 1; i += 2)
+                {
+                    var end = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, ivory);
+                    end.transform.localPosition = new Vector3(i * 0.06f, 0f, -0.22f);
+                    end.transform.localScale = new Vector3(0.17f, 0.14f, 0.17f);
+                }
+            }
+            else if (orb.HasValue)
             {
                 GameObject core = RuntimePrimitives.Create(PrimitiveType.Sphere, root.transform, orb.Value);
                 core.transform.localScale = Vector3.one * 0.4f;
@@ -314,7 +340,7 @@ namespace PoeClone.Player
                 transform.rotation = Quaternion.LookRotation(direction);
                 remaining = toOwner.magnitude;
             }
-            float step = Mathf.Min(Speed * (tree?.ProjectileSpeedMultiplier ?? 1f) * Time.deltaTime, remaining);
+            float step = Mathf.Min(speed * (tree?.ProjectileSpeedMultiplier ?? 1f) * Time.deltaTime, remaining);
             if (step <= 0f)
             {
                 Destroy(gameObject);
@@ -435,6 +461,13 @@ namespace PoeClone.Player
             for (int k = 0; k < count; k++)
             {
                 RaycastHit hit = Hits[k];
+                if (boneShard)
+                {
+                    if (hit.collider.GetComponentInParent<PlayerStats>() != null ||
+                        (Party.Partner != null && hit.collider.transform.IsChildOf(Party.Partner))) continue;
+                    var enemy = hit.collider.GetComponentInParent<Enemies.EnemyHealth>();
+                    if (enemy != null && (enemy.IsDead || enemy.IsAlly)) continue;
+                }
                 if (owner != null && hit.collider.transform.IsChildOf(owner))
                     continue;
                 if (returns && returnPassed.Contains(hit.collider.GetComponentInParent<IDamageable>()))
@@ -481,6 +514,7 @@ namespace PoeClone.Player
                 return;
 
             IDamageable target = collider.GetComponentInParent<IDamageable>();
+            if (boneShard && !(target is Enemies.EnemyHealth) && !(target is Enemies.SerpentPursuit)) return;
             if (target == null)
             {
                 if (isAttack) PoeClone.Audio.AudioManager.Instance?.PlayEffect("combat.bow.impact", collider.ClosestPoint(transform.position));
