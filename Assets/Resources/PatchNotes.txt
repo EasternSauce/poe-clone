@@ -1,3 +1,7 @@
+version: 2026-10-23-twin-rhythm-damage-and-drawing-cuts
+- Twin Rhythm slashes now deal 175% of normal hit damage, up from 115%; the second pair keeps its 10% damage bonus. Build damage estimates use the new damage.
+- Both cuts in the second pair have 35% greater radius and draw surviving non-boss enemies inward by up to 1.2 metres per cut, stopping short of the player. The pull does not guarantee stagger. Effects and co-op use the larger range and the new pull.
+
 version: 2026-10-23-cleave-finisher-stun-removed
 - Explosive Finale's fourth hit no longer applies a guaranteed 2-second stun. It uses the normal damage-based enemy stagger rules. Updated Cleave descriptions; Worldshaker retains its stun.
 

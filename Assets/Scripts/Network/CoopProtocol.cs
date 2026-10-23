@@ -40,6 +40,7 @@ namespace PoeClone.Network
         public const int FlagHead = 1;
         public const int FlagIgnoreArmour = 256;
         public const int FlagStunningHit = 1024;
+        public const int FlagPullingHit = 2048;
         public const int FlagFlinch = 4;
         public const int FlagOrigin = 8;
         public const int FlagAtYou = 16;

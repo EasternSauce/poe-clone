@@ -37,14 +37,25 @@ namespace PoeClone.Skills
         private bool meleeFinisher;
         private bool meleeCleaveAccent;
         private bool CleaveDoubleSlash => ActiveMeleeSkill == SkillId.Cleave && WeaponBonuses.Get(WeaponSkillEffect.CleaveDoubleSlash) > 0f;
+        private bool CleaveDoubleSlashFinisher => CleaveDoubleSlash && meleeFinisher;
         private bool CleaveExplosiveFinisher => ActiveMeleeSkill == SkillId.Cleave && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f;
         private bool PulverizeTwinHammer => ActiveMeleeSkill == SkillId.Pulverize && WeaponBonuses.Get(WeaponSkillEffect.PulverizeTwinHammer) > 0f;
         private bool PulverizeWorldshaker => ActiveMeleeSkill == SkillId.Pulverize && meleeFinisher && WeaponBonuses.Get(WeaponSkillEffect.PulverizeWorldshaker) > 0f;
         private bool MeleeImpactFinisher => meleeFinisher && (ActiveMeleeSkill == SkillId.Cleave ? CleaveExplosiveFinisher : ActiveMeleeSkill == SkillId.Pulverize ? PulverizeWorldshaker : true);
         private float meleeComboDamage = 1f;
         private float ComboDamage => meleeComboDamage * (meleeFinisher ? WeaponBonuses.ComboDamageMultiplier : 1f);
-        private float ComboArea => ActiveMeleeSkill == SkillId.Pulverize ? (PulverizeWorldshaker ? 1.35f : 1f) : !meleeFinisher || CleaveDoubleSlash ? 1f : ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher
-            ? 1.15f : (CleaveExplosiveFinisher ? WeaponSkillRules.CleaveExplosionRadiusMultiplier : 1.35f) * DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
+        private float ComboArea
+        {
+            get
+            {
+                if (ActiveMeleeSkill == SkillId.Pulverize) return PulverizeWorldshaker ? 1.35f : 1f;
+                if (!meleeFinisher) return 1f;
+                if (CleaveDoubleSlash) return WeaponSkillRules.CleaveDoubleSlashFinisherRadiusMultiplier;
+                if (ActiveMeleeSkill == SkillId.Cleave && !CleaveExplosiveFinisher) return 1.15f;
+                return (CleaveExplosiveFinisher ? WeaponSkillRules.CleaveExplosionRadiusMultiplier : 1.35f) *
+                    DefenceMath.RadiusMultiplier(WeaponBonuses.Get(WeaponSkillEffect.ComboArea));
+            }
+        }
         private float ComboKnockback => meleeFinisher ? WeaponBonuses.Get(WeaponSkillEffect.ComboKnockback) : 0f;
         public bool MeleeFollowupReady => meleeComboQueued && Time.time >= meleeComboReadyAt;
         public bool MeleeComboRestartReady => Time.time >= meleeComboRestartAt &&
@@ -191,6 +202,7 @@ namespace PoeClone.Skills
         {
             Hit(enemy, damage, color, attack: true, melee: true, skillId: skill,
                 stunningHit: skill == SkillId.Pulverize && PulverizeWorldshaker,
+                pullingHit: skill == SkillId.Cleave && CleaveDoubleSlashFinisher,
                 hitDamageMultiplier: hitDamageMultiplier);
             if (enemy != null && !enemy.IsDead && knockback > 0f)
                 enemy.GetComponent<EnemyController>()?.Knockback(enemy.transform.position - transform.position, knockback);

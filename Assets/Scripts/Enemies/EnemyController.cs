@@ -121,6 +121,18 @@ namespace PoeClone.Enemies
             stagger?.Trigger();
         }
 
+        /// <summary>Draw enemies inward without forcing a stagger or pulling through the attacker.</summary>
+        public void PullTowards(Vector3 point, float distance)
+        {
+            if (health == null || health.IsDead || EnemyKinds.Get(health.KindIndex).IsBoss) return;
+            Vector3 to = point - transform.position;
+            to.y = 0f;
+            float travel = Mathf.Min(distance, Mathf.Max(0f, to.magnitude - 1.5f));
+            if (travel <= 0f) return;
+            knockbackDirection = to.normalized;
+            knockbackLeft = travel;
+        }
+
         private const float HasteSpeed = 1.4f;
         private const float HasteAttackSpeed = 1.3f;
         private float hastedUntil = -1f;

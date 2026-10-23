@@ -769,10 +769,10 @@ namespace PoeClone.Skills
         }
 
         private void Hit(EnemyHealth enemy, float damage, Color color, bool attack, DamageType type = DamageType.Physical,
-            bool melee = false, float manaDamageMultiplier = 1f, SkillId? skillId = null, bool flinch = true, bool stunningHit = false, float hitDamageMultiplier = 1f)
+            bool melee = false, float manaDamageMultiplier = 1f, SkillId? skillId = null, bool flinch = true, bool stunningHit = false, float hitDamageMultiplier = 1f, bool pullingHit = false)
         {
             HitEffects.Deal(transform, enemy, damage, attack, color, type, melee: melee, manaDamageMultiplier: manaDamageMultiplier,
-                tree: skillId.HasValue ? BonusesFor(skillId.Value) : null, flinch: flinch, stunningHit: stunningHit, hitDamageMultiplier: hitDamageMultiplier);
+                tree: skillId.HasValue ? BonusesFor(skillId.Value) : null, flinch: flinch, stunningHit: stunningHit, hitDamageMultiplier: hitDamageMultiplier, pullingHit: pullingHit);
         }
 
         // ------------------------------------------------------------------ teleport

@@ -157,7 +157,9 @@ namespace PoeClone.Inventory
         // Preserve the 8.85-hit combo total, distributed in a 1:1:1:1.5 ratio.
         public const float CleaveExplosiveSlashDamage = 8.85f / 4.5f;
         public const float CleaveExplosionDamage = CleaveExplosiveSlashDamage * 1.5f;
-        public const float CleaveDoubleSlashDamage = 1.15f;
+        public const float CleaveDoubleSlashDamage = 1.75f;
+        public const float CleaveDoubleSlashFinisherRadiusMultiplier = 1.35f;
+        public const float CleaveDoubleSlashPullDistance = 1.2f;
         public const float CleaveBleedSeconds = 3f;
         public const float CleaveExplosionDuration = 1.56f;
         public static readonly float CleaveExplosionRadiusMultiplier = 1.35f * Mathf.Sqrt(0.6f);

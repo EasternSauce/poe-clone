@@ -129,6 +129,7 @@ namespace PoeClone.Enemies
             public bool IgnoreArmour;
             public float BonecrusherSpeed;
             public bool StunningHit;
+            public bool PullingHit;
             public bool Flinch;
             public bool HasOrigin;
             public Vector3 Origin;
@@ -234,7 +235,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true, bool ignoreArmour = false, float bonecrusherSpeed = 0f, bool stunningHit = false)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true, bool ignoreArmour = false, float bonecrusherSpeed = 0f, bool stunningHit = false, bool pullingHit = false)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -249,7 +250,7 @@ namespace PoeClone.Enemies
                     Amount = amount, RollSeed = rollSeed != 0 ? rollSeed : EventRandom.NextSeed(),
                     Type = type, ArmourPenetration = armourPenetration,
                     ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
-                    Flinch = flinch, HasOrigin = hitOrigin.HasValue, IgnoreArmour = ignoreArmour, BonecrusherSpeed = bonecrusherSpeed, StunningHit = stunningHit,
+                    Flinch = flinch, HasOrigin = hitOrigin.HasValue, IgnoreArmour = ignoreArmour, BonecrusherSpeed = bonecrusherSpeed, StunningHit = stunningHit, PullingHit = pullingHit,
                     Origin = hitOrigin ?? Vector3.zero
                 }) ?? 0;
             }
@@ -318,6 +319,9 @@ namespace PoeClone.Enemies
                 }
                 return amount;
             }
+
+            if (pullingHit && hitOrigin.HasValue && !Reassembling)
+                GetComponent<EnemyController>()?.PullTowards(hitOrigin.Value, WeaponSkillRules.CleaveDoubleSlashPullDistance);
 
             if (stunningHit && !kind.IsBoss && !Reassembling)
             {
