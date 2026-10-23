@@ -1,3 +1,7 @@
+version: 2026-10-23-cleave-damage-and-finisher-speed
+- Halved Cleave base damage from 55% to 27.5% weapon damage across all specializations, including Explosive Finale, Twin Rhythm and resulting bleeds.
+- Explosive Finale's fourth attack now takes 30% longer than before, preserving its 1:1:1:1.5 combo damage ratio.
+
 version: 2026-10-23-explosive-finale-damage-spread
 - Explosive Finale now spreads combo damage in a 1:1:1:1.5 ratio: the first three slashes each deal 196.7% of normal hit damage and the fourth-hit explosion deals 295%. Total combo damage is unchanged; the tooltip shows both values.
 
