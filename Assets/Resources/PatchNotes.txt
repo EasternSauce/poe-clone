@@ -1,3 +1,10 @@
+version: 2026-10-23-enemy-armour-and-penetration
+- Enemy armour now reduces small hits, critical strikes and heavy finishers by the same percentage at a given monster level. Player and minion armour still protects more against small hits.
+- Armour penetration is now a rating with diminishing returns: 40 ignores 40% of armour, 100 ignores 62.5%, and 200 ignores about 77%. Penetration cannot remove the last 1% of armour.
+- Armoured bosses now have at least 20% physical damage reduction before penetration. Unarmoured creatures remain unarmoured.
+- Weapon-tree nodes that previously granted only armour penetration also grant 10% increased damage. Penetration tooltips and character stats explain the rating, and build damage estimates use the updated enemy armour rules.
+- Bleeding continues to bypass armour after its originating hit, including in co-op.
+
 version: 2026-10-22-cleave-four-branches
 - Cleave now has four independent branches: six nodes each for Explosive Finale and Twin Rhythm, and four nodes each for Headsman's Blow and Serrated Edge. Every branch starts with two small nodes before its notable.
 - Existing Cleave tree allocations are refunded, preserving weapon skill level and experience.

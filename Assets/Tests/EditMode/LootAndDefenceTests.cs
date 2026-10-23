@@ -29,6 +29,36 @@ namespace PoeClone.Tests
             Assert.AreEqual(0.5f, DefenceMath.ArmourReduction(200f, 10f), 1e-4f);
         }
 
+        [TestCase(1), TestCase(14), TestCase(34)]
+        public void EnemyArmour_HasStableMitigationAcrossLevels_AndHitSizes(int level)
+        {
+            float armour = 120f * DefenceMath.EnemyArmourScale(level);
+            float reduction = DefenceMath.EnemyArmourReduction(armour, level);
+            Assert.AreEqual(0.2f, reduction, 1e-5f);
+            Assert.AreEqual(80f, 100f * (1f - reduction), 1e-4f);
+            Assert.AreEqual(800f, 1000f * (1f - reduction), 1e-3f);
+            Assert.AreEqual(0f, DefenceMath.EnemyArmourReduction(0f, level, 40f));
+            Assert.AreEqual(0.4f, DefenceMath.EnemyArmourReduction(320f * DefenceMath.EnemyArmourScale(level), level), 1e-5f);
+        }
+
+        [Test]
+        public void ArmourPenetration_DiminishesWithoutAllowingFullBypass()
+        {
+            Assert.AreEqual(0f, DefenceMath.ArmourIgnored(-10f));
+            Assert.AreEqual(0.4f, DefenceMath.ArmourIgnored(40f), 1e-5f);
+            Assert.AreEqual(0.625f, DefenceMath.ArmourIgnored(100f), 1e-5f);
+            Assert.AreEqual(0.99f, DefenceMath.ArmourIgnored(5940f), 1e-5f);
+            Assert.AreEqual(0.99f, DefenceMath.ArmourIgnored(float.MaxValue), 1e-5f);
+            Assert.Greater(DefenceMath.ArmourIgnored(200f), DefenceMath.ArmourIgnored(100f));
+            float firstForty = DefenceMath.ArmourIgnored(40f);
+            float secondForty = DefenceMath.ArmourIgnored(80f) - firstForty;
+            Assert.Less(secondForty, firstForty);
+            Assert.AreEqual(0.15f / 1.15f, DefenceMath.EnemyArmourReduction(120f, 1, 40f), 1e-5f);
+            Assert.Greater(DefenceMath.EnemyArmourReduction(120f, 1, 10000f), 0f);
+            Assert.IsFalse(StatFormatter.IsPercent(StatType.ArmourPenetration));
+            StringAssert.Contains("rating", StatFormatter.ItemLine(new StatModifier(StatType.ArmourPenetration, 40)));
+        }
+
         [Test]
         public void Stagger_ScalesWithLifeLost_AndAvoidStun()
         {

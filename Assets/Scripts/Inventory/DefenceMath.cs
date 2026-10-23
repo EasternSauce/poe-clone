@@ -60,6 +60,25 @@ namespace PoeClone.Inventory
             return armour / (armour + ArmourPerDamageForHalf * hitDamage);
         }
 
+        /// <summary>Penetration rating has diminishing returns: 40 ignores 40%, 100 ignores 62.5%.
+        /// Even extreme investments leave at least 1% of the target's armour.</summary>
+        public static float ArmourIgnored(float penetrationRating)
+        {
+            float rating = Math.Max(0f, penetrationRating);
+            return Math.Min(0.99f, 1f - 60f / (60f + rating));
+        }
+
+        public static float EnemyArmourScale(int level) => 1f + 0.06f * (Math.Max(1, level) - 1);
+
+        /// <summary>Enemy armour uses a level-based reference hit, independent of attack size.
+        /// Equal base armour keeps equal mitigation across levels; 120 base armour stops 20%, 320 stops 40%.
+        /// Player and minion defences still use ArmourReduction with the actual incoming hit.</summary>
+        public static float EnemyArmourReduction(float armour, int level, float penetrationRating = 0f)
+        {
+            float effectiveArmour = Math.Max(0f, armour) * (1f - ArmourIgnored(penetrationRating));
+            return ArmourReduction(effectiveArmour, 24f * EnemyArmourScale(level));
+        }
+
         /// <summary>Chance (0..1) that life lost to a hit staggers the player, after Avoid Stun.</summary>
         public static float StaggerChance(float lifeDamage, float maxLife, float avoidStunPercent)
         {

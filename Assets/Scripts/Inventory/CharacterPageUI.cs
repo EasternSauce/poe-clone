@@ -384,6 +384,8 @@ namespace PoeClone.Inventory
                 if (special.Length > 0)
                     special.Append('\n');
                 special.Append(StatFormatter.ItemLine(new StatModifier(stat, total)));
+                if (stat == StatType.ArmourPenetration)
+                    special.Append(" — ignores " + Percent(DefenceMath.ArmourIgnored(total)) + " enemy armour before weapon-tree bonuses");
             }
             specialText.text = special.Length > 0
                 ? special.ToString()

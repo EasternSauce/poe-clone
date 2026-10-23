@@ -126,6 +126,7 @@ namespace PoeClone.Enemies
             public float ArmourPenetration;
             public float ElementalPenetration;
             public bool ThroughExposedHead;
+            public bool IgnoreArmour;
             public bool Flinch;
             public bool HasOrigin;
             public Vector3 Origin;
@@ -231,7 +232,7 @@ namespace PoeClone.Enemies
         }
 
         public float TakeDamage(float amount, DamageType type, float armourPenetration, float elementalPenetration, bool throughExposedHead = false,
-            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true)
+            bool flinch = true, Vector3? hitOrigin = null, int rollSeed = 0, string impactSound = null, bool playImpactSound = true, bool ignoreArmour = false)
         {
             if (dead || amount <= 0f)
                 return 0f;
@@ -246,7 +247,7 @@ namespace PoeClone.Enemies
                     Amount = amount, RollSeed = rollSeed != 0 ? rollSeed : EventRandom.NextSeed(),
                     Type = type, ArmourPenetration = armourPenetration,
                     ElementalPenetration = elementalPenetration, ThroughExposedHead = throughExposedHead,
-                    Flinch = flinch, HasOrigin = hitOrigin.HasValue,
+                    Flinch = flinch, HasOrigin = hitOrigin.HasValue, IgnoreArmour = ignoreArmour,
                     Origin = hitOrigin ?? Vector3.zero
                 }) ?? 0;
             }
@@ -281,8 +282,9 @@ namespace PoeClone.Enemies
                 case DamageType.Lightning: amount = DefenceMath.AfterResistance(amount, kind.LightningResistance - elementalPenetration); break;
                 case DamageType.Poison: amount = DefenceMath.AfterResistance(amount, kind.PoisonResistance - elementalPenetration); break;
                 default:
-                    float effectiveArmour = kind.Armour * EnemyKinds.ArmourScale(MonsterLevel) * (1f - Mathf.Clamp(armourPenetration, 0f, 100f) / 100f);
-                    amount *= 1f - DefenceMath.ArmourReduction(effectiveArmour, amount);
+                    if (!ignoreArmour)
+                        amount *= 1f - DefenceMath.EnemyArmourReduction(
+                            kind.Armour * EnemyKinds.ArmourScale(MonsterLevel), MonsterLevel, armourPenetration);
                     break;
             }
             DamageApplied?.Invoke(amount);
@@ -331,9 +333,9 @@ namespace PoeClone.Enemies
         private float poisonDamageToShow;
 
         /// <summary>Ailment ticks never stagger or play impact sounds. Poison numbers combine per target and frame.</summary>
-        public float TakeDamageOverTime(float amount, DamageType type, float penetration = 0f, float armourPenetration = 0f)
+        public float TakeDamageOverTime(float amount, DamageType type, float penetration = 0f, float armourPenetration = 0f, bool ignoreArmour = false)
         {
-            float dealt = TakeDamage(amount, type, armourPenetration, penetration, flinch: false, playImpactSound: false);
+            float dealt = TakeDamage(amount, type, armourPenetration, penetration, flinch: false, playImpactSound: false, ignoreArmour: ignoreArmour);
             if (type == DamageType.Poison && dealt > 0f)
                 poisonDamageToShow += dealt;
             return dealt;
@@ -395,7 +397,7 @@ namespace PoeClone.Enemies
                 }
                 // The originating hit already paid armour, critical and damage modifiers.
                 // Reuse normal damage/death/replication handling without mitigating it twice.
-                float dealt = TakeDamageOverTime(amount, DamageType.Physical, armourPenetration: 100f);
+                float dealt = TakeDamageOverTime(amount, DamageType.Physical, ignoreArmour: true);
                 if (dealt > 0f)
                     UI.CombatText.Show(transform.position + Vector3.up * 1.8f * transform.localScale.y,
                         Mathf.CeilToInt(dealt).ToString(), new Color(0.8f, 0.18f, 0.16f), 0.6f);

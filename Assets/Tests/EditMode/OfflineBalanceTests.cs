@@ -355,7 +355,7 @@ namespace PoeClone.Tests
         }
 
         [TestCase(false), TestCase(true)]
-        public void Pulverize_PenetrationRequiresAConnectedKeystone_WithoutExceedingTheCap(bool sideRoute)
+        public void Pulverize_PenetrationKeystonesImproveRating_WithoutFullyBypassingArmour(bool sideRoute)
         {
             const StatType grant = StatType.GrantPulverize;
             var progress = new WeaponSkillProgress { level = 10 };
@@ -369,7 +369,9 @@ namespace PoeClone.Tests
             string terminal = sideRoute ? "v2_1_7" : "v2_1_5";
             Assert.IsTrue(WeaponSkillTrees.Find(grant, terminal).Keystone);
             Assert.IsTrue(progress.Allocate(grant, terminal));
-            Assert.AreEqual(100f, Penetration(), .001f, "Either complete route should reach, not waste, the penetration cap");
+            Assert.AreEqual(100f, Penetration(), .001f);
+            Assert.AreEqual(0.625f, DefenceMath.ArmourIgnored(Penetration()), .001f,
+                "A full route must leave armour relevant and further penetration useful");
         }
 
         [Test]
@@ -531,13 +533,16 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void BossMitigation_UsesLiveDefences_AndCapsPhysicalPenetration()
+        public void BossMitigation_UsesLevelReferenceAndDiminishingPhysicalPenetration()
         {
             float Hit(float penetration, bool physical) =>
-                (float)Call("BossMitigatedHit", 100f, 250f, 20f, penetration, physical);
-            Assert.AreEqual(100f * (1 - DefenceMath.ArmourReduction(250f, 100f)), Hit(0, true), .0001);
-            Assert.AreEqual(100f, Hit(100, true), .0001);
-            Assert.AreEqual(Hit(100, true), Hit(150, true), .0001);
+                (float)Call("BossMitigatedHit", 100f, 250f, 20f, penetration, physical, 1);
+            Assert.AreEqual(100f * 480f / 730f, Hit(0, true), .0001);
+            Assert.AreEqual(100f * 480f / (480f + 250f * 0.375f), Hit(100, true), .0001);
+            Assert.Greater(Hit(150, true), Hit(100, true));
+            Assert.Less(Hit(10000, true), 100f);
+            Assert.AreEqual(Hit(40, true), (float)Call("BossMitigatedHit",
+                100f, 250f * DefenceMath.EnemyArmourScale(34), 20f, 40f, true, 34), .0001);
             Assert.AreEqual(80f, Hit(0, false), .0001);
             Assert.AreEqual(100f, Hit(20, false), .0001);
         }

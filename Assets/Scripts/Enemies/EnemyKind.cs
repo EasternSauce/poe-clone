@@ -717,7 +717,7 @@ namespace PoeClone.Enemies
             {
                 // Greenwood's first boss: a boar the size of a cart, a thicket growing on its back.
                 Name = "Bramblesow", HealthMultiplier = 27.3f, DamageMultiplier = 2f, SpawnWeight = 0f, Tempo = 0.8f,
-                MaxHealth = 20f, Armour = 30f, PoisonResistance = 20f, Experience = 90,
+                MaxHealth = 20f, Armour = 120f, PoisonResistance = 20f, Experience = 90,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 7f, AttackCooldown = 1.6f, AttackRange = 5.1f,
                 SpeedRatio = 0.75f, Scale = 3.0f,
@@ -730,7 +730,7 @@ namespace PoeClone.Enemies
             {
                 // King of the tunnels under the Lost Hollows: small, quick and full of tricks.
                 Name = "Vex, the Tunnel King", HealthMultiplier = 24f, DamageMultiplier = 2.5f, SpawnWeight = 0f, Tempo = 0.85f,
-                MaxHealth = 15f, Armour = 60f, PoisonResistance = 40f, Experience = 130,
+                MaxHealth = 15f, Armour = 120f, PoisonResistance = 40f, Experience = 130,
                 Style = EnemyAttackStyle.Melee, DamageType = DamageType.Physical,
                 Damage = 8f, AttackCooldown = 0.8f, AttackRange = 1.9f,
                 SpeedRatio = 1.05f, Scale = 0.95f,
@@ -912,7 +912,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Namar, Keeper of the Dry Well", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.DryWellKeeper,
-                MaxHealth = 58, HealthMultiplier = 20, Armour = 75, Experience = 480,
+                MaxHealth = 58, HealthMultiplier = 20, Armour = 120, Experience = 480,
                 Damage = 25, DamageType = DamageType.Physical, Style = EnemyAttackStyle.Ranged,
                 AttackRange = 13, ProjectileSpeed = 11, AttackCooldown = 2.5f, SpeedRatio = 0.53f, Scale = 1.45f,
                 HideHorns = true, Skeletal = true, Undead = true, Gear = new[] { "hunter_hood" },
@@ -960,7 +960,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "The Last Engineer", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.LastEngineer,
-                MaxHealth = 60, HealthMultiplier = 21, Armour = 100, Experience = 540,
+                MaxHealth = 60, HealthMultiplier = 21, Armour = 120, Experience = 540,
                 Damage = 26, DamageType = DamageType.Physical, AttackRange = 3.5f, AttackCooldown = 2.4f,
                 SpeedRatio = 0.38f, Scale = 1.6f, Body = CreatureBody.LastEngineer, Undead = true,
                 Skin = new Color(0.28f, 0.43f, 0.37f), Cloth = new Color(0.64f, 0.48f, 0.25f),
@@ -1044,7 +1044,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Mother of the Last Harvest", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.HarvestMother,
-                MaxHealth = 65, HealthMultiplier = 22, Armour = 100, PoisonResistance = 40, Experience = 580,
+                MaxHealth = 65, HealthMultiplier = 22, Armour = 120, PoisonResistance = 40, Experience = 580,
                 Damage = 26, DamageType = DamageType.Poison, BasicDamageType = DamageType.Physical,
                 AttackRange = 3.8f, AttackCooldown = 2.4f, SpeedRatio = 0.35f, Scale = 1.8f, Body = CreatureBody.HarvestMother,
                 Skin = new Color(0.34f, 0.28f, 0.14f), Cloth = new Color(0.55f, 0.44f, 0.22f),
@@ -1054,7 +1054,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "Ishara, Keeper of the Borrowed River", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.Ishara,
-                MaxHealth = 62, HealthMultiplier = 24, Armour = 85, ColdResistance = 35, Experience = 650,
+                MaxHealth = 62, HealthMultiplier = 24, Armour = 120, ColdResistance = 35, Experience = 650,
                 Damage = 26, DamageType = DamageType.Cold, AttackRange = 13, Style = EnemyAttackStyle.Ranged,
                 ProjectileSpeed = 12, AttackCooldown = 2.6f, SpeedRatio = 0.53f, Scale = 1.7f, Body = CreatureBody.Ishara,
                 Skin = new Color(0.62f, 0.74f, 0.63f), Cloth = new Color(0.20f, 0.49f, 0.43f),
@@ -1152,7 +1152,7 @@ namespace PoeClone.Enemies
             new EnemyKind
             {
                 Name = "The First Root, Heart of the Tithe", SpawnWeight = 0, IsBoss = true, Boss = BossStyle.FirstRoot,
-                MaxHealth = 72, HealthMultiplier = 28, Armour = 105, Experience = 750,
+                MaxHealth = 72, HealthMultiplier = 28, Armour = 120, Experience = 750,
                 Damage = 28, DamageType = DamageType.Poison, BasicDamageType = DamageType.Physical,
                 AttackRange = 4, AttackCooldown = 2.6f, SpeedRatio = 0.38f, Scale = 1.9f, Body = CreatureBody.FirstRoot,
                 Skin = new Color(0.38f, 0.21f, 0.19f), Cloth = new Color(0.57f, 0.31f, 0.36f), Pants = new Color(0.44f, 0.36f, 0.25f),
@@ -1226,7 +1226,7 @@ namespace PoeClone.Enemies
             return DamageScale(level, kind) * pressure;
         }
 
-        public static float ArmourScale(int level) => 1f + 0.06f * (Mathf.Max(1, level) - 1);
+        public static float ArmourScale(int level) => Inventory.DefenceMath.EnemyArmourScale(level);
 
         public static float ExperienceScale(int level) => 1f + 0.4f * (Mathf.Max(1, level) - 1);
 

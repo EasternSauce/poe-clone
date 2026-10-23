@@ -564,8 +564,8 @@ namespace PoeClone.EditorTools
         public static float MinionLifetime(float life, float bossDps, int cap, float recovery, bool untargetable) =>
             untargetable || bossDps / Mathf.Max(1, cap) <= recovery ? -1 : life / (bossDps / Mathf.Max(1, cap) - recovery);
 
-        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, bool physical) =>
-            PoeClone.World.SingleTargetDamage.BossMitigatedHit(damage, armour, resistance, penetration, physical);
+        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, bool physical, int level = 1) =>
+            PoeClone.World.SingleTargetDamage.BossMitigatedHit(damage, armour, resistance, penetration, physical, level);
         private static void Incoming(int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion, out float hit, out float dps)
         {
             hit = dps = 0; float weights = 0;

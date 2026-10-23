@@ -295,7 +295,8 @@ namespace PoeClone.Network
             e.ap = hit.ArmourPenetration;
             e.ep = hit.ElementalPenetration;
             e.f = (hit.ThroughExposedHead ? CoopProtocol.FlagHead : 0) |
-                  (hit.Flinch ? CoopProtocol.FlagFlinch : 0) | (hit.HasOrigin ? CoopProtocol.FlagOrigin : 0);
+                  (hit.Flinch ? CoopProtocol.FlagFlinch : 0) | (hit.HasOrigin ? CoopProtocol.FlagOrigin : 0) |
+                  (hit.IgnoreArmour ? CoopProtocol.FlagIgnoreArmour : 0);
             SetAt(e, hit.Origin);
             string json = JsonUtility.ToJson(e);
             if (pendingHits.Count == 0) retryHitAt = Time.realtimeSinceStartupAsDouble + 0.5;
@@ -559,7 +560,7 @@ namespace PoeClone.Network
                 throughExposedHead: (e.f & CoopProtocol.FlagHead) != 0,
                 flinch: (e.f & CoopProtocol.FlagFlinch) != 0,
                 hitOrigin: (e.f & CoopProtocol.FlagOrigin) != 0 ? new Vector3(e.x, e.y, e.z) : (Vector3?)null,
-                rollSeed: e.sd);
+                rollSeed: e.sd, ignoreArmour: (e.f & CoopProtocol.FlagIgnoreArmour) != 0);
         }
 
         // Host: first come, first served - if it's still on the ground, it's theirs.

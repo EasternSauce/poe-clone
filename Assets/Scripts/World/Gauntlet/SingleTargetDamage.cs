@@ -148,9 +148,9 @@ namespace PoeClone.World
         private static StatType DamageStat(DamageType type) => type == DamageType.Fire ? StatType.FireDamage : type == DamageType.Cold ? StatType.ColdDamage :
             type == DamageType.Lightning ? StatType.LightningDamage : type == DamageType.Poison ? StatType.PoisonDamage : StatType.PhysicalDamage;
         /// <summary>Uses the same armour and resistance rules as EnemyHealth.TakeDamage.</summary>
-        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, bool physical)
+        public static float BossMitigatedHit(float damage, float armour, float resistance, float penetration, bool physical, int level = 1)
         {
-            return physical ? damage * (1 - DefenceMath.ArmourReduction(armour * (1 - Mathf.Clamp01(penetration / 100)), damage)) :
+            return physical ? damage * (1 - DefenceMath.EnemyArmourReduction(armour, level, penetration)) :
                 DefenceMath.AfterResistance(damage, resistance - penetration);
         }
         private static float AgainstEnemy(float damage, DamageType type, int level, StatSheet sheet, WeaponSkillBonuses tree, bool minion)
@@ -164,7 +164,7 @@ namespace PoeClone.World
                 float penetration = minion ? 0 : physical ? sheet.Total(StatType.ArmourPenetration) + tree.Get(E.ArmourPenetration) :
                     type == DamageType.Poison ? sheet.Total(StatType.PoisonPenetration) : sheet.Total(StatType.ElementalPenetration) +
                     sheet.Total(type == DamageType.Fire ? StatType.FirePenetration : type == DamageType.Cold ? StatType.ColdPenetration : StatType.LightningPenetration);
-                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level), resistance, penetration, physical);
+                total += BossMitigatedHit(damage, enemy.Armour * EnemyKinds.ArmourScale(level), resistance, penetration, physical, level);
             }
             return total / benchmarkBosses.Length;
         }

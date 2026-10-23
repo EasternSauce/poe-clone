@@ -121,7 +121,7 @@ namespace PoeClone.Inventory
         ColdPenetration,            // percentage points subtracted from enemy cold resistance
         LightningPenetration,        // percentage points subtracted from enemy lightning resistance
         ElementalPenetration,        // percentage points subtracted from all elemental resistances
-        ArmourPenetration,           // % of enemy armour ignored by physical hits
+        ArmourPenetration,           // rating: diminishing-return share of enemy armour ignored by physical hits
         PoisonResistance,
         PoisonPenetration,
         PoisonDamage,
@@ -811,7 +811,6 @@ namespace PoeClone.Inventory
                 case StatType.ColdPenetration:
                 case StatType.LightningPenetration:
                 case StatType.ElementalPenetration:
-                case StatType.ArmourPenetration:
                 case StatType.PoisonPenetration:
                 case StatType.PoisonDamage:
                 case StatType.DamageOverTime:
@@ -989,7 +988,7 @@ namespace PoeClone.Inventory
                 case StatType.ColdPenetration: return n + "% Cold Penetration";
                 case StatType.LightningPenetration: return n + "% Lightning Penetration";
                 case StatType.ElementalPenetration: return n + "% Elemental Penetration";
-                case StatType.ArmourPenetration: return n + "% Armour Penetration";
+                case StatType.ArmourPenetration: return sign + n + " Armour Penetration rating (diminishing returns)";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 case StatType.PhysicalToFire: return "Attacks deal Fire damage instead of Physical";
                 case StatType.PhysicalToCold: return "Attacks deal Cold damage instead of Physical";
