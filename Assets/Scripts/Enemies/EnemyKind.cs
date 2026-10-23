@@ -1214,7 +1214,7 @@ namespace PoeClone.Enemies
             (1f + 0.18f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.HealthMultiplier : 1f);
 
         public static float DamageScale(int level, EnemyKind kind) =>
-            (1f + 0.055f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.DamageMultiplier : 1f);
+            (1f + 0.165f * (Mathf.Max(1, level) - 1)) * (kind != null ? kind.DamageMultiplier : 1f);
 
         /// <summary>Elemental pressure ramps through Greenwood, reaching +25% in level-nine areas.
         /// At 20% resistance this restores the original hit; 15% leaves it only 6.25% higher.
