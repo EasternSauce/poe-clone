@@ -1,3 +1,9 @@
+version: 2026-10-23-leech-recovery-restored
+- Restored full attack and spell life leech recovery: 2% maximum life per second per effect, up to 10% maximum life per hit, with a shared 20% maximum-life-per-second cap. Item and character leech values again show their full amounts.
+
+version: 2026-10-23-cleave-cull-and-bleed
+- Headsman's Blow now executes enemies below 20% life, up from 15%. Serrated Edge now bleeds for 15% of each Cleave hit's damage over 3 seconds, up from 10%.
+
 version: 2026-10-23-enemy-stagger-resistance
 - Ordinary hits no longer automatically stagger enemies. Hits dealing 10% or less of maximum life cannot stagger; chance rises to 100% at 50% maximum life, using damage after mitigation. Boss immunity, explicit skill stuns and knockback are unchanged.
 

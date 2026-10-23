@@ -42,8 +42,8 @@ namespace PoeClone.Tests
         {
             var leech = new LifeLeech();
             leech.Add(10000f, 1000f);
-            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(10f).Within(0.001f));
-            Assert.That(leech.Tick(10f, 1000f), Is.EqualTo(40f).Within(0.001f));
+            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(20f).Within(0.001f));
+            Assert.That(leech.Tick(10f, 1000f), Is.EqualTo(80f).Within(0.001f));
             Assert.That(leech.Tick(1f, 1000f), Is.Zero);
         }
 
@@ -52,7 +52,7 @@ namespace PoeClone.Tests
         {
             var leech = new LifeLeech();
             for (int i = 0; i < 20; i++) leech.Add(100f, 1000f);
-            Assert.That(leech.Tick(5f, 1000f), Is.EqualTo(500f).Within(0.001f));
+            Assert.That(leech.Tick(5f, 1000f), Is.EqualTo(1000f).Within(0.001f));
             Assert.That(leech.Tick(1f, 1000f), Is.Zero);
         }
 
@@ -62,8 +62,8 @@ namespace PoeClone.Tests
             var leech = new LifeLeech();
             for (int i = 0; i < 10; i++) leech.Add(1f, 1000f);
             leech.Add(100f, 1000f);
-            // First .05 seconds: capped at 100/s; remaining .95 seconds: 10/s.
-            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(14.5f).Within(0.001f));
+            // First .05 seconds: capped at 200/s; remaining .95 seconds: 20/s.
+            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(29f).Within(0.001f));
         }
 
         [Test]
@@ -71,9 +71,9 @@ namespace PoeClone.Tests
         {
             var leech = new LifeLeech();
             leech.Add(100f, 1000f);
-            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(10f).Within(0.001f));
-            leech.Add(100f, 1000f);
             Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(20f).Within(0.001f));
+            leech.Add(100f, 1000f);
+            Assert.That(leech.Tick(1f, 1000f), Is.EqualTo(40f).Within(0.001f));
             leech.Clear();
             Assert.That(leech.Tick(1f, 1000f), Is.Zero);
         }
@@ -93,7 +93,7 @@ namespace PoeClone.Tests
             Assert.That(leech.Tick(seconds, maximumLife),
                 Is.EqualTo(maximumLife * LifeLeech.RatePerEffect * seconds).Within(0.000001f));
             Assert.That(leech.Tick(1f, maximumLife),
-                Is.EqualTo(0.5338872075080872f * LifeLeech.Effectiveness - maximumLife * LifeLeech.RatePerEffect * seconds).Within(0.000001f));
+                Is.EqualTo(0.5338872075080872f - maximumLife * LifeLeech.RatePerEffect * seconds).Within(0.000001f));
             Assert.That(leech.Tick(1f, maximumLife), Is.Zero);
         }
 

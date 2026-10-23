@@ -918,7 +918,7 @@ namespace PoeClone.Inventory
                 case StatType.AreaOfEffect: return n + "% increased Area of Effect";
                 case StatType.LifeRegen: return "Regenerate " + n + " Life per second";
                 case StatType.ManaRegen: return n + "% increased Mana Regeneration";
-                case StatType.LifeLeech: return Number(Math.Abs(m.Value) * LifeLeech.Effectiveness) + "% of Attack Damage Leeched as Life";
+                case StatType.LifeLeech: return n + "% of Attack Damage Leeched as Life";
                 case StatType.ManaAbsorb: return n + "% of Damage is taken from Mana before Life";
                 case StatType.AdditionalChains: return "Chain Lightning arcs " + n + " additional time" + (n == "1" ? "" : "s");
                 case StatType.ChillOnHit: return n + "% chance to Chill enemies with Attacks";
@@ -997,7 +997,7 @@ namespace PoeClone.Inventory
                 case StatType.DamageTaken: return "You take " + n + "% " + (m.Value < 0f ? "less" : "more") + " Damage";
                 case StatType.ManaAsDamage: return "Hits deal extra damage equal to " + n + "% of your Maximum Mana";
                 case StatType.BlockRetaliation: return "When you Block, deal " + n + "% of your Armour as Physical damage to enemies around you";
-                case StatType.SpellLeech: return Number(Math.Abs(m.Value) * LifeLeech.Effectiveness) + "% of Spell Damage Leeched as Life";
+                case StatType.SpellLeech: return n + "% of Spell Damage Leeched as Life";
                 case StatType.OnslaughtAtFullLife: return "You have Onslaught while on Full Life";
                 case StatType.CurseOnHit: return n + "% chance for Hits to curse enemies with Grave Rot";
                 case StatType.NoLifeRegen: return "You cannot Regenerate Life";
@@ -1033,7 +1033,6 @@ namespace PoeClone.Inventory
         /// <summary>A final value on the character page ("42", "20%").</summary>
         public static string Value(StatType stat, float value)
         {
-            if (stat == StatType.LifeLeech || stat == StatType.SpellLeech) value *= LifeLeech.Effectiveness;
             return Number(value) + (IsPercent(stat) ? "%" : "");
         }
     }

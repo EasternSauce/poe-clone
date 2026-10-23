@@ -165,8 +165,8 @@ namespace PoeClone.Inventory
             AddFourBranches(t, StatType.GrantCleave, new[] {
                 P("Heavy Steel", M(B(E.Damage, 10)), "Sundering Edge", M(B(E.ArmourPenetration, 40), B(E.Damage, 10)), "Explosive Finale", M(B(E.CleaveExplosion, 1))),
                 P("Flowing Steel", M(B(E.Damage, 10)), "Tempered Steel", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Twin Rhythm", M(B(E.CleaveDoubleSlash, 1))),
-                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 15))),
-                P("Serrated Steel", M(B(E.Damage, 10)), "Opening Wound", M(B(E.FirstStrike, 20)), "Serrated Edge", M(B(E.CleaveBleed, 10)))
+                P("Executioner", M(B(E.Damage, 10)), "Opening Edge", M(B(E.FirstStrike, 20)), "Headsman's Blow", M(B(E.BossCull, 20))),
+                P("Serrated Steel", M(B(E.Damage, 10)), "Opening Wound", M(B(E.FirstStrike, 20)), "Serrated Edge", M(B(E.CleaveBleed, 15)))
             });
             AddFourBranches(t, StatType.GrantPulverize, new[] {
                 P("Earthbreaker", M(B(E.Damage, 10)), "Seismic Reach", M(B(E.Area, 20)), "Worldshaker", M(B(E.PulverizeWorldshaker, 1))),
