@@ -75,6 +75,19 @@ namespace PoeClone.Tests
         }
 
         [Test]
+        public void EnemyStagger_RequiresHeavyHits_AndScalesWithMaximumLife()
+        {
+            Assert.AreEqual(0f, DefenceMath.EnemyStaggerChance(10f, 100f));
+            Assert.AreEqual(0.25f, DefenceMath.EnemyStaggerChance(20f, 100f), 1e-4f);
+            Assert.AreEqual(0.5f, DefenceMath.EnemyStaggerChance(30f, 100f), 1e-4f);
+            Assert.AreEqual(1f, DefenceMath.EnemyStaggerChance(50f, 100f));
+            Assert.AreEqual(1f, DefenceMath.EnemyStaggerChance(200f, 100f));
+            Assert.AreEqual(0f, DefenceMath.EnemyStaggerChance(20f, 200f));
+            Assert.AreEqual(0f, DefenceMath.EnemyStaggerChance(0f, 100f));
+            Assert.AreEqual(0f, DefenceMath.EnemyStaggerChance(20f, 0f));
+        }
+
+        [Test]
         public void Block_And_Resistance_UseTheSheetCaps()
         {
             Assert.AreEqual(0.2f, DefenceMath.BlockChance(20f), 1e-4f);

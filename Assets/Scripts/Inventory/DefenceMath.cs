@@ -92,6 +92,13 @@ namespace PoeClone.Inventory
             return hitChance * (1f - avoidChance);
         }
 
+        /// <summary>Ordinary enemy stagger needs over 10% maximum life lost; 50% guarantees it.</summary>
+        public static float EnemyStaggerChance(float lifeDamage, float maxLife)
+        {
+            if (lifeDamage <= 0f || maxLife <= 0f) return 0f;
+            return Math.Max(0f, Math.Min(1f, (lifeDamage / maxLife - 0.10f) / 0.40f));
+        }
+
         /// <summary>Chance (0..1) to block a hit entirely, from the (already capped) block stat in percent.</summary>
         public static float BlockChance(float blockPercent)
         {

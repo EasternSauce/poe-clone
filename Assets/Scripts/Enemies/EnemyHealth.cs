@@ -327,8 +327,10 @@ namespace PoeClone.Enemies
             if (!flinch || Reassembling)
                 return amount;
 
-            // Bosses don't flinch, but use the same impact audio as other enemies.
-            if (!kind.IsBoss)
+            // Ordinary hits must overcome enemy stagger resistance. Explicit stuns already triggered it.
+            if (!kind.IsBoss && !stunningHit &&
+                EventRandom.Value(rollSeed != 0 ? rollSeed : EventRandom.NextSeed(), EventRandom.Stagger) <
+                DefenceMath.EnemyStaggerChance(amount, maxHealth))
             {
                 Stagger stagger = GetComponent<Stagger>();
                 if (stagger == null)

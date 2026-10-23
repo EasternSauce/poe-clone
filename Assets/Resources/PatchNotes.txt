@@ -1,3 +1,6 @@
+version: 2026-10-23-enemy-stagger-resistance
+- Ordinary hits no longer automatically stagger enemies. Hits dealing 10% or less of maximum life cannot stagger; chance rises to 100% at 50% maximum life, using damage after mitigation. Boss immunity, explicit skill stuns and knockback are unchanged.
+
 version: 2026-10-23-monster-damage-level-scaling
 - Tripled damage growth per monster level from 5.5% to 16.5% of base damage for all monsters, including bosses and their summons. Level-one damage is unchanged.
 
