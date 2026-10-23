@@ -104,7 +104,8 @@ namespace PoeClone.Inventory
             {
                 Path path = paths[lane];
                 // Leave at least one small node between the notable and its keystone.
-                int length = lane < 2 ? 6 : 5;
+                int length = lane < 2 ? 6 : 4;
+                int notableIndex = lane < 2 ? 2 : 1;
                 float angle = (45f + lane * 90f) * Mathf.Deg2Rad;
                 Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 for (int i = 0; i < length; i++)
@@ -112,9 +113,9 @@ namespace PoeClone.Inventory
                     bool end = i == length - 1;
                     nodes.Add(new WeaponSkillNode {
                         Id = "v2_" + lane + "_" + i, Parent = i == 0 ? null : "v2_" + lane + "_" + (i - 1),
-                        Grant = grant, Depth = i, Notable = i == 2, Keystone = end,
-                        Name = end ? path.End : i == 2 ? path.Notable : path.Name,
-                        Bonuses = end ? path.Final : i == 2 ? path.Major : path.Small,
+                        Grant = grant, Depth = i, Notable = i == notableIndex, Keystone = end,
+                        Name = end ? path.End : i == notableIndex ? path.Notable : path.Name,
+                        Bonuses = end ? path.Final : i == notableIndex ? path.Major : path.Small,
                         Position = direction * (70f + i * 65f)
                     });
                 }

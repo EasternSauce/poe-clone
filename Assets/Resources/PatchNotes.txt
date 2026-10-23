@@ -1,5 +1,5 @@
 version: 2026-10-23-melee-tree-keystone-spacing
-- Cleave and Pulverize always have small nodes separating their notables from keystones. Their short branches now have five nodes, including a small damage node after the notable; long branches remain six nodes.
+- Cleave and Pulverize always have small nodes separating their notables from keystones. Their short branches have four nodes: small, notable, small, keystone. Long branches remain six nodes with the notable third.
 - Existing Cleave and Pulverize allocations are refunded while preserving weapon skill level and experience.
 
 version: 2026-10-23-pulverize-shards-and-precision
