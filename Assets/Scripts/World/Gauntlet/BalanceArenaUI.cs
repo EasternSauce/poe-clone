@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using PoeClone.Inventory;
+using PoeClone.Skills;
 using PoeClone.UI;
 
 namespace PoeClone.World
@@ -330,7 +331,7 @@ namespace PoeClone.World
                 for (int i = 0; i < skills.Length; i++)
                 {
                     EnsureRow(i);
-                    routeLabels[i].text = skills[i];
+                    routeLabels[i].text = SkillBook.GetByCodeName(skills[i]).Name;
                     routeLabels[i].color = UiKit.TextColor;
                     routeButtons[i].color = Color.white;
                     routeHighlights[i].gameObject.SetActive(false);
@@ -363,7 +364,8 @@ namespace PoeClone.World
             for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
             levelGroupLabel.text = "Levels 1, 10, 16, 24, 30, 34 · Highest DPS first at each level · Green frame = best at that level";
             levelLabel.text = randomLevel ? "Random milestone" : "Level " + level;
-            skillLabel.text = skill;
+            string skillName = SkillBook.GetByCodeName(skill).Name;
+            skillLabel.text = skillName;
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
             for (int i = 0; i < routeButtons.Count; i++)
@@ -380,7 +382,7 @@ namespace PoeClone.World
                     highest ? new Color(.7f, 1f, .8f) : Color.white;
             }
             routeCountLabel.text = choices.Count + " builds in " + category + " level groups · Scroll or drag to browse all builds";
-            detail.text = (randomBuild ? "Random build for " + skill + "." : "Selected skill: " + skill) +
+            detail.text = (randomBuild ? "Random build for " + skillName + "." : "Selected skill: " + skillName) +
                 "\nEach row starts at its listed level. Random levels use the same six milestones." +
                 "\nDPS uses the equipped gear against average boss defences; the undefended training doll takes more damage." +
                 "\nSuccessful full combos and full army; executes where applicable. Excludes opening/kill buffs and downtime." +

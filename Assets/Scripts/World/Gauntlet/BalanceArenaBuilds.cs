@@ -15,6 +15,7 @@ namespace PoeClone.World
         public static readonly int[] PickerLevels = { 1, 10, 16, 24, 30, 34 };
         private static readonly Dictionary<string, Entry[]> pickerChoices = new Dictionary<string, Entry[]>();
         private static readonly Dictionary<Entry, (string label, bool highest)> pickerRows = new Dictionary<Entry, (string, bool)>();
+        /// <summary>Stable skill code names for selection; resolve SkillBook names for display.</summary>
         public static string[] PickerSkills { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -38,7 +39,7 @@ namespace PoeClone.World
             for (int s = 0; s < skills.Length; s++)
             {
                 string skill = skills[s];
-                UI.LoadingStatus.Set("Comparing " + skill + " (" + (s + 1) + "/" + skills.Length + ")");
+                UI.LoadingStatus.Set("Comparing " + SkillBook.GetByCodeName(skill).Name + " (" + (s + 1) + "/" + skills.Length + ")");
                 yield return null;
                 var choices = new List<Entry>();
                 foreach (var group in Data.builds.Where(e => e.skill == skill && PickerLevels.Contains(e.level))
@@ -89,8 +90,9 @@ namespace PoeClone.World
         {
             public string id, skill, name, family, passives, weaponNodes, gear;
             public int level, sample, weaponRank;
+            public string SkillName => SkillBook.GetByCodeName(skill).Name;
             public GauntletBuild AsBuild() => new GauntletBuild {
-                Id = id, Name = skill + " · " + name, Summary = "Weapon-tree route: " + name,
+                Id = id, Name = SkillName + " · " + name, Summary = "Weapon-tree route: " + name,
                 Melee = family == "Melee", MainHand = new string[0], Armour = "int",
                 CoreSkills = new StatType[0], Passives = Split(passives), WeaponNodes = Split(weaponNodes)
             };
@@ -106,7 +108,7 @@ namespace PoeClone.World
             var entries = new List<Entry>();
             foreach (var group in samples.builds.GroupBy(e => e.skill))
             {
-                var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), group.Key));
+                var skill = SkillBook.GetByCodeName(group.Key);
                 var tree = WeaponSkillTrees.For(skill.Grant);
                 foreach (var route in WeaponSkillTrees.Routes(skill.Grant))
                     foreach (var level in group.GroupBy(e => e.level).OrderBy(g => g.Key))
@@ -138,7 +140,7 @@ namespace PoeClone.World
 
         public static string RouteEffects(Entry entry)
         {
-            var grant = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant;
+            var grant = SkillBook.GetByCodeName(entry.skill).Grant;
             var destinations = Split(entry.weaponNodes).Select(id => WeaponSkillTrees.Find(grant, id))
                 .Where(node => node != null && node.Keystone).ToArray();
             if (destinations.Length > 0)
@@ -175,7 +177,7 @@ namespace PoeClone.World
         public static float EstimatedDps(Entry entry, bool boss = false)
         {
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
-            var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
+            var skill = SkillBook.GetByCodeName(entry.skill);
             var kit = CreateKit(entry);
             var equipment = new EquipmentSet { EnforceRequirements = true };
             foreach (var pick in kit.Picks) equipment.Restore(pick.Slot, pick.Item, out _);
@@ -212,7 +214,7 @@ namespace PoeClone.World
         public static GauntletLoadout.Result CreateKit(Entry entry, int sample = 0)
         {
             var result = new GauntletLoadout.Result();
-            var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
+            var skill = SkillBook.GetByCodeName(entry.skill);
             string family = ArenaPassiveBuilds.Family(skill);
             if (!equipmentPools.TryGetValue((family, entry.level), out var pool))
             {
@@ -223,7 +225,7 @@ namespace PoeClone.World
                 var sheet = StatSheet.Build(basis, null, passiveMods);
                 // Pick a stable family template, independent of which skill is evaluated first.
                 var template = Data.builds.Where(e => e.level == entry.level &&
-                        ArenaPassiveBuilds.Family(SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), e.skill))) == family)
+                        ArenaPassiveBuilds.Family(SkillBook.GetByCodeName(e.skill)) == family)
                     .OrderBy(e => e.skill, StringComparer.Ordinal).First();
                 pool = new EquipmentPool {
                     Bases = ItemGenerator.BaseIds.Select(id => ItemGenerator.Display(id, null, ItemRarity.Normal))

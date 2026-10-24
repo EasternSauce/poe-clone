@@ -1,3 +1,6 @@
+version: 2026-10-24-arena-full-skill-names
+- The arena build picker, loading messages and active build titles now show full skill names, such as Rain of Arrows and Lunging Thrust. Display names come from skill definitions independently of internal code names.
+
 version: 2026-10-24-arena-equipped-gear-dps
 - Fixed arena build DPS rankings using different equipment from the gear equipped when starting a run. Estimates now use the actual arena kit, and the picker explains that damage includes boss defences while the training doll has none.
 

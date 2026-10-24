@@ -50,8 +50,8 @@ namespace PoeClone.Skills
     /// <summary>One skill: its fixed baseline, equipment source and presentation.</summary>
     public sealed class SkillDefinition
     {
-        public SkillId Id;
-        public string Name;
+        public SkillId Id;          // stable internal identity, never used as a display name
+        public string Name;         // full player-facing name, independent of the internal ID
         public string Short;        // legacy abbreviation retained for data compatibility
         public string Description;
         public StatType Grant;      // the gear stat that grants it (its value is the level)
@@ -315,6 +315,10 @@ namespace PoeClone.Skills
             }
             return All[0];
         }
+
+        /// <summary>Resolve a stored code name; display the returned definition's Name in UI.</summary>
+        public static SkillDefinition GetByCodeName(string codeName) =>
+            Get((SkillId)System.Enum.Parse(typeof(SkillId), codeName));
 
         /// <summary>The skill a gear stat grants, or null if it grants none.</summary>
         public static SkillDefinition ForGrant(StatType grant)
