@@ -137,6 +137,20 @@ namespace PoeClone.Skills
             meleeComboDamage = WeaponSkillRules.ComboHitMultiplier(skill.Grant, meleeComboSwing,
                 explosiveCleave: WeaponBonuses.Get(WeaponSkillEffect.CleaveExplosion) > 0f, doubleSlash: CleaveDoubleSlash, worldshaker: WeaponBonuses.Get(WeaponSkillEffect.PulverizeWorldshaker) > 0f, twinHammer: PulverizeTwinHammer);
             float maxStep = meleeFinisher && !CleaveDoubleSlash ? 1.65f : 1.1f;
+            Vector3? cursorDirection = PrepareMeleeStep(maxStep);
+            controller.BeginComboAttack(continuing, cursorDirection);
+            meleeAttackDelivered = false;
+            meleeComboQueued = false;
+            meleeComboWeapon = MainWeapon;
+            meleeComboMovement = controller.MovementRevision;
+            if (CleaveDoubleSlash && !meleeFinisher)
+                interval += MeleeInterval(skill.Id) * WeaponSkillRules.CleaveDoubleSlashPause;
+            meleeComboBraceAt = Time.time + interval * (2f / 3f);
+            meleeComboReadyAt = Time.time + interval;
+        }
+
+        private Vector3? PrepareMeleeStep(float maxStep)
+        {
             meleeStepDistance = maxStep;
             Vector3? cursorDirection = null;
             if (!TouchMode.Active)
@@ -150,15 +164,7 @@ namespace PoeClone.Skills
                     if (toCursor.sqrMagnitude > 0.001f) cursorDirection = toCursor;
                 }
             }
-            controller.BeginComboAttack(continuing, cursorDirection);
-            meleeAttackDelivered = false;
-            meleeComboQueued = false;
-            meleeComboWeapon = MainWeapon;
-            meleeComboMovement = controller.MovementRevision;
-            if (CleaveDoubleSlash && !meleeFinisher)
-                interval += MeleeInterval(skill.Id) * WeaponSkillRules.CleaveDoubleSlashPause;
-            meleeComboBraceAt = Time.time + interval * (2f / 3f);
-            meleeComboReadyAt = Time.time + interval;
+            return cursorDirection;
         }
 
         // Move through the same obstacle and collision checks as walking, during the strike.
@@ -500,9 +506,10 @@ namespace PoeClone.Skills
             controller.SetSkillCommit(true);
             for (int cut = 0; cut < 2; cut++)
             {
+                // Recheck the remaining room after the first step, keeping this pair's facing.
+                if (cut > 0) PrepareMeleeStep(1.1f);
                 PlaySkillAnimation(skill.Id, CurrentWeapon(), rate, mirrored: cut == 1);
-                if (cut == 0) yield return MeleeWindup(CleaveWindup / rate);
-                else yield return new WaitForSeconds(CleaveWindup / rate);
+                yield return MeleeWindup(CleaveWindup / rate);
                 if (!TryReleaseMeleeAttack()) yield break;
                 PlayMeleeSound(skill.Id, accent: false);
                 Cleave(skill, level, cut);
