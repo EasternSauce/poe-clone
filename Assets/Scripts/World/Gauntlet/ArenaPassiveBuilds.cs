@@ -86,6 +86,8 @@ namespace PoeClone.World
         private static GauntletBuild For(SkillDefinition skill) =>
             skill.Summon ? minion : skill.Bow ? bow : skill.MeleeAttack ? melee : mage;
 
+        public static string Family(SkillDefinition skill) => For(skill).Id;
+
         public static string[] Plan(SkillDefinition skill, int level)
         {
             GauntletBuild build = For(skill);

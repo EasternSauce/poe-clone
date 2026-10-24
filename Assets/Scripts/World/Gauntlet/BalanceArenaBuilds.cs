@@ -25,6 +25,7 @@ namespace PoeClone.World
             pickerChoices.Clear();
             pickerRows.Clear();
             damageEstimates.Clear();
+            equipmentPools.Clear();
         }
 
         /// <summary>Finish every comparison under the loading cover, yielding between estimates.</summary>
@@ -150,11 +151,23 @@ namespace PoeClone.World
 
         private static readonly Dictionary<(Entry entry, bool boss), float> damageEstimates = new Dictionary<(Entry, bool), float>();
 
-        // Route choices must not change the item pools used to compare the same skill and level.
-        private static int EquipmentSeed(Entry entry)
+        private sealed class EquipmentPool
         {
-            int seed = entry.level;
-            foreach (char c in entry.skill) seed = unchecked(seed * 31 + c);
+            public ItemData[] Bases;
+            public string SharedGear;
+            public readonly Dictionary<(EquipSlot slot, string baseId, int sample), GauntletLoadout.SlotPick> Picks =
+                new Dictionary<(EquipSlot, string, int), GauntletLoadout.SlotPick>();
+        }
+
+        private static readonly Dictionary<(string family, int level), EquipmentPool> equipmentPools =
+            new Dictionary<(string, int), EquipmentPool>();
+
+        private static int EquipmentSeed(string family, int level, EquipSlot slot, string baseId, int sample)
+        {
+            int seed = unchecked(level + sample * 7919);
+            foreach (char c in family) seed = unchecked(seed * 31 + c);
+            seed = unchecked(seed * 31 + (int)slot);
+            foreach (char c in baseId) seed = unchecked(seed * 31 + c);
             return seed;
         }
 
@@ -162,13 +175,12 @@ namespace PoeClone.World
         public static float EstimatedDps(Entry entry, bool boss = false)
         {
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
-            int seed = EquipmentSeed(entry);
             var rolls = new float[3];
             var bossRolls = new float[3];
             var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
             for (int i = 0; i < rolls.Length; i++)
             {
-                var kit = CreateKit(entry, new System.Random(unchecked(seed + i * 7919)));
+                var kit = CreateKit(entry, i);
                 var equipment = new EquipmentSet { EnforceRequirements = true };
                 foreach (var pick in kit.Picks) equipment.Restore(pick.Slot, pick.Item, out _);
                 var basis = new BaseStats { Level = entry.level }
@@ -205,48 +217,84 @@ namespace PoeClone.World
             return result;
         }
 
-        public static GauntletLoadout.Result CreateKit(Entry entry, System.Random rng = null)
+        /// <summary>Reuse family loot pools; return independent items with this skill's grant and route.</summary>
+        public static GauntletLoadout.Result CreateKit(Entry entry, int sample = 0)
         {
-            rng = rng ?? new System.Random(EquipmentSeed(entry));
             var result = new GauntletLoadout.Result();
-            var basis = new BaseStats { Level = entry.level }
-                .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)
-                .Set(StatType.Intelligence, 9 + entry.level);
-            var passiveMods = Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods);
-            var sheet = StatSheet.Build(basis, null, passiveMods);
-            var bases = ItemGenerator.BaseIds.Select(id => ItemGenerator.Display(id, null, ItemRarity.Normal))
-                .Where(item => item.Requirements.Level <= entry.level && item.Requirements.MetBy(sheet)).ToArray();
+            var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
+            string family = ArenaPassiveBuilds.Family(skill);
+            if (!equipmentPools.TryGetValue((family, entry.level), out var pool))
+            {
+                var basis = new BaseStats { Level = entry.level }
+                    .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)
+                    .Set(StatType.Intelligence, 9 + entry.level);
+                var passiveMods = Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods);
+                var sheet = StatSheet.Build(basis, null, passiveMods);
+                // Pick a stable family template, independent of which skill is evaluated first.
+                var template = Data.builds.Where(e => e.level == entry.level &&
+                        ArenaPassiveBuilds.Family(SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), e.skill))) == family)
+                    .OrderBy(e => e.skill, StringComparer.Ordinal).First();
+                pool = new EquipmentPool {
+                    Bases = ItemGenerator.BaseIds.Select(id => ItemGenerator.Display(id, null, ItemRarity.Normal))
+                        .Where(item => item.Requirements.Level <= entry.level && item.Requirements.MetBy(sheet)).ToArray(),
+                    SharedGear = template.gear
+                };
+                equipmentPools[(family, entry.level)] = pool;
+            }
             int rolls = Math.Max(1, Data.rareRollsPerSlot);
-            foreach (string saved in entry.gear.Split(';'))
+            // Keep skill-compatible hands; share all armour and accessories within the family.
+            var slots = new Dictionary<EquipSlot, string>();
+            foreach (string saved in pool.SharedGear.Split(';').Concat(entry.gear.Split(';')))
             {
                 string[] parts = saved.Trim().Split(new[] { '=' }, 2);
-                if (parts.Length != 2 || parts[1] == "empty") continue;
+                if (parts.Length != 2) continue;
                 var slot = (EquipSlot)Enum.Parse(typeof(EquipSlot), parts[0]);
-                string recordedBase = parts[1].Substring(0, parts[1].IndexOf(" [", StringComparison.Ordinal));
+                if (!slots.ContainsKey(slot) || slot == EquipSlot.MainHand || slot == EquipSlot.OffHand)
+                    slots[slot] = parts[1];
+            }
+            foreach (var saved in slots.OrderBy(p => p.Key == EquipSlot.MainHand ? 0 : p.Key == EquipSlot.OffHand ? 1 : 2))
+            {
+                var slot = saved.Key;
+                if (saved.Value == "empty") continue;
+                string recordedBase = saved.Value.Substring(0, saved.Value.IndexOf(" [", StringComparison.Ordinal));
                 // Retain the build's item family, stepping down to a base that needs no
                 // lucky attribute affixes on other pieces to stay active.
                 string line = ItemGenerator.LineOf(recordedBase);
-                var available = bases.Where(item => ItemGenerator.LineOf(item.Id) == line)
+                var available = pool.Bases.Where(item => ItemGenerator.LineOf(item.Id) == line)
                     .OrderByDescending(item => item.Requirements.Level).FirstOrDefault();
                 // Some hybrid armour families have no low-requirement tier. Fall back
                 // to wearable armour in this slot rather than aborting the whole build.
                 if (available == null && slot != EquipSlot.MainHand && slot != EquipSlot.OffHand)
-                    available = bases.Where(item => SlotRules.Accepts(slot, item))
+                    available = pool.Bases.Where(item => SlotRules.Accepts(slot, item))
                         .OrderByDescending(item => item.Requirements.Level).ThenBy(item => item.Id).FirstOrDefault();
                 if (available == null) throw new InvalidOperationException("Arena: no wearable base for " + recordedBase);
-                StatType? grant = slot == EquipSlot.MainHand
-                    ? (StatType?)SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)).Grant : null;
-                GauntletLoadout.SlotPick pick = null;
-                for (int i = 0; i < rolls; i++)
+                if (!pool.Picks.TryGetValue((slot, available.Id, sample), out var cached))
                 {
-                    var item = ItemGenerator.Generate(rng, available.Id, entry.level, ItemGenerator.RollRarity(rng), grant);
-                    // Compare normalized stat totals so large armour/life numbers do not
-                    // automatically outweigh smaller speed, resistance or skill rolls.
-                    float score = item.Modifiers.Sum(mod => mod.Value * GauntletLoadout.UnitValue(mod.Stat));
-                    if (pick == null || score > pick.Score)
-                        pick = new GauntletLoadout.SlotPick { Slot = slot, Item = item, Score = score, Rolls = rolls,
-                            Note = "best of ground-loot rolls; survey route sample " + entry.sample };
+                    var rng = new System.Random(EquipmentSeed(family, entry.level, slot, available.Id, sample));
+                    var grants = WeaponSkillRules.Pool(available.Type, available.WeaponType);
+                    StatType? grant = grants.Length > 0 ? (StatType?)grants[0] : null;
+                    for (int i = 0; i < rolls; i++)
+                    {
+                        var item = ItemGenerator.Generate(rng, available.Id, entry.level, ItemGenerator.RollRarity(rng), grant);
+                        // Compare normalized totals so large armour/life numbers do not dominate.
+                        float score = item.Modifiers.Sum(mod => mod.Value * GauntletLoadout.UnitValue(mod.Stat));
+                        if (cached == null || score > cached.Score)
+                            cached = new GauntletLoadout.SlotPick { Slot = slot, Item = item, Score = score, Rolls = rolls,
+                                Note = "best of shared " + family + " ground-loot rolls" };
+                    }
+                    pool.Picks[(slot, available.Id, sample)] = cached;
                 }
+                var source = cached.Item;
+                if (slot == EquipSlot.MainHand && !WeaponSkillRules.Pool(source.Type, source.WeaponType).Contains(skill.Grant))
+                    throw new InvalidOperationException("Arena: incompatible weapon for " + entry.skill);
+                var copy = new ItemData(source.Id, source.Name, source.Type, source.Width, source.Height, source.Tint,
+                    source.Modifiers.Select(mod => slot == EquipSlot.MainHand && mod.Stat == source.MainSkillGrant
+                        ? new StatModifier(skill.Grant, mod.Value, mod.Tier) : mod),
+                    source.HasCape, source.WeaponType, source.Rarity) {
+                    ItemLevel = source.ItemLevel, ArtId = source.ArtId, ArtTint = source.ArtTint
+                };
+                var pick = new GauntletLoadout.SlotPick { Slot = slot, Item = copy, Score = cached.Score,
+                    Rolls = cached.Rolls, Note = cached.Note };
                 if (slot == EquipSlot.MainHand && pick.Item.MainSkillGrant.HasValue)
                 {
                     pick.Item.SkillProgress = new WeaponSkillProgress { level = entry.weaponRank };
