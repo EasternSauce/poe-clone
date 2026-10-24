@@ -188,6 +188,8 @@ namespace PoeClone.Skills
             meleeComboDamage = 1f;
             CancelPendingCast();
             EndWhirlwind();
+            ResetWhirlBlades();
+            whirlRequiresRelease = false;
             StopAllCoroutines();
             meleeAction = null;
             if (controller != null)
@@ -359,6 +361,7 @@ namespace PoeClone.Skills
                 return;
             }
 
+            UpdateWhirlBlades();
             AdvanceCast();
 
             int pressed = VirtualInput.SkillPressed;

@@ -1,3 +1,10 @@
+version: 2026-10-24-whirlwind-specializations
+- Rebuilt Whirlwind's weapon tree with four keystones: Gale Cutter fires three piercing projectiles on a successful melee pulse, Unbroken Spin prevents stuns and staggers while spinning, Gathering Storm builds up to five spectral blades from melee hits, and Slipstream trades half your area for faster movement.
+- Gathering Storm gains at most one blade per second. After three seconds without a melee hit, blades fall off one per second, including after you stop spinning. Five blades contribute 40% of combined melee DPS without Gale Cutter.
+- Gale Cutter keeps 40% of normal melee damage and deals another 20% with each of its three projectiles. Spectral blades cannot trigger projectiles or build more blades.
+- Whirlwind now moves at 70% of normal running speed, or 120% with Slipstream. Staggers interrupt the spin and require a fresh attack press unless you have Unbroken Spin.
+- Small nodes give damage and attack speed. Four new notables sit between small nodes, separated from their keystones. Existing Whirlwind allocations are refunded while retaining weapon skill level and experience.
+
 version: 2026-10-24-arena-full-skill-names
 - The arena build picker, loading messages and active build titles now show full skill names, such as Rain of Arrows and Lunging Thrust. Display names come from skill definitions independently of internal code names.
 

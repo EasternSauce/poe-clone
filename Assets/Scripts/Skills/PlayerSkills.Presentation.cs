@@ -118,6 +118,16 @@ namespace PoeClone.Skills
                 case SkillId.Whirlwind:
                     // Each hit keeps the circle up a little past the slowest weapon's next one.
                     HeldArea.Hold(caster, cast.At, cast.Size, skill.Color, SkillEffects.DamagePattern(skill), linger: 0.6f);
+                    if (cast.Points != null)
+                        foreach (Vector3 flight in cast.Points)
+                            PlayerArrow.LaunchGaleBlade(caster, flight.magnitude, 0f, flight.normalized, harmless: true);
+                    for (int i = 0; i < Mathf.Min(cast.Count, WeaponSkillRules.WhirlMaxBlades); i++)
+                    {
+                        Vector3 offset = Quaternion.Euler(0f, 360f * i / Mathf.Max(1, cast.Count), 0f) * facing * cast.Size * 0.75f;
+                        Vector3 tip = cast.At + Vector3.up * 0.8f + offset;
+                        SkillEffects.Arc(tip, tip + Vector3.Cross(Vector3.up, offset).normalized * 0.85f,
+                            new Color(0.55f, 0.85f, 1f), 0.3f);
+                    }
                     break;
 
                 case SkillId.ReapingArc:
@@ -237,6 +247,8 @@ namespace PoeClone.Skills
                     ? sheet.DamageMultiplier(false, false, false, false, element, spell: true, skillIncreased: tree.Get(WeaponSkillEffect.Damage)) : 1f);
             else
                 return null;
+            if (id == SkillId.Whirlwind && tree.Get(WeaponSkillEffect.WhirlGaleCutter) > 0f)
+                damage *= WeaponSkillRules.WhirlGaleMeleeShare;
             return Mathf.Max(1, Mathf.RoundToInt(damage * tree.MoreDamageMultiplier)) + " " + ElementName(element) +
                    (skill.Bow ? " per arrow" : " per hit");
         }

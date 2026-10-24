@@ -20,6 +20,7 @@ namespace PoeClone.Player
         private const float Speed = 26f;
         private float speed = Speed;
         private bool boneShard;
+        private bool galeBlade;
         public const float BowRangeMultiplier = 1.5f;
         private const float Radius = 0.3f;
         // Enemies are hit from further off than walls are: a shot that visibly grazes one counts.
@@ -71,7 +72,7 @@ namespace PoeClone.Player
         {
             if (returnRulesInitialized) return;
             returnRulesInitialized = true;
-            returns = isAttack && !harmless && owner != null &&
+            returns = isAttack && !galeBlade && !harmless && owner != null &&
                 owner.GetComponent<PlayerInventory>()?.Stats.Total(StatType.ReturningVolley) > 0f;
             if (!returns) return;
             pierced = new HashSet<Enemies.EnemyHealth>();
@@ -269,6 +270,22 @@ namespace PoeClone.Player
             shard.damageType = Combat.DamageType.Cold;
             shard.chillSeconds = chillSeconds;
             return shard;
+        }
+
+        /// <summary>A straight physical attack projectile, with independent piercing and no bow return rules.</summary>
+        public static PlayerArrow LaunchGaleBlade(Transform shooter, float range, float damage, Vector3 direction,
+            WeaponSkillBonuses tree = null, bool harmless = false)
+        {
+            var blade = Create(shooter, range, damage, harmless, orb: new Color(0.65f, 0.85f, 1f),
+                direction: direction, spawnPosition: shooter.position + Vector3.up * 0.3f);
+            blade.name = "Gale Cutter blade";
+            blade.transform.localScale = new Vector3(1.6f, 0.25f, 0.7f);
+            blade.galeBlade = true;
+            blade.nativePiercing = true;
+            blade.pierced = new HashSet<Enemies.EnemyHealth>();
+            blade.WithSkill(tree);
+            blade.sourceDamageMultiplier = WeaponSkillRules.WhirlGaleProjectileShare;
+            return blade;
         }
 
         public static PlayerArrow LaunchBoneShard(Vector3 at, Vector3 direction, float damage, float speedMultiplier, bool harmless = false)
@@ -532,7 +549,7 @@ namespace PoeClone.Player
                         ai.Chill(chillSeconds * (tree?.DurationMultiplier ?? 1f));
                 }
                 HitEffects.Deal(owner, enemy, damage, isAttack, textColor, damageType, igniteBonus: igniteBonus,
-                    projectileDistance: DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier, impactSound: isAttack ? "combat.bow.impact" : null);
+                    projectileDistance: galeBlade ? -1f : DistanceTo(enemy.transform.position), venomArrowLevel: venomArrowLevel, hitOrigin: launchPosition, tree: tree, skillIncreased: skillIncreased, sourceDamageMultiplier: DamageMultiplier, impactSound: isAttack && !galeBlade ? "combat.bow.impact" : null, flinch: !galeBlade);
                 return;
             }
 

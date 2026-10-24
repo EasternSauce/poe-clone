@@ -13,7 +13,7 @@ namespace PoeClone.Skills
     /// Whirlwind, the channelled melee skill: on a weapon it is the weapon's attack like the other
     /// melee skills, and holding the attack (left click / the aim stick) spins the player, hitting
     /// everything in reach several times a second, passing through enemies and drifting towards the
-    /// cursor (faster the further it is, sprinting speed at <see cref="WhirlFullSpeedDiameters"/>
+    /// cursor (faster the further it is, full channel speed at <see cref="WhirlFullSpeedDiameters"/>
     /// body widths away; on touch, the joystick or the aim stick). It costs mana every
     /// <see cref="ChannelTick"/> seconds, paid up front, and stops when the attack is let go or the
     /// mana runs out.
@@ -32,6 +32,15 @@ namespace PoeClone.Skills
         private const float WhirlFullSpeedDiameters = 5f;
 
         private bool whirling;
+        private bool whirlAttackHeld;
+        private bool whirlRequiresRelease;
+        private int whirlBlades;
+        private float whirlNextBladeGain;
+        private float whirlBladeDecayAt;
+        private readonly List<GameObject> whirlBladeVisuals = new List<GameObject>();
+        private bool WhirlEffect(WeaponSkillEffect effect) => BonusesFor(SkillId.Whirlwind).Get(effect) > 0f;
+        public bool WhirlStunImmune => whirling && WhirlEffect(WeaponSkillEffect.WhirlUnbrokenSpin);
+
         private int whirlLevel;
         private float whirlNextMana;
         private float whirlNextHit;
@@ -52,7 +61,84 @@ namespace PoeClone.Skills
         public float WhirlYawSpeed => whirling ? -360f * Mathf.Clamp(WhirlHitsPerSecond(), WhirlMinTurnsPerSecond, WhirlMaxTurnsPerSecond) : 0f;
 
         /// <summary>Whether the attack is held right now (set by <see cref="PlayerCombat"/>): Whirlwind spins while it is.</summary>
-        public bool AttackHeld { get; set; }
+        public bool AttackHeld
+        {
+            get => whirlAttackHeld;
+            set
+            {
+                whirlAttackHeld = value;
+                if (!value) whirlRequiresRelease = false;
+            }
+        }
+
+        /// <summary>A stagger requires a fresh attack press, rather than restarting from a held button.</summary>
+        public void InterruptWhirlwind()
+        {
+            if (!whirling || WhirlStunImmune) return;
+            whirlRequiresRelease = true;
+            EndWhirlwind();
+        }
+
+        private void ResetWhirlBlades()
+        {
+            whirlBlades = 0;
+            whirlNextBladeGain = 0f;
+            foreach (GameObject blade in whirlBladeVisuals)
+                if (blade != null) Destroy(blade);
+            whirlBladeVisuals.Clear();
+        }
+
+        private void UpdateWhirlBlades()
+        {
+            if (!WhirlEffect(WeaponSkillEffect.WhirlGatheringStorm))
+            {
+                if (whirlBlades > 0) ResetWhirlBlades();
+                return;
+            }
+            while (whirlBlades > 0 && Time.time >= whirlBladeDecayAt)
+            {
+                whirlBlades--;
+                whirlBladeDecayAt += 1f;
+            }
+            while (whirlBladeVisuals.Count < whirlBlades)
+            {
+                var blade = new GameObject("Gathering Storm blade");
+                blade.transform.SetParent(transform, false);
+                var edge = RuntimePrimitives.Create(PrimitiveType.Cube, blade.transform, new Color(0.55f, 0.85f, 1f));
+                edge.transform.localScale = new Vector3(0.12f, 0.05f, 0.85f);
+                var guard = RuntimePrimitives.Create(PrimitiveType.Cube, blade.transform, new Color(0.8f, 0.95f, 1f));
+                guard.transform.localPosition = Vector3.back * 0.3f;
+                guard.transform.localScale = new Vector3(0.32f, 0.07f, 0.08f);
+                var grip = RuntimePrimitives.Create(PrimitiveType.Cube, blade.transform, new Color(0.3f, 0.55f, 0.8f));
+                grip.transform.localPosition = Vector3.back * 0.45f;
+                grip.transform.localScale = new Vector3(0.08f, 0.07f, 0.22f);
+                whirlBladeVisuals.Add(blade);
+            }
+            while (whirlBladeVisuals.Count > whirlBlades)
+            {
+                int last = whirlBladeVisuals.Count - 1;
+                Destroy(whirlBladeVisuals[last]);
+                whirlBladeVisuals.RemoveAt(last);
+            }
+            float reach = WhirlReach() * 0.75f;
+            for (int i = 0; i < whirlBladeVisuals.Count; i++)
+            {
+                Transform blade = whirlBladeVisuals[i].transform;
+                float angle = 360f * i / Mathf.Max(1, whirlBlades);
+                Quaternion orbit = Quaternion.Euler(0f, angle, 0f);
+                blade.localPosition = orbit * Vector3.forward * reach + Vector3.up * 0.8f;
+                blade.localRotation = orbit * Quaternion.Euler(0f, 90f, 0f);
+            }
+        }
+
+        private void LandWhirlMeleeHit()
+        {
+            if (!WhirlEffect(WeaponSkillEffect.WhirlGatheringStorm)) return;
+            whirlBladeDecayAt = Time.time + 3f;
+            if (Time.time < whirlNextBladeGain) return;
+            whirlBlades = Mathf.Min(WeaponSkillRules.WhirlMaxBlades, whirlBlades + 1);
+            whirlNextBladeGain = Time.time + 1f;
+        }
 
         // TryStartMeleeSkill already paid the first tick.
         private void BeginWhirlwind(int level)
@@ -111,7 +197,7 @@ namespace PoeClone.Skills
             Vector3 whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
             if (whirlSteer.sqrMagnitude > 0.01f)
                 whirlFacing = whirlSteer.normalized;
-            controller.SteerChannel(whirlSteer);
+            controller.SteerChannel(whirlSteer, WhirlEffect(WeaponSkillEffect.WhirlSlipstream) ? 1.2f : 0.7f);
             // Counter-clockwise, so the sword arm sweeps forward and the blade leads (a forehand
             // cut); a turn per hit, so a heavy weapon spins heavier.
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + WhirlYawSpeed * Time.deltaTime, 0f);
@@ -156,14 +242,18 @@ namespace PoeClone.Skills
 
         private float WhirlReach()
         {
-            return WhirlBaseReach * SkillArea(SkillId.Whirlwind) * WhirlAreaScale;
+            return WhirlBaseReach * SkillArea(SkillId.Whirlwind) * WhirlAreaScale *
+                (WhirlEffect(WeaponSkillEffect.WhirlSlipstream) ? Mathf.Sqrt(0.5f) : 1f);
         }
 
         private void WhirlHit(SkillDefinition skill, int level, float reach)
         {
             Vector3 center = transform.position;
-            Record(skill, level, reach, at: center);
             float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
+            bool gale = WhirlEffect(WeaponSkillEffect.WhirlGaleCutter);
+            float meleeShare = gale ? WeaponSkillRules.WhirlGaleMeleeShare : 1f;
+            int blades = whirlBlades; // A newly gained blade starts dealing damage next pulse.
+            bool landed = false;
             List<EnemyHealth> targets = EnemiesWithin(center, reach);
             // Missing an enemy for even one pulse breaks its streak, independently of other enemies.
             whirlPreviousTargets.Clear();
@@ -177,8 +267,32 @@ namespace PoeClone.Skills
                 hits = enemy.Immune || damage <= 0f ? 0 : hits + 1;
                 bool flinch = hits >= WhirlHitsToStagger;
                 whirlHitStreaks[enemy] = flinch ? 0 : hits;
-                Hit(enemy, damage, CombatText.PhysicalColor, attack: true, melee: true, skillId: skill.Id, flinch: flinch);
+                HitEffects.Deal(transform, enemy, damage, true, CombatText.PhysicalColor, melee: true,
+                    tree: BonusesFor(skill.Id), flinch: flinch, sourceDamageMultiplier: meleeShare,
+                    onLanded: () => landed = true);
+                for (int blade = 0; blade < blades && !enemy.IsDead; blade++)
+                    HitEffects.Deal(transform, enemy, damage, true, CombatText.PhysicalColor, melee: true,
+                        tree: BonusesFor(skill.Id), flinch: false,
+                        sourceDamageMultiplier: meleeShare * WeaponSkillRules.WhirlBladeDamageShare);
             }
+            Vector3[] flights = null;
+            Vector3 aim = TouchMode.Active && VirtualInput.Aim.sqrMagnitude < 0.0001f ? whirlFacing : AimDirection();
+            if (landed)
+            {
+                LandWhirlMeleeHit();
+                if (gale)
+                {
+                    flights = new Vector3[3];
+                    int i = 0;
+                    foreach (Vector3 direction in HitEffects.Spread(aim, 3, 7f))
+                    {
+                        float range = WeaponSkillRules.WhirlGaleRange * BonusesFor(skill.Id).RangeMultiplier;
+                        PlayerArrow.LaunchGaleBlade(transform, range, damage, direction, BonusesFor(skill.Id));
+                        flights[i++] = direction * range;
+                    }
+                }
+            }
+            Record(skill, level, reach, count: blades, points: flights, at: center, facing: aim);
         }
 
         // Towards the cursor, as a share of full speed that grows with its distance. On touch: the

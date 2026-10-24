@@ -48,7 +48,7 @@ namespace PoeClone.Player
         public static void Deal(Transform attacker, EnemyHealth enemy, float damage, bool attack, Color color,
             DamageType type = DamageType.Physical, bool secondary = false, float igniteBonus = 0f, Vector3? displayAt = null,
             bool throughExposedHead = false, bool melee = false, float projectileDistance = -1f, int venomArrowLevel = 0,
-            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f, string impactSound = null, bool stunningHit = false, float hitDamageMultiplier = 1f, bool pullingHit = false)
+            Vector3? hitOrigin = null, bool fromExplosion = false, int rollSeed = 0, float manaDamageMultiplier = 1f, WeaponSkillBonuses tree = null, float skillIncreased = 0f, bool flinch = true, float sourceDamageMultiplier = 1f, string impactSound = null, bool stunningHit = false, float hitDamageMultiplier = 1f, bool pullingHit = false, System.Action onLanded = null)
         {
             // Utility effects must never become hits through added mana damage or on-hit stats.
             if (enemy == null || enemy.IsDead || damage <= 0f)
@@ -130,6 +130,7 @@ namespace PoeClone.Player
                 flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed, impactSound: impactSound, bonecrusherSpeed: bonecrusherSpeed, stunningHit: stunningHit, pullingHit: pullingHit);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
+            onLanded?.Invoke();
             if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);

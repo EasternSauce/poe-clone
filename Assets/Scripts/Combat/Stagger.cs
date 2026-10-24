@@ -26,8 +26,12 @@ namespace PoeClone.Combat
         /// <summary>Staggers so far. Only ever increases, so a periodic observer (spectator replication) can't miss one.</summary>
         public int TriggerCount { get; private set; }
 
+        private bool IgnoreChannelStagger => GetComponent<PoeClone.Skills.PlayerSkills>()?.WhirlStunImmune ?? false;
+
         public void Trigger()
         {
+            if (IgnoreChannelStagger) return;
+            GetComponent<PoeClone.Skills.PlayerSkills>()?.InterruptWhirlwind();
             TriggerCount++;
             timer = 0f;
             IsStaggered = true;
@@ -43,7 +47,7 @@ namespace PoeClone.Combat
         /// <summary>A timed stun survives subsequent ordinary hit reactions.</summary>
         public void Stun(float seconds)
         {
-            if (seconds <= 0f) return;
+            if (seconds <= 0f || IgnoreChannelStagger) return;
             stunnedUntil = Mathf.Max(stunnedUntil, Time.time + seconds);
             Trigger();
         }

@@ -103,6 +103,21 @@ namespace PoeClone.World
             // The stationary benchmark assumes the target is in the bright centre; on-kill shards are excluded.
             float perfect = skill.Id == SkillId.Pulverize && tree.Get(E.PulverizePerfectImpact) > 0f ? 1.3f : 1f;
             float dealt = AgainstEnemy(baseHit * multiplier * taken * perfect, element, sheet.Level, sheet, tree, skill.Summon);
+            if (skill.Id == SkillId.Whirlwind)
+            {
+                // Sustained contact: all three Gale blades connect and Gathering Storm is fully wound up.
+                bool gale = tree.Get(E.WhirlGaleCutter) > 0f;
+                float meleeShare = gale ? WeaponSkillRules.WhirlGaleMeleeShare : 1f;
+                int blades = tree.Get(E.WhirlGatheringStorm) > 0f ? WeaponSkillRules.WhirlMaxBlades : 0;
+                float fullHit = baseHit * multiplier * taken;
+                dealt = AgainstEnemy(fullHit * meleeShare, element, sheet.Level, sheet, tree, false);
+                if (gale)
+                    dealt += 3f * AgainstEnemy(fullHit * WeaponSkillRules.WhirlGaleProjectileShare, element, sheet.Level, sheet, tree, false);
+                dealt += blades * AgainstEnemy(fullHit * meleeShare * WeaponSkillRules.WhirlBladeDamageShare,
+                    element, sheet.Level, sheet, tree, false);
+                baseHit *= meleeShare * (1f + blades * WeaponSkillRules.WhirlBladeDamageShare) +
+                    (gale ? 3f * WeaponSkillRules.WhirlGaleProjectileShare : 0f);
+            }
             hitDps = dealt * rate * hits;
             // Bleeding stores the tree's percentage of each final hit; armour and damage modifiers
             // have already applied, and each hit contributes an independent stack.

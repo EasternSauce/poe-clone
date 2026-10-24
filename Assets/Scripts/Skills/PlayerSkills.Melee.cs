@@ -329,6 +329,7 @@ namespace PoeClone.Skills
         {
             interval = 0f;
             SkillId? id = ActiveMeleeSkill;
+            if (id == SkillId.Whirlwind && (whirlRequiresRelease || (GetComponent<PoeClone.Combat.Stagger>()?.IsStaggered ?? false))) return false;
             if (id == null || stats == null || controller.IsDashing || controller.IsSkillCommitted || IsWhirling)
                 return false;
             int level = ActiveAttackLevel;

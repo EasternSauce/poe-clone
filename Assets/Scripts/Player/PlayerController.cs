@@ -301,6 +301,8 @@ namespace PoeClone.Player
                 MovementRevision++;
 
             float speed = (IsSprinting() || channelling ? moveSpeed * sprintMultiplier : moveSpeed) * speedMultiplier * (HasOnslaught ? OnslaughtMore : 1f);
+            if (channelling)
+                speed *= channelSpeedMultiplier;
             if (IsChilled)
                 speed *= chilledSpeed;
 
@@ -332,6 +334,7 @@ namespace PoeClone.Player
 
         // A channelled skill (Whirlwind) steers the player itself and turns the body itself.
         private bool channelling;
+        private float channelSpeedMultiplier = 1f;
         private Vector3 channelSteer;
         public bool IsChannelling => channelling;
 
@@ -345,12 +348,13 @@ namespace PoeClone.Player
 
         /// <summary>
         /// While channelling: where to move instead of the movement input, a flat direction whose
-        /// length (0 to 1) is the share of sprinting speed.
+        /// length (0 to 1) is the share of full channel speed. The multiplier scales running speed.
         /// </summary>
-        public void SteerChannel(Vector3 steer)
+        public void SteerChannel(Vector3 steer, float speedMultiplier = 1f)
         {
             steer.y = 0f;
             channelSteer = Vector3.ClampMagnitude(steer, 1f);
+            channelSpeedMultiplier = speedMultiplier;
         }
 
         /// <summary>Roots the player during a deliberate melee skill windup and strike.</summary>

@@ -97,15 +97,15 @@ namespace PoeClone.Inventory
             }
             all.Add(grant, nodes);
         }
-        private static void AddFourBranches(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, Path[] paths)
+        private static void AddFourBranches(Dictionary<StatType, List<WeaponSkillNode>> all, StatType grant, Path[] paths, bool equalRoutes = false)
         {
             var nodes = new List<WeaponSkillNode>();
             for (int lane = 0; lane < paths.Length; lane++)
             {
                 Path path = paths[lane];
                 // Leave at least one small node between the notable and its keystone.
-                int length = lane < 2 ? 6 : 4;
-                int notableIndex = lane < 2 ? 2 : 1;
+                int length = equalRoutes ? 5 : lane < 2 ? 6 : 4;
+                int notableIndex = equalRoutes ? 2 : lane < 2 ? 2 : 1;
                 float angle = (45f + lane * 90f) * Mathf.Deg2Rad;
                 Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 for (int i = 0; i < length; i++)
@@ -182,10 +182,12 @@ namespace PoeClone.Inventory
                 P("Pursuit", U(E.Area, 10), "Long Point", M(B(E.Area, 25)), "Farstrider", M(B(E.Area, 40)), "Swift Entry", B(E.Speed, 18)),
                 P("Duelist", M(B(E.Damage, 10)), "Heartseeker", M(B(E.FirstStrike, 25)), "Perfect Thrust", M(B(E.FirstStrike, 35)), "Vital Point", B(E.ArmourPenetration, 100), B(E.Damage, 10)),
                 P("Impaler", U(E.ArmourPenetration, 20), "Skewering Point", M(B(E.Splash, 15)), "Through and Through", M(B(E.Splash, 25)), "Decisive Thrust", B(E.MoreDamage, 25)));
-            Add(t, StatType.GrantWhirlwind,
-                P("Wide Orbit", U(E.Area, 10), "Cyclone", M(B(E.Area, 25)), "Eye of the Storm", M(B(E.Area, 35)), "Long Blades", B(E.Area, 35)),
-                P("Rising Tempo", M(B(E.Speed, 5)), "Razor Vortex", M(B(E.Speed, 12)), "Dervish", M(B(E.Speed, 20)), "Unbroken Spin", B(E.Cost, -25), B(E.Damage, 15)),
-                P("Sustenance", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Blood Funnel", M(B(E.LifeOnHit, 2)), "Sanguine Storm", M(B(E.LifeOnHit, 3)), "Reaching Steel", B(E.Area, 30)));
+            AddFourBranches(t, StatType.GrantWhirlwind, new[] {
+                P("Cutting Wind", M(B(E.Damage, 4), B(E.Speed, 2)), "Razor Gale", M(B(E.Damage, 12), B(E.Area, 15)), "Gale Cutter", M(B(E.WhirlGaleCutter, 1))),
+                P("Steady Steel", M(B(E.Damage, 4), B(E.Speed, 2)), "Battle Trance", M(B(E.LifeOnHit, 2), B(E.Cost, -10)), "Unbroken Spin", M(B(E.WhirlUnbrokenSpin, 1))),
+                P("Rising Tempo", M(B(E.Damage, 4), B(E.Speed, 2)), "Honed Rhythm", M(B(E.Speed, 8), B(E.ArmourPenetration, 40)), "Gathering Storm", M(B(E.WhirlGatheringStorm, 1))),
+                P("Flowing Steel", M(B(E.Damage, 4), B(E.Speed, 2)), "Sweeping Footwork", M(B(E.Area, 20), B(E.Cost, -10)), "Slipstream", M(B(E.WhirlSlipstream, 1)))
+            }, equalRoutes: true);
             Add(t, StatType.GrantFissure,
                 P("Fault Line", U(E.Area, 10), "Deep Fault", M(B(E.Area, 25)), "Continental Rift", M(B(E.Area, 40)), "Wide Fault", B(E.Area, 30)),
                 P("Molten Core", U(E.Duration, 15), "Lava Vein", M(B(E.Fire, 1), B(E.Ignite, 10)), "Volcanic Rupture", M(B(E.Ignite, 20), B(E.Area, 25), B(E.MoreDamage, -15)), "Lingering Heat", B(E.Duration, 40)),
@@ -258,6 +260,10 @@ namespace PoeClone.Inventory
             string damage = minion ? "minion damage" : "damage";
             switch (b.Effect)
             {
+                case E.WhirlGaleCutter: return "Melee pulses that land launch 3 straight, piercing blades towards your aim (one volley per pulse)\nMelee deals 40% of normal damage; each projectile deals 20%\nAll three projectiles can hit the same enemy; spectral hits cannot trigger volleys";
+                case E.WhirlUnbrokenSpin: return "Cannot be stunned or staggered while channeling Whirlwind";
+                case E.WhirlGatheringStorm: return "Whirlwind melee hits grant a spectral blade, up to 5; at most one blade gained per second\nEach blade adds a melee hit for 13.33% of Whirlwind's melee damage per revolution (40% of total damage at full stacks without Gale Cutter)\nAfter 3 seconds without a melee hit, lose one blade per second, even after ending Whirlwind\nSpectral hits cannot build blades or trigger Gale Cutter";
+                case E.WhirlSlipstream: return "Whirlwind moves at 120% of normal running speed instead of 70%\n50% less Whirlwind area of effect";
                 case E.Damage: return Percent(b.Value, damage);
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.PulverizeWorldshaker: return "Replaces the third slam with Worldshaker\nDeals 300% of normal hit damage with 35% greater radius and a 40% longer windup\nStuns non-boss enemies hit for 2 seconds";

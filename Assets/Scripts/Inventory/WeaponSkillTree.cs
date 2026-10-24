@@ -19,13 +19,14 @@ namespace PoeClone.Inventory
         PulverizeWorldshaker, PulverizeTwinHammer,
         // Retain retired effect IDs so later values stay stable.
         LegacyArmourShred, LegacyPulverizeWindupDefence, LegacyPulverizeUnstoppable,
-        PulverizeBonecrusher, PulverizePerfectImpact
+        PulverizeBonecrusher, PulverizePerfectImpact,
+        WhirlGaleCutter, WhirlUnbrokenSpin, WhirlGatheringStorm, WhirlSlipstream
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 9;
+        public int version = 10;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
@@ -41,7 +42,7 @@ namespace PoeClone.Inventory
         public void Sanitize(StatType grant)
         {
             // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantPulverize || grant == StatType.GrantCleave ? 9 : 2;
+            int requiredVersion = grant == StatType.GrantWhirlwind ? 10 : grant == StatType.GrantPulverize || grant == StatType.GrantCleave ? 9 : 2;
             if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
             level = Mathf.Clamp(level, 1, 10);
             experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
@@ -150,6 +151,13 @@ namespace PoeClone.Inventory
 
     public static class WeaponSkillRules
     {
+        public const int WhirlMaxBlades = 5;
+        // Five blades add 2/3 of base melee DPS: 40% of the combined total.
+        public const float WhirlBladeDamageShare = 2f / (3f * WhirlMaxBlades);
+        public const float WhirlGaleMeleeShare = 0.4f;
+        public const float WhirlGaleProjectileShare = 0.2f;
+        public const float WhirlGaleRange = 12f;
+
         // Continuous strikes per normal weapon attack interval, independent of any reference weapon.
         public static float WhirlwindHitsPerSecond(WeaponType weapon, float attackRate) =>
             (10f / 3f) * SlotRules.BaseAttacksPerSecond(weapon) * attackRate;
