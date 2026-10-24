@@ -988,7 +988,7 @@ namespace PoeClone.Inventory
                 case StatType.ColdPenetration: return n + "% Cold Penetration";
                 case StatType.LightningPenetration: return n + "% Lightning Penetration";
                 case StatType.ElementalPenetration: return n + "% Elemental Penetration";
-                case StatType.ArmourPenetration: return sign + n + " Armour Penetration rating (diminishing returns)";
+                case StatType.ArmourPenetration: return sign + n + " Armour Penetration rating";
                 case StatType.BoneArmour: return "Minions take " + n + "% " + (m.Value < 0f ? "more" : "less") + " damage";
                 case StatType.PhysicalToFire: return "Attacks deal Fire damage instead of Physical";
                 case StatType.PhysicalToCold: return "Attacks deal Cold damage instead of Physical";

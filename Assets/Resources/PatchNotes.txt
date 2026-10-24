@@ -1,3 +1,6 @@
+version: 2026-10-24-armour-penetration-text
+- Removed parenthetical explanations from armour penetration modifiers on items and weapon skill trees.
+
 version: 2026-10-24-double-base-leech-recovery
 - Doubled base attack and spell life leech recovery from 2% to 4% of maximum life per second per effect. The 10% maximum-life limit per hit and shared 20% maximum-life-per-second cap are unchanged.
 

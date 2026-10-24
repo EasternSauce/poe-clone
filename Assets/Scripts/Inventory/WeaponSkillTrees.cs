@@ -315,7 +315,7 @@ namespace PoeClone.Inventory
                 case E.FireOrbit: return "Every " + b.Value + " uses, fire 8 fireballs in sequence around you at 40% of normal damage";
                 case E.ChargeDamage: return Percent(b.Value, "damage at full charge (scales with charge)");
                 case E.ChargeTime: return Percent(b.Value, "time required to fully charge");
-                case E.ArmourPenetration: return n + " armour penetration rating (diminishing returns; cannot fully ignore armour)";
+                case E.ArmourPenetration: return n + " armour penetration rating";
                 case E.PackHunt: return Percent(b.Value, "damage per other Spirit Wolf within 6 metres (up to 4)");
                 case E.MinionRegen: return "Minions regenerate " + b.Value.ToString("0.#") + "% of maximum life per second";
                 case E.GolemAftershock: return "Slam repeats after 0.6 seconds for 40% damage";
