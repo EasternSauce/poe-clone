@@ -6,7 +6,7 @@ namespace PoeClone.Inventory
     /// <summary>Independent hit recovery effects sharing one life recovery rate limit.</summary>
     public sealed class LifeLeech
     {
-        public const float RatePerEffect = 0.02f;
+        public const float RatePerEffect = 0.04f;
         public const float MaximumTotalRate = 0.20f;
         public const float MaximumPerEffect = 0.10f;
 
