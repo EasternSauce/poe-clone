@@ -168,9 +168,12 @@ namespace PoeClone.Inventory
         public static float ComboFollowupSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false) =>
             grant == StatType.GrantCleave ? (doubleSlash ? 1.7f : 2.25f) : grant == StatType.GrantPulverize && twinHammer ? 6f : 4f;
         public static float ComboRecoveryMultiplier(StatType grant, bool twinHammer = false) =>
-            grant == StatType.GrantPulverize && twinHammer ? 0.75f : 1f;
+            grant == StatType.GrantPulverize && twinHammer ? 0.5f : 1f;
         public const float PulverizeWorldshakerDamage = 3f;
         public const float PulverizeTwinHammerDamage = 1.3f;
+        // Redistribute the original 0.875-interval pair cycle into a deliberate opener
+        // and shorter recovery. Both strikes keep their full damage and attack-speed scaling.
+        public static float PulverizeTwinHammerStepDuration(int step) => step % 2 == 1 ? 0.375f : 0.125f;
         public const float PulverizeWorldshakerDuration = 1.4f;
         public const int BonecrusherShardCount = 6;
         public const float BonecrusherRange = 10f;
@@ -202,6 +205,8 @@ namespace PoeClone.Inventory
         /// <summary>Fast links inside each combo, followed by one normal finisher-to-opener interval.</summary>
         public static float ComboSustainedSpeed(StatType grant, bool doubleSlash = false, bool twinHammer = false)
         {
+            if (grant == StatType.GrantPulverize && twinHammer)
+                return 2f / (PulverizeTwinHammerStepDuration(1) + ComboRecoveryMultiplier(grant, true));
             int length = ComboLength(grant, doubleSlash, twinHammer);
             float linkInterval = 1f / ComboFollowupSpeed(grant, doubleSlash, twinHammer);
             if (grant == StatType.GrantCleave && doubleSlash) linkInterval += CleaveDoubleSlashPause;

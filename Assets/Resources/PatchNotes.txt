@@ -1,3 +1,6 @@
+version: 2026-10-24-twin-hammer-windup
+- Twin Hammer now has a deliberate windup before its first slam and a rapid second slam. Recovery between pairs is reduced from 75% to 50% of a normal attack interval. Each slam still deals 130% damage, and the complete pair cycle keeps the same sustained DPS.
+
 version: 2026-10-24-arena-skill-and-build-menus
 - Arena builds now opens a skill list followed by builds for the chosen skill. The chosen skill stays selected across runs; use Back to return to the skill list.
 - Random build options now choose within the selected skill.

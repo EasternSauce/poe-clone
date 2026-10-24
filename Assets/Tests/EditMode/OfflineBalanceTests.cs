@@ -415,7 +415,10 @@ namespace PoeClone.Tests
             Assert.AreEqual(2, WeaponSkillRules.ComboLength(grant, twinHammer: true));
             Assert.AreEqual(1.3f, WeaponSkillRules.ComboHitMultiplier(grant, 1, twinHammer: true));
             Assert.AreEqual(1.3f, WeaponSkillRules.ComboHitMultiplier(grant, 2, twinHammer: true));
-            Assert.AreEqual(0.75f, WeaponSkillRules.ComboRecoveryMultiplier(grant, true));
+            Assert.AreEqual(0.5f, WeaponSkillRules.ComboRecoveryMultiplier(grant, true));
+            Assert.Greater(WeaponSkillRules.PulverizeTwinHammerStepDuration(1), WeaponSkillRules.PulverizeTwinHammerStepDuration(2));
+            Assert.AreEqual(2f / 0.875f, WeaponSkillRules.ComboSustainedSpeed(grant, twinHammer: true), .0001f,
+                "Moving recovery into the opener preserves sustained pair DPS");
             Assert.Greater(WeaponSkillRules.ComboSustainedSpeed(grant, twinHammer: true), WeaponSkillRules.ComboSustainedSpeed(grant));
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             foreach (int lane in new[] { 0, 1 })

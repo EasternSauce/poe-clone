@@ -145,6 +145,8 @@ namespace PoeClone.Skills
             meleeComboMovement = controller.MovementRevision;
             if (CleaveDoubleSlash && !meleeFinisher)
                 interval += MeleeInterval(skill.Id) * WeaponSkillRules.CleaveDoubleSlashPause;
+            if (PulverizeTwinHammer)
+                interval = MeleeInterval(skill.Id) * WeaponSkillRules.PulverizeTwinHammerStepDuration(meleeComboSwing);
             meleeComboBraceAt = Time.time + interval * (2f / 3f);
             meleeComboReadyAt = Time.time + interval;
         }
@@ -349,11 +351,13 @@ namespace PoeClone.Skills
             }
 
             interval = MeleeInterval(id.Value) * WeaponSkillRules.ComboRecoveryMultiplier(skill.Grant, PulverizeTwinHammer);
-            // Keep the normal cooldown between combos; fit each pose and hit into its fast link.
+            // Fit each pose and hit into its link, with a separate recovery between combos.
             float comboSpeed = WeaponSkillRules.ComboFollowupSpeed(skill.Grant, CleaveDoubleSlash, PulverizeTwinHammer);
             float comboInterval = interval / comboSpeed;
             float rate = Mathf.Max(1f, MeleeSeconds(id.Value) / interval) * comboSpeed;
             BeginMeleeCombo(skill, comboInterval);
+            if (PulverizeTwinHammer)
+                comboInterval = MeleeInterval(id.Value) * WeaponSkillRules.PulverizeTwinHammerStepDuration(meleeComboSwing);
             meleeManaCost = cost;
             meleeComboInterval = interval;
             switch (skill.Id)
