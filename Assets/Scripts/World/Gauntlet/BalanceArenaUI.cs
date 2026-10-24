@@ -382,7 +382,8 @@ namespace PoeClone.World
             routeCountLabel.text = choices.Count + " builds in " + category + " level groups · Scroll or drag to browse all builds";
             detail.text = (randomBuild ? "Random build for " + skill + "." : "Selected skill: " + skill) +
                 "\nEach row starts at its listed level. Random levels use the same six milestones." +
-                "\nDPS: successful full combos, full army + repeatable buffs; executes where applicable. Excludes opening/kill buffs and downtime." +
+                "\nDPS uses the equipped gear against average boss defences; the undefended training doll takes more damage." +
+                "\nSuccessful full combos and full army; executes where applicable. Excludes opening/kill buffs and downtime." +
                 "\nShared gear pools and passives per skill and level. Best drop per slot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
                 " enemies and occasional bosses. No XP, loot or saves.";
             LayoutRoutes();

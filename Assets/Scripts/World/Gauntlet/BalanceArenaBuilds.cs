@@ -58,7 +58,7 @@ namespace PoeClone.World
                         float dps = EstimatedDps(entry), bossDps = EstimatedDps(entry, boss: true);
                         bool highest = entry == ranked[0];
                         string label = entry.name + " · " + RouteEffects(entry) +
-                            "\n≈ " + dps.ToString("N0") + " effective DPS" +
+                            "\n≈ " + dps.ToString("N0") + " mitigated DPS" +
                             (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
                             " at Lv " + entry.level + (highest ? " · BEST AT THIS LEVEL" : "");
                         pickerRows[entry] = (label, highest);
@@ -171,35 +171,26 @@ namespace PoeClone.World
             return seed;
         }
 
-        /// <summary>Median of three repeatable best-of-pool kits, without touching player state or RNG.</summary>
+        /// <summary>Estimate the same repeatable kit that Equip assigns, without touching player state or RNG.</summary>
         public static float EstimatedDps(Entry entry, bool boss = false)
         {
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
-            var rolls = new float[3];
-            var bossRolls = new float[3];
             var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
-            for (int i = 0; i < rolls.Length; i++)
-            {
-                var kit = CreateKit(entry, i);
-                var equipment = new EquipmentSet { EnforceRequirements = true };
-                foreach (var pick in kit.Picks) equipment.Restore(pick.Slot, pick.Item, out _);
-                var basis = new BaseStats { Level = entry.level }
-                    .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)
-                    .Set(StatType.Intelligence, 9 + entry.level).Set(StatType.MaxLife, 90 + entry.level * 10)
-                    .Set(StatType.MaxMana, 45 + entry.level * 5).Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
-                var sheet = StatSheet.Build(basis, equipment, Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods));
-                var weapon = equipment.GetActive(EquipSlot.MainHand);
-                if (weapon == null) continue;
-                var bonuses = new WeaponSkillBonuses(weapon);
-                rolls[i] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
-                    out _, out _, out _, includeNonBossCull: true);
-                bossRolls[i] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
-                    out _, out _, out _, includeNonBossCull: false);
-            }
-            Array.Sort(rolls);
-            Array.Sort(bossRolls);
-            damageEstimates[(entry, false)] = rolls[1];
-            damageEstimates[(entry, true)] = bossRolls[1];
+            var kit = CreateKit(entry);
+            var equipment = new EquipmentSet { EnforceRequirements = true };
+            foreach (var pick in kit.Picks) equipment.Restore(pick.Slot, pick.Item, out _);
+            var basis = new BaseStats { Level = entry.level }
+                .Set(StatType.Strength, 9 + entry.level).Set(StatType.Dexterity, 9 + entry.level)
+                .Set(StatType.Intelligence, 9 + entry.level).Set(StatType.MaxLife, 90 + entry.level * 10)
+                .Set(StatType.MaxMana, 45 + entry.level * 5).Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
+            var sheet = StatSheet.Build(basis, equipment, Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods));
+            var weapon = equipment.GetActive(EquipSlot.MainHand);
+            if (weapon == null) throw new InvalidOperationException("Arena: missing weapon for " + entry.skill);
+            var bonuses = new WeaponSkillBonuses(weapon);
+            damageEstimates[(entry, false)] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
+                out _, out _, out _, includeNonBossCull: true);
+            damageEstimates[(entry, true)] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
+                out _, out _, out _, includeNonBossCull: false);
             return damageEstimates[(entry, boss)];
         }
 

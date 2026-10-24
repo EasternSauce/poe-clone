@@ -1,3 +1,6 @@
+version: 2026-10-24-arena-equipped-gear-dps
+- Fixed arena build DPS rankings using different equipment from the gear equipped when starting a run. Estimates now use the actual arena kit, and the picker explains that damage includes boss defences while the training doll has none.
+
 version: 2026-10-24-arena-shared-family-equipment
 - Arena builds now reuse generated equipment pools by family and level: melee, mage, summoner and archer. Builds in each family share armour and accessories, with compatible weapon rolls reused across skills and routes to reduce loading work. Each build keeps its own weapon skill and route.
 
