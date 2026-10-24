@@ -16,27 +16,37 @@ namespace PoeClone.World
         private readonly List<RectTransform> layoutItems = new List<RectTransform>();
         private readonly List<Vector2> layoutPositions = new List<Vector2>();
         private readonly List<Vector2> layoutSizes = new List<Vector2>();
+        private readonly List<GameObject> buildControls = new List<GameObject>();
         private Vector2 lastCanvasSize;
         private float lastHudBottom;
         private float timeScaleBeforePicker;
         private bool audioPausedBeforePicker;
         private bool pickerPaused;
         public bool IsOpen => panel != null && panel.gameObject.activeSelf;
-        private Text status, levelLabel, skillLabel, detail, routeCountLabel, levelGroupLabel;
+        private Text status, levelLabel, skillLabel, detail, routeCountLabel, levelGroupLabel, subtitle;
         private ScrollRect routeScroll;
         private Image randomLevelButton, randomBuildButton, lowerLevelButton;
         private readonly List<Image> routeButtons = new List<Image>();
         private readonly List<Image> routeHighlights = new List<Image>();
         private readonly List<Text> routeLabels = new List<Text>();
         private readonly List<Text> categoryHeaders = new List<Text>();
-        private string skill, route;
-        private int level = 1;
-        private bool randomLevel, randomBuild;
+        // Arena runs reload the scene. Keep the current menu until Back is pressed.
+        private static string skill, route;
+        private static int level = 1;
+        private static bool randomLevel, randomBuild;
         private List<BalanceArenaBuilds.Entry> choices;
         private string[] skills;
         private List<BalanceArenaBuilds.Entry> visibleChoices;
         private static readonly Color HighestDps = new Color(.45f, 1f, .65f);
         private static readonly Color Selected = new Color(1f, .62f, .3f);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetPicker()
+        {
+            skill = route = null;
+            level = 1;
+            randomLevel = randomBuild = false;
+        }
 
         public void Bind(GauntletMode gauntlet)
         {
@@ -68,7 +78,7 @@ namespace PoeClone.World
             UiKit.Frame(panel);
             Text title = Label(panel, "Balance Test Arena", new Vector2(30, -20), new Vector2(1060, 50), 36);
             UiKit.Heading(title);
-            Label(panel, "Click a build to start the arena immediately", new Vector2(30, -78), new Vector2(1060, 32), 20);
+            subtitle = Label(panel, "", new Vector2(30, -78), new Vector2(1060, 32), 20);
 
             lowerLevelButton = Button(panel, "−", new Vector2(40, -130), new Vector2(65, 48), () => ChangeLevel(-1));
             levelLabel = Label(panel, "", new Vector2(115, -130), new Vector2(200, 48), 24);
@@ -79,9 +89,8 @@ namespace PoeClone.World
             randomBuildButton = Button(panel, "Random build", new Vector2(750, -130), new Vector2(330, 48), () => {
                 randomBuild = !randomBuild; Refresh();
             });
-            Button(panel, "Previous skill", new Vector2(40, -200), new Vector2(220, 48), () => ChangeSkill(-1));
+            Button(panel, "Back", new Vector2(40, -200), new Vector2(220, 48), BackToSkills);
             skillLabel = Label(panel, "", new Vector2(275, -200), new Vector2(570, 48), 24);
-            Button(panel, "Next skill", new Vector2(860, -200), new Vector2(220, 48), () => ChangeSkill(1));
             levelGroupLabel = Label(panel, "", new Vector2(40, -256), new Vector2(1040, 28), 18);
             BuildRouteList();
             routeCountLabel = Label(panel, "", new Vector2(40, -604), new Vector2(1040, 42), 18);
@@ -97,6 +106,9 @@ namespace PoeClone.World
                 layoutItems.Add(child);
                 layoutPositions.Add(child.anchoredPosition);
                 layoutSizes.Add(child.sizeDelta);
+                float y = -child.anchoredPosition.y;
+                if (y != 20f && y != 78f && child != routeScroll.transform)
+                    buildControls.Add(child.gameObject);
             }
             UiKit.CloseButton(panel, ClosePicker);
             Refresh();
@@ -208,12 +220,11 @@ namespace PoeClone.World
                     else if (y == 200f)
                     {
                         at.y = -264f;
-                        if (at.x == 40f || at.x == 860f)
+                        if (at.x == 40f)
                         {
-                            at.x = at.x == 40f ? 24f : w - 84f; dimensions.x = 60f;
-                            layoutItems[i].GetComponentInChildren<Text>().text = layoutPositions[i].x == 40f ? "‹" : "›";
+                            at.x = 24f; dimensions.x = 120f;
                         }
-                        else { at.x = 94f; dimensions.x = w - 188f; }
+                        else { at.x = 156f; dimensions.x = w - 180f; }
                     }
                     else if (y >= 256f && y <= 540f) { at = new Vector2(24f, at.y - 80f); dimensions.x = w - 48f; }
                     else if (y == 604f)
@@ -224,13 +235,10 @@ namespace PoeClone.World
                     else if (y == 662f) { at = new Vector2(24f, -746f); dimensions = new Vector2(w - 48f, 240f); }
                     else if (y == 780f) { at = new Vector2(24f, at.x == 200f ? -1010f : -1080f); dimensions.x = w - 48f; }
                 }
-                else if (-at.y == 200f)
-                {
-                    string value = at.x == 40f ? "Previous skill" : at.x == 860f ? "Next skill" : null;
-                    if (value != null) layoutItems[i].GetComponentInChildren<Text>().text = value;
-                }
                 UiKit.TopLeft(layoutItems[i], at, dimensions);
             }
+            if (skill == null)
+                UiKit.TopLeft((RectTransform)routeScroll.transform, new Vector2(24f, -130f), new Vector2(w - 48f, height - 160f));
             lastHudBottom = PlayerHUD.BottomPixels;
             float occupied = TouchMode.Active ? Mathf.Max(lastHudBottom, TouchControlsUI.ShortcutBottomPixels) : lastHudBottom;
             float top = occupied / canvasRect.GetComponent<Canvas>().scaleFactor + 12f;
@@ -243,13 +251,14 @@ namespace PoeClone.World
 
         private void LayoutRoutes()
         {
-            if (visibleChoices == null) return;
+            if (skills == null) return;
             float width = Mathf.Max(1f, routeScroll.viewport.rect.width - 8f);
             float y = 0;
             int category = 0;
-            for (int i = 0; i < visibleChoices.Count; i++)
+            int count = skill == null ? skills.Length : visibleChoices.Count;
+            for (int i = 0; i < count; i++)
             {
-                if (i == 0 || visibleChoices[i].level != visibleChoices[i - 1].level)
+                if (skill != null && (i == 0 || visibleChoices[i].level != visibleChoices[i - 1].level))
                 {
                     if (i > 0) y += 8f;
                     RoutePosition(categoryHeaders[category++].rectTransform, y, 28f);
@@ -270,18 +279,66 @@ namespace PoeClone.World
             level = BalanceArenaBuilds.PickerLevels[Mathf.Clamp(index + delta, 0, BalanceArenaBuilds.PickerLevels.Length - 1)];
             randomLevel = false; Refresh();
         }
-        private void ChangeSkill(int delta)
+        private void SelectSkill(string selected)
         {
-            int current = System.Array.IndexOf(skills, skill);
-            skill = skills[(current + delta + skills.Length) % skills.Length];
-            route = null; randomBuild = false; Refresh();
+            skill = selected;
+            route = null;
+            randomBuild = randomLevel = false;
+            Refresh();
+            Layout();
+            ResetScroll();
+        }
+        private void BackToSkills()
+        {
+            skill = route = null;
+            randomBuild = randomLevel = false;
+            Refresh();
+            Layout();
+            ResetScroll();
+        }
+        private void ResetScroll()
+        {
             routeScroll.StopMovement();
             routeScroll.verticalNormalizedPosition = 1;
+        }
+        private void EnsureRow(int index)
+        {
+            if (index < routeButtons.Count) return;
+            Image button = Button(routeScroll.content, "", Vector2.zero, Vector2.zero, () => {
+                if (skill == null) { SelectSkill(skills[index]); return; }
+                route = visibleChoices[index].id;
+                randomBuild = randomLevel = false;
+                level = visibleChoices[index].level;
+                StartRun();
+            });
+            routeButtons.Add(button);
+            Image highlight = UiKit.Rim(button.rectTransform, outset: -1f, tint: HighestDps);
+            highlight.name = "TopDpsFrame";
+            routeHighlights.Add(highlight);
+            routeLabels.Add(button.GetComponentInChildren<Text>());
         }
         private void Refresh()
         {
             skills = BalanceArenaBuilds.PickerSkills;
-            if (!skills.Contains(skill)) skill = skills[0];
+            if (!skills.Contains(skill)) skill = null;
+            foreach (var control in buildControls) control.SetActive(skill != null);
+            subtitle.text = skill == null ? "Choose a skill to browse its builds" : "Choose a build · Back to change skill";
+            if (skill == null)
+            {
+                visibleChoices = null;
+                foreach (var header in categoryHeaders) header.gameObject.SetActive(false);
+                for (int i = 0; i < skills.Length; i++)
+                {
+                    EnsureRow(i);
+                    routeLabels[i].text = skills[i];
+                    routeLabels[i].color = UiKit.TextColor;
+                    routeButtons[i].color = Color.white;
+                    routeHighlights[i].gameObject.SetActive(false);
+                }
+                for (int i = 0; i < routeButtons.Count; i++) routeButtons[i].gameObject.SetActive(i < skills.Length);
+                LayoutRoutes();
+                return;
+            }
             choices = BalanceArenaBuilds.PickerChoices(skill).ToList();
             if (!choices.Any(b => b.id == route && b.level == level)) route = choices.First(b => b.level == level).id;
             lowerLevelButton.color = !randomLevel && level == 1 ? new Color(.45f, .45f, .45f) : Color.white;
@@ -300,27 +357,13 @@ namespace PoeClone.World
                 {
                     int index = visibleChoices.Count;
                     visibleChoices.Add(choice);
-                    if (index >= routeButtons.Count)
-                    {
-                        Image button = Button(routeScroll.content, "", Vector2.zero, Vector2.zero, () => {
-                            route = visibleChoices[index].id;
-                            randomBuild = randomLevel = false;
-                            level = visibleChoices[index].level;
-                            StartRun();
-                        });
-                        routeButtons.Add(button);
-                        Image highlight = UiKit.Rim(button.rectTransform, outset: -1f, tint: HighestDps);
-                        highlight.name = "TopDpsFrame";
-                        routeHighlights.Add(highlight);
-                        Text label = button.GetComponentInChildren<Text>();
-                        routeLabels.Add(label);
-                    }
+                    EnsureRow(index);
                 }
             }
             for (int i = category; i < categoryHeaders.Count; i++) categoryHeaders[i].gameObject.SetActive(false);
             levelGroupLabel.text = "Levels 1, 10, 16, 24, 30, 34 · Highest DPS first at each level · Green frame = best at that level";
             levelLabel.text = randomLevel ? "Random milestone" : "Level " + level;
-            skillLabel.text = skill + "  (" + (System.Array.IndexOf(skills, skill) + 1) + "/" + skills.Length + ")";
+            skillLabel.text = skill;
             randomLevelButton.color = randomLevel ? Selected : Color.white;
             randomBuildButton.color = randomBuild ? Selected : Color.white;
             for (int i = 0; i < routeButtons.Count; i++)
@@ -337,7 +380,7 @@ namespace PoeClone.World
                     highest ? new Color(.7f, 1f, .8f) : Color.white;
             }
             routeCountLabel.text = choices.Count + " builds in " + category + " level groups · Scroll or drag to browse all builds";
-            detail.text = (randomBuild ? "Random build from all available skills and routes." : "Selected skill: " + skill) +
+            detail.text = (randomBuild ? "Random build for " + skill + "." : "Selected skill: " + skill) +
                 "\nEach row starts at its listed level. Random levels use the same six milestones." +
                 "\nDPS: successful full combos, full army + repeatable buffs; executes where applicable. Excludes opening/kill buffs and downtime." +
                 "\nShared gear pools and passives per skill and level. Best drop per slot. 20 waves of " + GauntletMode.ArenaMinMonsters + "–" + GauntletMode.ArenaMaxMonsters +
@@ -346,8 +389,8 @@ namespace PoeClone.World
         }
         private void StartRun()
         {
-            string pickedSkill = randomBuild ? skills[Random.Range(0, skills.Length)] : skill;
-            var pool = BalanceArenaBuilds.PickerChoices(pickedSkill)
+            if (skill == null) return;
+            var pool = BalanceArenaBuilds.PickerChoices(skill)
                 .Where(b => (randomLevel || b.level == level) && (randomBuild || randomLevel || b.id == route)).ToArray();
             // Choose a level first so random-level runs do not favour high levels with more routes.
             int[] levels = pool.Select(b => b.level).Distinct().ToArray();
