@@ -132,12 +132,34 @@ namespace PoeClone.World
                 MinimalCombatMode.PlacePlayer(player, StartRoomCenter + new Vector3(0f, 1.1f, -2f), Quaternion.identity);
                 if (MinimalCombatMode.ArenaEnabled)
                 {
-                    Level = 1;
-                    player.RestoreProgress(Level, 0);
-                    player.GetComponent<PlayerStatsLink>()?.PushBase();
-                    player.Heal(player.MaxHealth);
-                    player.RestoreMana(player.MaxMana);
-                    gameObject.AddComponent<BalanceArenaUI>().Bind(this);
+                    // No build evaluation is allowed to spill into skill-page navigation.
+                    var loadingObject = new GameObject("Arena Loading");
+                    loadingObject.transform.SetParent(transform, false);
+                    var loading = loadingObject.AddComponent<PoeClone.UI.LoadingScreenUI>();
+                    float previousTimeScale = Time.timeScale;
+                    bool previousAudioPause = AudioListener.pause;
+                    Time.timeScale = 0f;
+                    AudioListener.pause = true;
+                    try
+                    {
+                        yield return loading.FadeIn("Balance Test Arena");
+                        yield return BalanceArenaBuilds.PreparePicker();
+                        Level = 1;
+                        player.RestoreProgress(Level, 0);
+                        player.GetComponent<PlayerStatsLink>()?.PushBase();
+                        player.Heal(player.MaxHealth);
+                        player.RestoreMana(player.MaxMana);
+                        gameObject.AddComponent<BalanceArenaUI>().Bind(this);
+                        PoeClone.UI.LoadingStatus.Clear();
+                        yield return loading.FadeOut();
+                    }
+                    finally
+                    {
+                        Time.timeScale = previousTimeScale;
+                        AudioListener.pause = previousAudioPause;
+                        PoeClone.UI.LoadingStatus.Clear();
+                        Destroy(loadingObject);
+                    }
                     var selectedBuild = pendingArenaBuild;
                     pendingArenaBuild = null;
                     if (selectedBuild != null) BeginArena(selectedBuild);

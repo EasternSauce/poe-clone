@@ -1,3 +1,7 @@
+version: 2026-10-24-arena-build-preloading
+- Arena loading now prepares every skill's build rankings, normal and boss DPS, and route descriptions before opening the arena. Switching skill pages uses the prepared results instead of recalculating builds.
+- Normal and boss DPS comparisons now share generated equipment, reducing duplicate work during loading.
+
 version: 2026-10-24-armour-penetration-text
 - Removed parenthetical explanations from armour penetration modifiers on items and weapon skill trees.
 

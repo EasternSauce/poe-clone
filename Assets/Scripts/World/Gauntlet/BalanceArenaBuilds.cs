@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,15 +14,68 @@ namespace PoeClone.World
     {
         public static readonly int[] PickerLevels = { 1, 10, 16, 24, 30, 34 };
         private static readonly Dictionary<string, Entry[]> pickerChoices = new Dictionary<string, Entry[]>();
+        private static readonly Dictionary<Entry, (string label, bool highest)> pickerRows = new Dictionary<Entry, (string, bool)>();
+        public static string[] PickerSkills { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            catalogue = null;
+            PickerSkills = null;
+            pickerChoices.Clear();
+            pickerRows.Clear();
+            damageEstimates.Clear();
+        }
+
+        /// <summary>Finish every comparison under the loading cover, yielding between estimates.</summary>
+        public static IEnumerator PreparePicker()
+        {
+            if (PickerSkills != null) yield break;
+            UI.LoadingStatus.Set("Preparing arena builds");
+            yield return null;
+            var skills = Data.builds.Select(e => e.skill).Distinct().ToArray();
+            for (int s = 0; s < skills.Length; s++)
+            {
+                string skill = skills[s];
+                UI.LoadingStatus.Set("Comparing " + skill + " (" + (s + 1) + "/" + skills.Length + ")");
+                yield return null;
+                var choices = new List<Entry>();
+                foreach (var group in Data.builds.Where(e => e.skill == skill && PickerLevels.Contains(e.level))
+                    .GroupBy(e => e.level).OrderBy(g => g.Key))
+                {
+                    var candidates = group.GroupBy(e => string.Join(",", Split(e.weaponNodes).OrderBy(id => id, StringComparer.Ordinal)))
+                        .Select(allocations => allocations.First()).ToArray();
+                    foreach (var entry in candidates)
+                    {
+                        EstimatedDps(entry);
+                        yield return null;
+                    }
+                    var ranked = candidates.OrderByDescending(e => EstimatedDps(e))
+                        .ThenBy(e => e.name, StringComparer.Ordinal).ThenBy(e => e.id, StringComparer.Ordinal).Take(4).ToArray();
+                    foreach (var entry in ranked)
+                    {
+                        float dps = EstimatedDps(entry), bossDps = EstimatedDps(entry, boss: true);
+                        bool highest = entry == ranked[0];
+                        string label = entry.name + " · " + RouteEffects(entry) +
+                            "\n≈ " + dps.ToString("N0") + " effective DPS" +
+                            (Mathf.Approximately(dps, bossDps) ? "" : " · " + bossDps.ToString("N0") + " boss DPS") +
+                            " at Lv " + entry.level + (highest ? " · BEST AT THIS LEVEL" : "");
+                        pickerRows[entry] = (label, highest);
+                    }
+                    choices.AddRange(ranked);
+                }
+                pickerChoices[skill] = choices.ToArray();
+            }
+            // Publish readiness only once every skill page is complete. Scene reloads reuse it.
+            PickerSkills = skills;
+        }
+
+        public static (string label, bool highest) PickerRow(Entry entry) => pickerRows[entry];
 
         public static Entry[] PickerChoices(string skill)
         {
-            if (pickerChoices.TryGetValue(skill, out var cached)) return cached;
-            return pickerChoices[skill] = Data.builds.Where(e => e.skill == skill && PickerLevels.Contains(e.level))
-                .GroupBy(e => e.level).OrderBy(g => g.Key)
-                .SelectMany(g => g.GroupBy(e => string.Join(",", Split(e.weaponNodes).OrderBy(id => id, StringComparer.Ordinal)))
-                    .Select(allocations => allocations.First())
-                    .OrderByDescending(e => EstimatedDps(e)).ThenBy(e => e.name, StringComparer.Ordinal).Take(4)).ToArray();
+            if (PickerSkills == null) throw new InvalidOperationException("Arena picker has not finished loading.");
+            return pickerChoices[skill];
         }
 
         [Serializable] public sealed class Catalogue
@@ -110,6 +164,8 @@ namespace PoeClone.World
             if (damageEstimates.TryGetValue((entry, boss), out float cached)) return cached;
             int seed = EquipmentSeed(entry);
             var rolls = new float[3];
+            var bossRolls = new float[3];
+            var skill = SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill));
             for (int i = 0; i < rolls.Length; i++)
             {
                 var kit = CreateKit(entry, new System.Random(unchecked(seed + i * 7919)));
@@ -121,12 +177,18 @@ namespace PoeClone.World
                     .Set(StatType.MaxMana, 45 + entry.level * 5).Set(StatType.PhysicalDamage, PlayerStatsLink.BasePhysicalDamage);
                 var sheet = StatSheet.Build(basis, equipment, Split(entry.passives).SelectMany(id => PassiveTree.Get(id).Mods));
                 var weapon = equipment.GetActive(EquipSlot.MainHand);
-                rolls[i] = weapon == null ? 0 : SingleTargetDamage.Estimate(
-                    SkillBook.Get((SkillId)Enum.Parse(typeof(SkillId), entry.skill)), weapon, sheet,
-                    new WeaponSkillBonuses(weapon), out _, out _, out _, includeNonBossCull: !boss);
+                if (weapon == null) continue;
+                var bonuses = new WeaponSkillBonuses(weapon);
+                rolls[i] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
+                    out _, out _, out _, includeNonBossCull: true);
+                bossRolls[i] = SingleTargetDamage.Estimate(skill, weapon, sheet, bonuses,
+                    out _, out _, out _, includeNonBossCull: false);
             }
             Array.Sort(rolls);
-            return damageEstimates[(entry, boss)] = rolls[1];
+            Array.Sort(bossRolls);
+            damageEstimates[(entry, false)] = rolls[1];
+            damageEstimates[(entry, true)] = bossRolls[1];
+            return damageEstimates[(entry, boss)];
         }
 
         public static GauntletLoadout.Result Equip(Entry entry, PlayerStats player, PlayerInventory inventory)

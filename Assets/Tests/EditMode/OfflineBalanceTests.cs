@@ -14,8 +14,7 @@ namespace PoeClone.Tests
     /// These tests stay in Edit mode; temporary test objects are always destroyed.</summary>
     public class OfflineBalanceTests
     {
-        private static Type EditorType(string name) => AppDomain.CurrentDomain.GetAssemblies()
-            .Select(a => a.GetType("PoeClone.EditorTools." + name)).First(t => t != null);
+        private static Type EditorType(string name) => Type.GetType("PoeClone.EditorTools." + name + ", Assembly-CSharp-Editor", true);
         private static object Call(string method, params object[] args) => EditorType("OfflineBalance").GetMethod(method).Invoke(null, args);
 
         private static float SingleTarget(string skill, ItemData weapon, StatSheet sheet, bool cull = false)
@@ -335,7 +334,7 @@ namespace PoeClone.Tests
             }
             // SkillId resides in the runtime assembly; read its actual enum rather than
             // duplicating a count that silently misses newly added skills.
-            var skillType = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillId")).First(t => t != null);
+            var skillType = Type.GetType("PoeClone.Skills.SkillId, Assembly-CSharp", true);
             CollectionAssert.AreEquivalent(Enum.GetNames(skillType), skills);
             foreach (string skill in skills)
                 if (Enum.TryParse("Grant" + skill, out StatType grant) && WeaponSkillTrees.For(grant) != null)
@@ -528,8 +527,8 @@ namespace PoeClone.Tests
             Assert.AreEqual(1.95f, (float)Call("PiercingInterval", 1f, 0f), .0001);
             Assert.AreEqual(1.175f, (float)Call("PiercingInterval", 2f, 25f), .0001);
             Assert.AreEqual(.72f, (float)Call("PiercingInterval", 5f, 0f), .0001);
-            var book = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillBook")).First(t => t != null);
-            var idType = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillId")).First(t => t != null);
+            var book = Type.GetType("PoeClone.Skills.SkillBook, Assembly-CSharp", true);
+            var idType = Type.GetType("PoeClone.Skills.SkillId, Assembly-CSharp", true);
             foreach (var expected in new[] { new[] { "VenomSlash", "Physical" }, new[] { "BurningArrow", "Fire" }, new[] { "VenomSpout", "Poison" }, new[] { "RainOfArrows", "Physical" } })
             {
                 object skill = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(idType, expected[0]) });
@@ -727,8 +726,8 @@ namespace PoeClone.Tests
         [Test]
         public void CharacterDamageProgression_DoesNotReintroduceWeaponRankScaling_OrBuffSupportSpells()
         {
-            var book = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillBook")).First(t => t != null);
-            var ids = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.SkillId")).First(t => t != null);
+            var book = Type.GetType("PoeClone.Skills.SkillBook, Assembly-CSharp", true);
+            var ids = Type.GetType("PoeClone.Skills.SkillId, Assembly-CSharp", true);
             foreach (string id in new[] { "FireBolt", "IceShard", "ChainLightning", "VenomSpout", "FrostNova", "WarCry", "DeathMark" })
             {
                 object skill = book.GetMethod("Get").Invoke(null, new[] { Enum.Parse(ids, id) });
@@ -747,8 +746,8 @@ namespace PoeClone.Tests
         [Test]
         public void MinionDamageProgression_UsesOwnerCharacterLevel_AndPreservesStatInvestment()
         {
-            var minions = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.Minion")).First(t => t != null);
-            var kinds = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("PoeClone.Skills.MinionKind")).First(t => t != null);
+            var minions = Type.GetType("PoeClone.Skills.Minion, Assembly-CSharp", true);
+            var kinds = Type.GetType("PoeClone.Skills.MinionKind, Assembly-CSharp", true);
             var early = StatSheet.Build(new BaseStats { Level = 1 }, null);
             var late = StatSheet.Build(new BaseStats { Level = 34 }, null);
             var invested = StatSheet.Build(new BaseStats { Level = 34 }.Set(StatType.MinionDamage, 100), null);
