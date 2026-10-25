@@ -60,6 +60,11 @@ keystone directly to a notable or another keystone; travel nodes always sit in
 between. Weapon trees should not duplicate main passive tree stats (attack speed,
 generic damage, area, armour penetration, life on hit and similar); prefer
 skill-specific mechanics, or move a modifier off the main tree on purpose.
+Basic (travel) nodes only carry plain "increased" stats such as increased
+damage, physical damage, minion damage, area, attack speed or reduced cost.
+Lead with damage on early nodes so levelling feels stronger. Almost never put
+"more" damage, conditional, finisher-only or keystone-specific modifiers on
+basic nodes; those belong to notables and keystones.
 
 When making a specific code change, spend some time looking for improvements in and around the code you are touching: remove old, dead, or unreachable code. Do small cleanups alongside the change. If a spot looks like it needs a bigger refactor, ask the user first instead of doing it unprompted.
 

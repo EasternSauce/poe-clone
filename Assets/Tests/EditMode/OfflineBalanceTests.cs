@@ -129,6 +129,24 @@ namespace PoeClone.Tests
             }
         }
 
+        // Travel points carry plain "increased" stats; conditional, "more", finisher and
+        // keystone-specific bonuses belong to notables and keystones.
+        private static readonly WeaponSkillEffect[] BasicEffects = {
+            WeaponSkillEffect.Damage, WeaponSkillEffect.Area, WeaponSkillEffect.Speed, WeaponSkillEffect.Cost,
+            WeaponSkillEffect.Range, WeaponSkillEffect.ProjectileSpeed, WeaponSkillEffect.Duration, WeaponSkillEffect.ArmourPenetration,
+            WeaponSkillEffect.MinionLife, WeaponSkillEffect.MinionMoveSpeed, WeaponSkillEffect.LifeOnHit
+        };
+
+        [Test]
+        public void WeaponTrees_TravelNodesOnlyCarryBasicStats()
+        {
+            foreach (StatType grant in TreeGrants())
+                foreach (var node in WeaponSkillTrees.For(grant).Where(n => !n.Notable && !n.Keystone))
+                    foreach (var bonus in node.Bonuses)
+                        Assert.Contains(bonus.Effect, BasicEffects, grant + "/" + node.Id + " " + bonus.Effect);
+            Assert.IsFalse(WeaponSkillTrees.Neighbours(StatType.GrantCleave, "cr7").Contains("cm5"), "Twin Rhythm and Carnage branches stay apart");
+        }
+
         [Test]
         public void WeaponProgress_GrantsTwentyPointsAndHalfwayPoints()
         {
@@ -287,12 +305,11 @@ namespace PoeClone.Tests
         [Test]
         public void SingleTarget_OpeningDamageDoesNotInflateSustainedDamage()
         {
-            // Opening Edge (full life) and Butcher (low life) are both situational.
-            var weapon = RouteWeapon("rusty_sword", StatType.GrantCleave, "c2");
+            // Butcher's low-life damage is situational, like full-life bonuses.
+            var weapon = RouteWeapon("rusty_sword", StatType.GrantCleave, "cm3", includeTarget: false);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = SingleTarget("Cleave", weapon, sheet);
-            foreach (string id in new[] { "cm1", "cm2", "cm3", "cm4" })
-                Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, id));
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "cm3"));
             Assert.AreEqual(before, SingleTarget("Cleave", weapon, sheet), .001f);
         }
 

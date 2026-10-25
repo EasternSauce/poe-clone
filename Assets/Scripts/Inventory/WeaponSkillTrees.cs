@@ -80,9 +80,9 @@ namespace PoeClone.Inventory
         private static WeaponSkillBonus[] M(params WeaponSkillBonus[] bonuses) => bonuses;
         // Utility travel points keep a little offensive progression. Strong offensive stats stand alone.
         private static WeaponSkillBonus[] U(E effect, float value) => M(B(effect, value), B(E.Damage, 5));
-        // Burning Arrow earns damage while developing its routes; terminals add the remainder.
-        private static WeaponSkillBonus[] BurningTravel(E effect, float value) =>
-            M(B(effect, value), B(E.Damage, 5), B(E.MoreDamage, 7));
+        // Travel points carry basic stats only. Burning Arrow's notables and keystones carry the
+        // more damage its travel points used to give: 3.5% compounded per point leading to them.
+        private static WeaponSkillBonus BurningMore(int travelPoints) => B(E.MoreDamage, (Mathf.Pow(1.035f, travelPoints) - 1f) * 100f);
         // Twice as many travel points as the old 10-point trees, each worth half.
         private static WeaponSkillBonus[] Half(WeaponSkillBonus[] bonuses) => bonuses.Select(b => B(b.Effect, b.Value / 2f)).ToArray();
         private static readonly string[] Form = { "form" };
@@ -193,11 +193,12 @@ namespace PoeClone.Inventory
 
         private static void AddComboLane(TreeBuilder tree, Vector2 direction)
         {
+            // Finisher bonuses live on the notable and keystone; travel points stay basic.
             string[] names = { "Decisive Blow", "Decisive Blow", "Sweeping Finish", "Sweeping Finish", "Driving Impact", "Building Finale", "Building Finale", "Grand Finale" };
             WeaponSkillBonus[][] bonuses = {
-                M(B(E.ComboDamage, 7.5f)), M(B(E.ComboDamage, 7.5f)), M(B(E.ComboArea, 12.5f)), M(B(E.ComboArea, 12.5f)),
-                M(B(E.ComboKnockback, 1.8f)), M(B(E.ComboDamage, 5), B(E.ComboArea, 5)), M(B(E.ComboDamage, 5), B(E.ComboArea, 5)),
-                M(B(E.ComboDamage, 20), B(E.ComboArea, 25))
+                M(B(E.Damage, 5)), M(B(E.Damage, 5)), M(B(E.Area, 5)), M(B(E.Area, 5)),
+                M(B(E.ComboKnockback, 1.8f), B(E.ComboDamage, 15), B(E.ComboArea, 25)), M(B(E.Damage, 5)), M(B(E.Damage, 5)),
+                M(B(E.ComboDamage, 30), B(E.ComboArea, 35))
             };
             string previous = WeaponSkillNode.Root;
             for (int i = 0; i < names.Length; i++)
@@ -239,9 +240,9 @@ namespace PoeClone.Inventory
                 P("Focused Rain", M(B(E.Damage, 10)), "Concentrated Rain", M(B(E.RainSpread, -10)), "Death Zone", M(B(E.RainSpread, -15)), "Overlapping Impacts", B(E.Area, 40)),
                 P("Sustained Rain", M(B(E.LifeOnHit, 1), B(E.Damage, 6)), "Second Salvo", M(B(E.RainSalvos, 1), B(E.MoreDamage, -25)), "Rolling Barrage", M(B(E.RainSalvos, 1), B(E.MoreDamage, -33.333333f)), "Blood Rain", B(E.LifeOnHit, 3)));
             Add(StatType.GrantBurningArrow,
-                P("Ignition", BurningTravel(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20), B(E.MoreDamage, 20)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20), B(E.MoreDamage, 20)), "Hot Coals", B(E.Damage, 25), B(E.MoreDamage, 10)),
-                P("Blast Radius", BurningTravel(E.Area, 10), "Flame Burst", M(B(E.Area, 25)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1)), "Burning Volley", B(E.Projectiles, 1)),
-                P("Hot Draw", BurningTravel(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12)), "Flashfire", M(B(E.Speed, 20)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1)));
+                P("Ignition", U(E.Duration, 15), "Firestarter", M(B(E.Ignite, 20), B(E.MoreDamage, 20), BurningMore(4)), "Slow Burn", M(B(E.Duration, 45), B(E.Ignite, 20), B(E.MoreDamage, 20), BurningMore(4)), "Hot Coals", B(E.Damage, 25), B(E.MoreDamage, 10), BurningMore(2)),
+                P("Blast Radius", U(E.Area, 10), "Flame Burst", M(B(E.Area, 25), BurningMore(4)), "Scorched Earth", M(B(E.Area, 35), B(E.Pierce, 1), BurningMore(4)), "Burning Volley", B(E.Projectiles, 1), BurningMore(2)),
+                P("Hot Draw", U(E.ProjectileSpeed, 12), "Rapid Fire", M(B(E.Speed, 12), BurningMore(4)), "Flashfire", M(B(E.Speed, 20), BurningMore(4)), "Searing Reach", B(E.Range, 40), B(E.Projectiles, 1), BurningMore(2)));
             Add(StatType.GrantVenomArrow,
                 P("Venom Glands", U(E.Duration, 15), "Deep Venom", M(B(E.Poison, 55)), "Black Blood", M(B(E.Poison, 35)), "Lingering Venom", B(E.Duration, 40)),
                 P("Toxic Air", U(E.Area, 10), "Venom Plume", M(B(E.Cloud, 20)), "Choking Fog", M(B(E.Cloud, 30)), "Wide Infection", B(E.Projectiles, 1)),
@@ -302,55 +303,57 @@ namespace PoeClone.Inventory
         // ------------------------------------------------------------------ authored melee trees
         // Left, centre and right boughs leave a shared two-point trunk. Every notable sits at least
         // three points from the origin, and travel points always separate notables from keystones.
+        // Travel points only carry basic stats (increased damage, area, attack speed, cost); conditional,
+        // finisher and keystone-specific bonuses belong to notables and keystones.
 
         private static void BuildCleave()
         {
             var t = new TreeBuilder(StatType.GrantCleave);
-            t.S("c1", "Honed Edge", 0, 75, "root", B(E.ComboDamage, 5));
-            t.S("c2", "Honed Edge", 0, 145, "c1", B(E.ComboDamage, 5));
+            t.S("c1", "Honed Edge", 0, 75, "root", B(E.Damage, 6));
+            t.S("c2", "Honed Edge", 0, 145, "c1", B(E.Damage, 6));
 
             // Left: the finisher. Gathering Force is the toll on the way to Explosive Finale.
-            t.S("cl1", "Heavy Finish", -70, 205, "c2", B(E.ComboDamage, 6));
-            t.S("cl2", "Heavy Finish", -135, 260, "cl1", B(E.ComboDamage, 6));
+            t.S("cl1", "Heavy Swing", -70, 205, "c2", B(E.Damage, 6));
+            t.S("cl2", "Heavy Swing", -135, 260, "cl1", B(E.Damage, 6));
             t.N("cl3", "Gathering Force", -190, 325, "cl2", B(E.ComboSetupDamage, -20), B(E.ComboDamage, 50));
-            t.S("cl4", "Wide Finish", -225, 395, "cl3", B(E.ComboArea, 8));
-            t.S("cl5", "Wide Finish", -245, 465, "cl4", B(E.ComboArea, 8));
+            t.S("cl4", "Wide Arc", -225, 395, "cl3", B(E.Area, 6));
+            t.S("cl5", "Wide Arc", -245, 465, "cl4", B(E.Area, 6));
             t.K("cl6", "Explosive Finale", -255, 545, "cl5", Form, "Cannot be combined with Twin Rhythm", B(E.CleaveExplosion, 1));
-            t.S("cl7", "Shock Front", -320, 605, "cl6", B(E.ComboArea, 6));
-            t.S("cl8", "Shock Front", -360, 675, "cl7", B(E.ComboArea, 6));
-            t.N("cl9", "Driving Finish", -380, 755, "cl8", B(E.ComboKnockback, 2f), B(E.ComboArea, 15));
+            t.S("cl7", "Wide Arc", -320, 605, "cl6", B(E.Area, 6));
+            t.S("cl8", "Wide Arc", -360, 675, "cl7", B(E.Area, 6));
+            t.N("cl9", "Driving Finish", -380, 755, "cl8", B(E.ComboKnockback, 2f), B(E.ComboArea, 25));
             t.S("cl10", "Economy of Motion", -195, 615, "cl6", B(E.Cost, -6));
             t.S("cl11", "Economy of Motion", -160, 690, "cl10", B(E.Cost, -6));
             t.N("cl12", "Ringing Blow", -150, 770, "cl11", B(E.FinisherStun, 1));
 
             // Centre: finishing off the wounded, then Carnage spreads each kill into the pack.
-            t.S("cm1", "Butcher's Eye", 0, 215, "c2", B(E.ExecuteDamage, 8));
-            t.S("cm2", "Butcher's Eye", 0, 285, "cm1", B(E.ExecuteDamage, 8));
-            t.N("cm3", "Butcher", 0, 360, "cm2", B(E.ExecuteDamage, 40));
-            t.S("cm4", "Opening Edge", 0, 430, "cm3", B(E.FirstStrike, 8));
-            t.S("cm5", "Opening Edge", 0, 500, "cm4", B(E.FirstStrike, 8));
-            t.S("cm6", "Opening Edge", 0, 570, "cm5", B(E.FirstStrike, 8));
+            t.S("cm1", "Keen Edge", 0, 215, "c2", B(E.Damage, 6));
+            t.S("cm2", "Keen Edge", 0, 285, "cm1", B(E.Damage, 6));
+            t.N("cm3", "Butcher", 0, 360, "cm2", B(E.ExecuteDamage, 50));
+            t.S("cm4", "Sweeping Steel", 0, 430, "cm3", B(E.Area, 5));
+            t.S("cm5", "Sweeping Steel", 0, 500, "cm4", B(E.Area, 5));
+            t.S("cm6", "Sweeping Steel", 0, 570, "cm5", B(E.Area, 5));
             t.K("cm7", "Carnage", 0, 660, "cm6", null,
                 "Bursts never chain or trigger on-kill effects", B(E.Overkill, 100));
-            t.S("cm8", "Spreading Gore", 0, 735, "cm7", B(E.Overkill, 20));
-            t.S("cm9", "Spreading Gore", 0, 805, "cm8", B(E.Overkill, 20));
-            t.N("cm10", "Feast of Carnage", 0, 885, "cm9", B(E.OverkillHeal, 1));
+            t.S("cm8", "Butcher's Strength", 0, 735, "cm7", B(E.Damage, 6));
+            t.S("cm9", "Butcher's Strength", 0, 805, "cm8", B(E.Damage, 6));
+            t.N("cm10", "Feast of Carnage", 0, 885, "cm9", B(E.OverkillHeal, 1), B(E.Overkill, 25));
 
             // Right: bleeding. Twin Rhythm branches off midway; Rupture waits at the far end.
-            t.S("cr1", "Jagged Steel", 70, 205, "c2", B(E.CleaveBleed, 3));
-            t.S("cr2", "Jagged Steel", 135, 260, "cr1", B(E.CleaveBleed, 3));
-            t.N("cr3", "Serrated Edge", 190, 325, "cr2", B(E.CleaveBleed, 15));
-            t.S("cr4", "Flowing Cuts", 170, 400, "cr3", B(E.ComboSetupDamage, 4));
-            t.S("cr5", "Flowing Cuts", 150, 470, "cr4", B(E.ComboSetupDamage, 4));
+            t.S("cr1", "Jagged Steel", 70, 205, "c2", B(E.Damage, 6));
+            t.S("cr2", "Jagged Steel", 135, 260, "cr1", B(E.Damage, 6));
+            t.N("cr3", "Serrated Edge", 190, 325, "cr2", B(E.CleaveBleed, 20));
+            t.S("cr4", "Flowing Cuts", 170, 400, "cr3", B(E.Damage, 6));
+            t.S("cr5", "Flowing Cuts", 150, 470, "cr4", B(E.Damage, 6));
             t.K("cr6", "Twin Rhythm", 135, 550, "cr5", Form, "Cannot be combined with Explosive Finale", B(E.CleaveDoubleSlash, 1));
-            t.S("cr7", "Steady Rhythm", 175, 625, "cr6,cm5", B(E.ComboDamageTaken, -4));
-            t.S("cr8", "Steady Rhythm", 195, 700, "cr7", B(E.ComboDamageTaken, -4));
-            t.N("cr9", "Iron Rhythm", 205, 780, "cr8", B(E.ComboDamageTaken, -20));
-            t.S("cr10", "Deep Cuts", 260, 385, "cr3", B(E.CleaveBleed, 3));
-            t.S("cr11", "Deep Cuts", 305, 450, "cr10", B(E.CleaveBleed, 3));
-            t.S("cr12", "Deep Cuts", 335, 525, "cr11", B(E.CleaveBleed, 3));
-            t.S("cr13", "Deep Cuts", 350, 605, "cr12", B(E.CleaveBleed, 3));
-            t.S("cr14", "Deep Cuts", 355, 685, "cr13", B(E.CleaveBleed, 3));
+            t.S("cr7", "Steady Rhythm", 175, 625, "cr6", B(E.Cost, -6));
+            t.S("cr8", "Steady Rhythm", 195, 700, "cr7", B(E.Cost, -6));
+            t.N("cr9", "Iron Rhythm", 205, 780, "cr8", B(E.ComboDamageTaken, -25));
+            t.S("cr10", "Deep Cuts", 260, 385, "cr3", B(E.Damage, 6));
+            t.S("cr11", "Deep Cuts", 305, 450, "cr10", B(E.Damage, 6));
+            t.N("cr12", "Haemorrhage", 335, 525, "cr11", B(E.CleaveBleed, 15));
+            t.S("cr13", "Deep Cuts", 350, 605, "cr12", B(E.Damage, 6));
+            t.S("cr14", "Deep Cuts", 355, 685, "cr13", B(E.Damage, 6));
             t.K("cr15", "Rupture", 360, 775, "cr14", null, null, B(E.CleaveRupture, 1));
             t.Register();
         }
@@ -358,54 +361,55 @@ namespace PoeClone.Inventory
         private static void BuildPulverize()
         {
             var t = new TreeBuilder(StatType.GrantPulverize);
-            t.S("p1", "Concussive Weight", 0, 75, "root", B(E.DamageVsStaggered, 6));
-            t.S("p2", "Concussive Weight", 0, 145, "p1", B(E.DamageVsStaggered, 6));
+            t.S("p1", "Crushing Weight", 0, 75, "root", B(E.Damage, 6));
+            t.S("p2", "Crushing Weight", 0, 145, "p1", B(E.Damage, 6));
 
             // Left: patience. Measured Blows rewards resting between combos.
-            t.S("pl1", "Opening Blow", -70, 205, "p2", B(E.FirstStrike, 8));
-            t.S("pl2", "Opening Blow", -135, 260, "pl1", B(E.FirstStrike, 8));
+            t.S("pl1", "Steady Blows", -70, 205, "p2", B(E.Damage, 6));
+            t.S("pl2", "Steady Blows", -135, 260, "pl1", B(E.Damage, 6));
             t.N("pl3", "Perfect Impact", -190, 325, "pl2", B(E.PerfectImpact, 1));
-            t.S("pl4", "Steady Breath", -225, 395, "pl3", B(E.FirstStrike, 8));
-            t.S("pl5", "Steady Breath", -245, 465, "pl4", B(E.FirstStrike, 8));
+            t.S("pl4", "Broad Impact", -225, 395, "pl3", B(E.Area, 6));
+            t.S("pl5", "Broad Impact", -245, 465, "pl4", B(E.Area, 6));
             t.K("pl6", "Measured Blows", -255, 545, "pl5", Patience,
                 "A combo opener is Measured after resting " + WeaponSkillRules.MeasuredRest.ToString("0.#") + " seconds once your next attack is ready\n" +
                 "A gold pulse at your feet shows a Measured attack is ready; Measured slams flash gold\nCannot be combined with Cataclysm",
                 B(E.MeasuredStrike, 60));
-            t.S("pl7", "Patience", -320, 605, "pl6", B(E.MeasuredStrike, 10));
-            t.S("pl8", "Patience", -360, 675, "pl7", B(E.MeasuredStrike, 10));
-            t.N("pl9", "Crushing Patience", -380, 755, "pl8", B(E.MeasuredStun, 1));
-            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.MeasuredRest, -15));
-            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.MeasuredRest, -15));
+            t.S("pl7", "Patience", -320, 605, "pl6", B(E.Damage, 6));
+            t.S("pl8", "Patience", -360, 675, "pl7", B(E.Damage, 6));
+            t.N("pl9", "Crushing Patience", -380, 755, "pl8", B(E.MeasuredStun, 1), B(E.MeasuredStrike, 20));
+            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.Cost, -6));
+            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.Cost, -6));
+            t.N("pl12", "Unhurried", -235, 770, "pl11", B(E.MeasuredRest, -40));
 
             // Centre: the combo's finisher, its two alternative forms, and Bonecrusher above them.
-            t.S("pm1", "Heavy Finish", 0, 215, "p2", B(E.ComboDamage, 6));
-            t.S("pm2", "Heavy Finish", 0, 285, "pm1", B(E.ComboDamage, 6));
-            t.N("pm3", "Seismic Finish", 0, 360, "pm2", B(E.ComboArea, 25), B(E.ComboKnockback, 1.5f));
-            t.S("pm4", "Rolling Force", -55, 430, "pm3", B(E.ComboDamage, 6));
-            t.S("pm5", "Rolling Force", -80, 500, "pm4", B(E.ComboDamage, 6));
+            t.S("pm1", "Heavy Head", 0, 215, "p2", B(E.Damage, 6));
+            t.S("pm2", "Heavy Head", 0, 285, "pm1", B(E.Damage, 6));
+            t.N("pm3", "Seismic Finish", 0, 360, "pm2", B(E.ComboArea, 25), B(E.ComboKnockback, 1.5f), B(E.ComboDamage, 15));
+            t.S("pm4", "Rolling Force", -55, 430, "pm3", B(E.Area, 6));
+            t.S("pm5", "Rolling Force", -80, 500, "pm4", B(E.Area, 6));
             t.K("pm6", "Worldshaker", -90, 580, "pm5", Form, "Cannot be combined with Twin Hammer or Cataclysm", B(E.PulverizeWorldshaker, 1));
-            t.S("pm7", "Driving Rhythm", 55, 430, "pm3", B(E.ComboSetupDamage, 4));
-            t.S("pm8", "Driving Rhythm", 80, 500, "pm7", B(E.ComboSetupDamage, 4));
+            t.S("pm7", "Driving Rhythm", 55, 430, "pm3", B(E.Damage, 6));
+            t.S("pm8", "Driving Rhythm", 80, 500, "pm7", B(E.Damage, 6));
             t.K("pm9", "Twin Hammer", 90, 580, "pm8", Form, "Cannot be combined with Worldshaker or Cataclysm", B(E.PulverizeTwinHammer, 1));
-            t.S("pm10", "Bone Splinter", -55, 660, "pm6", B(E.DamageVsStaggered, 6));
-            t.S("pm11", "Bone Splinter", 55, 660, "pm9", B(E.DamageVsStaggered, 6));
-            t.S("pm12", "Bone Splinter", 0, 730, "pm10,pm11,pl11", B(E.DamageVsStaggered, 6));
-            t.S("pm13", "Bone Splinter", 0, 800, "pm12", B(E.DamageVsStaggered, 6));
+            t.S("pm10", "Bone Splinter", -55, 660, "pm6", B(E.Area, 5));
+            t.S("pm11", "Bone Splinter", 55, 660, "pm9", B(E.Area, 5));
+            t.S("pm12", "Bone Splinter", 0, 730, "pm10,pm11,pl11", B(E.Damage, 6));
+            t.S("pm13", "Bone Splinter", 0, 800, "pm12", B(E.Damage, 6));
             t.K("pm14", "Bonecrusher", 0, 885, "pm13", null, null, B(E.PulverizeBonecrusher, 1));
 
             // Right: Cataclysm, a channelled slam, then the defences that let it finish charging.
-            t.S("pr1", "Heavy Grip", 70, 205, "p2", B(E.DamageVsStaggered, 6));
-            t.S("pr2", "Heavy Grip", 135, 260, "pr1", B(E.DamageVsStaggered, 6));
-            t.N("pr3", "Concussive Blows", 190, 325, "pr2", B(E.DamageVsStaggered, 30));
-            t.S("pr4", "Gathering Strength", 225, 395, "pr3", B(E.DamageVsStaggered, 6));
-            t.S("pr5", "Gathering Strength", 245, 465, "pr4", B(E.DamageVsStaggered, 6));
+            t.S("pr1", "Heavy Grip", 70, 205, "p2", B(E.Damage, 6));
+            t.S("pr2", "Heavy Grip", 135, 260, "pr1", B(E.Damage, 6));
+            t.N("pr3", "Concussive Blows", 190, 325, "pr2", B(E.DamageVsStaggered, 40));
+            t.S("pr4", "Gathering Strength", 225, 395, "pr3", B(E.Area, 6));
+            t.S("pr5", "Gathering Strength", 245, 465, "pr4", B(E.Area, 6));
             t.K("pr6", "Cataclysm", 255, 545, "pr5", FormAndPatience,
                 "Cannot be combined with Worldshaker, Twin Hammer or Measured Blows", B(E.PulverizeCataclysm, 1));
-            t.S("pr7", "Swift Gathering", 320, 605, "pr6", B(E.ChargeTime, -10));
-            t.S("pr8", "Swift Gathering", 360, 675, "pr7", B(E.ChargeTime, -10));
-            t.N("pr9", "Braced Channel", 380, 755, "pr8", B(E.ChannelDamageTaken, -25));
-            t.S("pr10", "Firm Footing", 195, 615, "pr6", B(E.ChannelDamageTaken, -4));
-            t.S("pr11", "Firm Footing", 160, 690, "pr10", B(E.ChannelDamageTaken, -4));
+            t.S("pr7", "Deep Breath", 320, 605, "pr6", B(E.Cost, -6));
+            t.S("pr8", "Deep Breath", 360, 675, "pr7", B(E.Cost, -6));
+            t.N("pr9", "Braced Channel", 380, 755, "pr8", B(E.ChannelDamageTaken, -30));
+            t.S("pr10", "Firm Grip", 195, 615, "pr6", B(E.Damage, 6));
+            t.S("pr11", "Firm Grip", 160, 690, "pr10", B(E.Damage, 6));
             t.N("pr12", "Unbroken Channel", 150, 770, "pr11", B(E.ChannelUnbroken, 1));
             t.Register();
         }
@@ -413,25 +417,26 @@ namespace PoeClone.Inventory
         private static void BuildWhirlwind()
         {
             var t = new TreeBuilder(StatType.GrantWhirlwind);
-            t.S("w1", "Cutting Wind", 0, 75, "root", B(E.Speed, 3));
-            t.S("w2", "Cutting Wind", 0, 145, "w1", B(E.Speed, 3));
+            t.S("w1", "Cutting Wind", 0, 75, "root", B(E.Damage, 6));
+            t.S("w2", "Cutting Wind", 0, 145, "w1", B(E.Damage, 6));
 
             // Left: tempo, then Gale Cutter's thrown blades and their reach.
-            t.S("wl1", "Rising Wind", -70, 205, "w2", B(E.Speed, 3));
-            t.S("wl2", "Rising Wind", -135, 260, "wl1", B(E.Speed, 3));
+            t.S("wl1", "Keen Gale", -70, 205, "w2", B(E.Damage, 6));
+            t.S("wl2", "Keen Gale", -135, 260, "wl1", B(E.Damage, 6));
             t.N("wl3", "Rising Tempo", -190, 325, "wl2", B(E.ChannelRamp, 25));
-            t.S("wl4", "Keen Gale", -225, 395, "wl3", B(E.Speed, 3));
-            t.S("wl5", "Keen Gale", -245, 465, "wl4", B(E.Speed, 3));
+            t.S("wl4", "Rising Wind", -225, 395, "wl3", B(E.Speed, 3));
+            t.S("wl5", "Rising Wind", -245, 465, "wl4", B(E.Speed, 3));
             t.K("wl6", "Gale Cutter", -255, 545, "wl5", null, null, B(E.WhirlGaleCutter, 1));
-            t.S("wl7", "Long Gale", -320, 605, "wl6", B(E.Range, 10));
-            t.S("wl8", "Long Gale", -360, 675, "wl7", B(E.Range, 10));
-            t.N("wl9", "Howling Gale", -380, 755, "wl8", B(E.Range, 35));
-            t.S("wl10", "Light Feet", -195, 615, "wl6", B(E.ChannelMoveSpeed, 6));
-            t.S("wl11", "Light Feet", -150, 685, "wl10,wm8", B(E.ChannelMoveSpeed, 6));
+            t.S("wl7", "Sharp Gale", -320, 605, "wl6", B(E.Damage, 6));
+            t.S("wl8", "Sharp Gale", -360, 675, "wl7", B(E.Damage, 6));
+            t.N("wl9", "Howling Gale", -380, 755, "wl8", B(E.Range, 50));
+            t.S("wl10", "Light Feet", -195, 615, "wl6", B(E.Cost, -5));
+            t.S("wl11", "Light Feet", -150, 685, "wl10,wm8", B(E.Cost, -5));
+            t.N("wl12", "Fleet Spin", -215, 765, "wl11", B(E.ChannelMoveSpeed, 25));
 
             // Centre: endurance, Gathering Storm, then Tempest Release far above.
-            t.S("wm1", "Steady Breath", 0, 215, "w2", B(E.Cost, -5));
-            t.S("wm2", "Steady Breath", 0, 285, "wm1", B(E.Cost, -5));
+            t.S("wm1", "Honed Steel", 0, 215, "w2", B(E.Damage, 6));
+            t.S("wm2", "Honed Steel", 0, 285, "wm1", B(E.Damage, 6));
             t.N("wm3", "Battle Trance", 0, 360, "wm2", B(E.Cost, -20));
             t.S("wm4", "Honed Rhythm", 0, 430, "wm3", B(E.Speed, 3));
             t.S("wm5", "Honed Rhythm", 0, 500, "wm4", B(E.Speed, 3));
@@ -442,26 +447,26 @@ namespace PoeClone.Inventory
                 "Ending Whirlwind after channelling at least " + WeaponSkillRules.ReleaseMinimumSeconds.ToString("0.#") +
                 " second unleashes a shockwave twice its radius\nCounts up to " + WeaponSkillRules.ReleaseMaximumSeconds.ToString("0.#") +
                 " seconds of channelling; an interrupted channel releases nothing", B(E.ChannelRelease, 100));
-            t.S("wm10", "Gathered Fury", 0, 890, "wm9", B(E.ChannelRelease, 20));
-            t.S("wm11", "Gathered Fury", 0, 960, "wm10", B(E.ChannelRelease, 20));
-            t.N("wm12", "Thunderclap", 0, 1045, "wm11", B(E.ReleaseStun, 1));
+            t.S("wm10", "Gathered Fury", 0, 890, "wm9", B(E.Damage, 6));
+            t.S("wm11", "Gathered Fury", 0, 960, "wm10", B(E.Damage, 6));
+            t.N("wm12", "Thunderclap", 0, 1045, "wm11", B(E.ReleaseStun, 1), B(E.ChannelRelease, 40));
 
             // Right: holding ground. Slipstream and Maelstrom pull the spin in opposite directions.
-            t.S("wr1", "Iron Skin", 70, 205, "w2", B(E.ChannelDamageTaken, -4));
-            t.S("wr2", "Iron Skin", 135, 260, "wr1", B(E.ChannelDamageTaken, -4));
-            t.N("wr3", "Braced Channel", 190, 325, "wr2", B(E.ChannelDamageTaken, -25));
-            t.S("wr4", "Fleet Spin", 175, 400, "wr3", B(E.ChannelMoveSpeed, 6));
-            t.S("wr5", "Fleet Spin", 160, 470, "wr4", B(E.ChannelMoveSpeed, 6));
+            t.S("wr1", "Iron Edge", 70, 205, "w2", B(E.Damage, 6));
+            t.S("wr2", "Iron Edge", 135, 260, "wr1", B(E.Damage, 6));
+            t.N("wr3", "Braced Channel", 190, 325, "wr2", B(E.ChannelDamageTaken, -30));
+            t.S("wr4", "Wide Spin", 175, 400, "wr3", B(E.Area, 6));
+            t.S("wr5", "Wide Spin", 160, 470, "wr4", B(E.Area, 6));
             t.K("wr6", "Slipstream", 150, 550, "wr5", null, null, B(E.WhirlSlipstream, 1));
-            t.S("wr14", "Rooted Will", 205, 625, "wr6", B(E.ChannelDamageTaken, -4));
-            t.S("wr15", "Rooted Will", 225, 700, "wr14", B(E.ChannelDamageTaken, -4));
+            t.S("wr14", "Rooted Will", 205, 625, "wr6", B(E.Damage, 6));
+            t.S("wr15", "Rooted Will", 225, 700, "wr14", B(E.Damage, 6));
             t.N("wr16", "Unbroken Channel", 235, 780, "wr15", B(E.ChannelUnbroken, 1));
             t.S("wr7", "Pull of the Storm", 260, 385, "wr3", B(E.Speed, 3));
             t.S("wr8", "Pull of the Storm", 305, 450, "wr7", B(E.Speed, 3));
             t.S("wr9", "Pull of the Storm", 330, 525, "wr8", B(E.Speed, 3));
             t.K("wr10", "Maelstrom", 345, 610, "wr9", null, null, B(E.WhirlMaelstrom, 1));
-            t.S("wr11", "Tightening Gyre", 380, 685, "wr10", B(E.Speed, 3));
-            t.S("wr12", "Tightening Gyre", 395, 760, "wr11", B(E.Speed, 3));
+            t.S("wr11", "Tightening Gyre", 380, 685, "wr10", B(E.Area, 6));
+            t.S("wr12", "Tightening Gyre", 395, 760, "wr11", B(E.Area, 6));
             t.N("wr13", "Eye of the Storm", 405, 845, "wr12", B(E.PerfectImpact, 1));
             t.Register();
         }
