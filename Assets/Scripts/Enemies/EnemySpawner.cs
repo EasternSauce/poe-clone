@@ -723,10 +723,12 @@ namespace PoeClone.Enemies
                 PoeClone.Visuals.DistanceActivity.SetAvailable(transform.GetChild(i).gameObject, active);
         }
 
-        public static EnemyRarity RollRarity()
+        // Layout generation deliberately seeds Unity's RNG; rarity must remain a fresh roll.
+        public static EnemyRarity RollRarity() => RollRarity(rarityRandom);
+
+        public static EnemyRarity RollRarity(System.Random rng)
         {
-            // Layout generation deliberately seeds Unity's RNG; rarity must remain a fresh roll.
-            double roll = rarityRandom.NextDouble();
+            double roll = rng.NextDouble();
             return roll < 0.05f ? EnemyRarity.Rare : roll < 0.25f ? EnemyRarity.Magic : EnemyRarity.Normal;
         }
         private static readonly System.Random rarityRandom = new System.Random();

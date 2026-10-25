@@ -1,3 +1,6 @@
+version: 2026-10-25-arena-random-rarity
+- Arena waves no longer turn whole groups magic or rare. Each monster rolls its own rarity with the same odds as on a map, and every wave keeps at least one normal monster.
+
 version: 2026-10-25-twenty-point-weapon-trees
 - Weapon skill trees now hold 20 points. A weapon earns a point on each level and another halfway to the next, reaching 20 at level 10. All weapon tree allocations are refunded once; weapon levels and experience are kept.
 - Weapon skill levels cannot outgrow your character. Skill level 10 needs character level 34, with the levels in between spread evenly, including progress within a level. Experience stops at the cap until your character levels up.

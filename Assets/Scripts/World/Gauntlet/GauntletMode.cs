@@ -40,7 +40,7 @@ namespace PoeClone.World
             public string Label;
             public List<int> Kinds;
             public bool Elite;  // the first kind is an elite
-            public EnemyRarity Rarity;  // magic packs, or a rare leader with normal escorts
+            public List<EnemyRarity> Rarities;  // per kind, rolled as in the world; null is all normal
         }
 
         // Rooms: the arena round the origin, the start room south of it, a corridor between.
@@ -297,14 +297,16 @@ namespace PoeClone.World
                 {
                     int size = plan.Next(ArenaMinMonsters, ArenaMaxMonsters + 1);
                     e.Elite = roll < 0.15;
-                    // Four magic packs and four rare leaders in every twenty-wave run.
-                    e.Rarity = k % 5 == 2 ? EnemyRarity.Magic : k % 5 == 4 ? EnemyRarity.Rare : EnemyRarity.Normal;
-                    string group = e.Rarity == EnemyRarity.Magic ? "magic pack" :
-                        e.Rarity == EnemyRarity.Rare ? "rare-led group" : "mixed group";
-                    e.Label = (e.Elite ? "elite " : "") + group + " (" + size + ")";
+                    e.Label = (e.Elite ? "elite " : "") + "mixed group (" + size + ")";
+                    // Each monster rolls its own rarity, as on a map; a group is never wholly magic or rare.
+                    e.Rarities = new List<EnemyRarity>();
                     for (int i = 0; i < size; i++)
+                    {
                         e.Kinds.Add(e.Elite && i == 0
                             ? EnemyKinds.IndexOf(EliteKinds[plan.Next(EliteKinds.Length)]) : RandomNormal(plan));
+                        e.Rarities.Add(EnemySpawner.RollRarity(plan));
+                    }
+                    if (!e.Rarities.Contains(EnemyRarity.Normal)) e.Rarities[size - 1] = EnemyRarity.Normal;
                     encounters.Add(e);
                     continue;
                 }
@@ -485,7 +487,7 @@ namespace PoeClone.World
             for (int i = 0; i < e.Kinds.Count; i++)
             {
                 int kindIndex = e.Kinds[i];
-                EnemyRarity rarity = e.Rarity == EnemyRarity.Rare && i > 0 ? EnemyRarity.Normal : e.Rarity;
+                EnemyRarity rarity = e.Rarities?[i] ?? EnemyRarity.Normal;
                 EnemyKind kind = EnemyKinds.Get(kindIndex);
                 float spawnScale = kind.WithRarity(rarity).Scale;
                 Vector3 at = Automated ? FrozenSpot(origin, i, e.Kinds.Count, spawnScale) : ArenaSpot();
