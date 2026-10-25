@@ -78,7 +78,8 @@ namespace PoeClone.Inventory
 
         private static WeaponSkillBonus B(E effect, float value) => new WeaponSkillBonus(effect, value);
         private static WeaponSkillBonus[] M(params WeaponSkillBonus[] bonuses) => bonuses;
-        // Utility travel points keep a little offensive progression. Strong offensive stats stand alone.
+        // A route's signature stat plus a little damage. Exotic stats (see Exotic) leave the travel
+        // points for the route's notable and keystones when the placeholder tree is built.
         private static WeaponSkillBonus[] U(E effect, float value) => M(B(effect, value), B(E.Damage, 5));
         // Travel points carry basic stats only. Burning Arrow's notables and keystones carry the
         // more damage its travel points used to give: 3.5% compounded per point leading to them.
@@ -153,6 +154,23 @@ namespace PoeClone.Inventory
             return lanes <= 1 ? 90f : 90f + spread / 2f - lane * spread / (lanes - 1);
         }
 
+        // Travel points never carry these; a route's exotic stat rides on its notable and keystones instead.
+        private static readonly E[] Exotic = { E.Range, E.ProjectileSpeed, E.Duration, E.ArmourPenetration, E.LifeOnHit, E.MinionMoveSpeed };
+
+        // Adds the exotic share of `travelPoints` placeholder travel points (each worth half the route's stat) to a strong node.
+        private static WeaponSkillBonus[] WithExotic(WeaponSkillBonus[] bonuses, WeaponSkillBonus[] exotic, int travelPoints)
+        {
+            var merged = bonuses.ToList();
+            foreach (var extra in exotic)
+            {
+                float value = extra.Value * travelPoints / 2f;
+                int i = merged.FindIndex(b => b.Effect == extra.Effect);
+                if (i >= 0) merged[i] = B(extra.Effect, merged[i].Value + value);
+                else merged.Add(B(extra.Effect, value));
+            }
+            return merged.ToArray();
+        }
+
         /// <summary>Placeholder layout: four travel points, a notable, four more and the route's keystone;
         /// a side spur of two travel points leads from the notable to the alternative keystone.</summary>
         private static void Add(StatType grant, params Path[] paths)
@@ -163,6 +181,13 @@ namespace PoeClone.Inventory
             for (int lane = 0; lane < paths.Length; lane++)
             {
                 Path p = paths[lane];
+                var exotic = p.Small.Where(b => System.Array.IndexOf(Exotic, b.Effect) >= 0).ToArray();
+                var small = Half(p.Small.Except(exotic).ToArray());
+                // A travel point that lost its exotic stat still grants a full 5% increased damage.
+                if (exotic.Length > 0)
+                    small = small.Where(b => b.Effect != E.Damage).Append(B(E.Damage, Mathf.Max(5f, small.Where(b => b.Effect == E.Damage).Sum(b => b.Value)))).ToArray();
+                var major = WithExotic(p.Major, exotic, 4);
+                var final = WithExotic(p.Final, exotic, 4);
                 float angle = LaneAngle(lane, lanes);
                 Vector2 direction = Direction(angle);
                 string previous = WeaponSkillNode.Root;
@@ -171,7 +196,7 @@ namespace PoeClone.Inventory
                     bool notable = i == 4, keystone = i == 9;
                     string id = "v3_" + lane + "_" + i;
                     tree.Node(id, notable ? p.Notable : keystone ? p.End : p.Name, direction * (80f + i * 56f), previous,
-                        notable ? p.Major : keystone ? p.Final : Half(p.Small), notable, keystone);
+                        notable ? major : keystone ? final : small, notable, keystone);
                     previous = id;
                 }
                 if (p.Side == null) continue;
@@ -183,7 +208,7 @@ namespace PoeClone.Inventory
                     bool keystone = k == 2;
                     string id = "v3_" + lane + "_s" + k;
                     tree.Node(id, keystone ? p.Side : p.Name, origin + spur * (56f * (k + 1)), previous,
-                        keystone ? p.Alternative : Half(p.Small), keystone: keystone);
+                        keystone ? WithExotic(p.Alternative, exotic, 2) : small, keystone: keystone);
                     previous = id;
                 }
             }

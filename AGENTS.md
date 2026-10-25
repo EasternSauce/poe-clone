@@ -61,8 +61,10 @@ between. Weapon trees should not duplicate main passive tree stats (attack speed
 generic damage, area, armour penetration, life on hit and similar); prefer
 skill-specific mechanics, or move a modifier off the main tree on purpose.
 Basic (travel) nodes only carry plain "increased" stats such as increased
-damage, physical damage, minion damage, area or attack speed. Exotic stats
-(reduced cost and the like) also belong on notables and keystones.
+damage, physical damage, minion damage, minion life, area or attack speed.
+Exotic stats (reduced cost, range, projectile speed, ailment duration, armour
+penetration, minion movement speed, life on hit and the like) belong on notables
+and keystones.
 Lead with damage on early nodes so levelling feels stronger. Almost never put
 "more" damage, conditional, finisher-only or keystone-specific modifiers on
 basic nodes; those belong to notables and keystones.
