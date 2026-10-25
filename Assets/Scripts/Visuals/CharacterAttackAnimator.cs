@@ -811,11 +811,14 @@ namespace PoeClone.Visuals
         }
 
         /// <summary>Plays a skill's pose and holds it until <see cref="ReleaseHold"/> (a channelled skill).</summary>
-        public void HoldSkillPose(SkillId skill, WeaponType weaponType)
+        public void HoldSkillPose(SkillId skill, WeaponType weaponType, float rate = 1f)
         {
-            PlaySkillAttack(skill, weaponType);
+            PlaySkillAttack(skill, weaponType, rate);
             holding = true;
         }
+
+        /// <summary>Changes how fast the current skill pose plays from here on.</summary>
+        public void SetSkillRate(float rate) => speedMultiplier = Mathf.Max(0.01f, rate);
 
         /// <summary>Lets a held pose finish and return to rest.</summary>
         public void ReleaseHold()

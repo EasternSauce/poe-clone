@@ -19,10 +19,22 @@ namespace PoeClone.Skills
             if (b.Get(E.Lightning) > 0) return DamageType.Lightning;
             return fallback;
         }
+        /// <summary>The tree's "more damage" bonuses that depend on the target: full life, low life, staggered.</summary>
+        public static float ConditionalMore(EnemyHealth enemy, WeaponSkillBonuses b)
+        {
+            float more = 1f;
+            if (enemy.CurrentHealth >= enemy.MaxHealth * 0.999f) more *= 1f + b.Get(E.FirstStrike) / 100f;
+            else if (enemy.CurrentHealth < enemy.MaxHealth * WeaponSkillRules.ExecuteThreshold) more *= 1f + b.Get(E.ExecuteDamage) / 100f;
+            if (b.Get(E.DamageVsStaggered) > 0f && (enemy.GetComponent<Stagger>()?.IsStaggered ?? false))
+                more *= 1f + b.Get(E.DamageVsStaggered) / 100f;
+            return more;
+        }
+
         public static void Apply(Transform owner, EnemyHealth enemy, float dealt, WeaponSkillBonuses b,
-            DamageType type, bool wasChilled, bool minion = false, bool melee = false)
+            DamageType type, bool wasChilled, bool minion = false, bool melee = false, float overkill = 0f)
         {
             if (b == null || owner == null || enemy == null || dealt <= 0) return;
+            if (overkill > 0f && b.Get(E.Overkill) > 0f) Carnage(owner, enemy, overkill * b.Get(E.Overkill) / 100f, type, b);
             var inventory = owner.GetComponent<PlayerInventory>();
             var stats = owner.GetComponent<PlayerStats>();
             float seconds = 2f * b.DurationMultiplier;
@@ -60,6 +72,27 @@ namespace PoeClone.Skills
                 if (shatter) other.GetComponent<EnemyController>()?.Chill(seconds);
             }
         }
+        // A killing blow's excess damage bursts from the corpse. Burst kills never burst again.
+        private static void Carnage(Transform owner, EnemyHealth dead, float amount, DamageType type, WeaponSkillBonuses b)
+        {
+            Vector3 at = dead.transform.position;
+            float radius = WeaponSkillRules.OverkillRadius;
+            Color color = new Color(0.75f, 0.08f, 0.08f);
+            SkillEffects.Shockwave(at, radius, color, 0.3f, type: type);
+            int struck = 0;
+            foreach (EnemyHealth other in EnemyHealth.Active.ToArray())
+            {
+                if (other == null || other == dead || other.IsDead) continue;
+                Vector3 offset = other.transform.position - at;
+                offset.y = 0f;
+                if (offset.magnitude > radius || other.TakeDamage(amount, type, 0f, 0f, hitOrigin: at) <= 0f) continue;
+                struck++;
+            }
+            var stats = owner.GetComponent<PlayerStats>();
+            if (struck > 0 && stats != null && !stats.IsDead && b.Get(E.OverkillHeal) > 0f)
+                stats.Heal(stats.MaxHealth * b.Get(E.OverkillHeal) / 100f * struck);
+        }
+
         private static bool Roll(float chance) => chance > 0 && Random.value * 100f < chance;
     }
 }

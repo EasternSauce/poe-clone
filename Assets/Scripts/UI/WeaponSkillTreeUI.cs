@@ -33,7 +33,7 @@ namespace PoeClone.UI
 
         private sealed class LinkView
         {
-            public string Child;
+            public string From, To; // From may be the origin
             public Image Line;
         }
 
@@ -166,14 +166,8 @@ namespace PoeClone.UI
                 AudioManager.Instance.PlayUI(AudioManager.Instance.Sfx("ui_click"));
         }
 
-        // Only pending end nodes come back off the draft; confirmed nodes are reset at Mentor Ilyra.
-        private bool CanRefund(string id)
-        {
-            if (!draft.nodes.Contains(id) || weapon.SkillProgress.nodes.Contains(id)) return false;
-            foreach (string other in draft.nodes)
-                if (WeaponSkillTrees.Find(Grant, other)?.Parent == id) return false;
-            return true;
-        }
+        // Pending nodes come back off the draft while the rest stays connected; confirmed nodes are reset at Mentor Ilyra.
+        private bool CanRefund(string id) => !weapon.SkillProgress.nodes.Contains(id) && draft.CanRemove(Grant, id);
 
         private void Refund(string id)
         {
@@ -217,10 +211,12 @@ namespace PoeClone.UI
             var real = weapon.SkillProgress;
             title.text = SkillGrants.SkillName(Grant).ToUpperInvariant();
             int unspent = draft.Available;
-            pointsText.text = weapon.Name + "  |  Level " + real.level + "/10  |  " +
-                (real.level == 10 ? "Maximum level" : "Weapon experience " + Mathf.FloorToInt(100f * real.experience / real.RequiredExperience) + "%") + "  |  " +
+            string dim = "<color=#" + UiKit.Hex(UiKit.DimText) + ">";
+            pointsText.text = weapon.Name + "  |  Level " + real.level + "/" + WeaponSkillProgress.MaxLevel + "  |  " +
+                (real.level == WeaponSkillProgress.MaxLevel ? "Maximum level" : "Weapon experience " + Mathf.FloorToInt(100f * real.experience / real.RequiredExperience) + "%" +
+                    (real.AtCharacterCap(skills.CharacterLevel) ? dim + " (capped by character level)</color>" : "")) + "  |  " +
                 (unspent > 0 ? "<color=#FFD040>" + unspent + " point" + (unspent > 1 ? "s" : "") + " to spend</color>"
-                    : "<color=#" + UiKit.Hex(UiKit.DimText) + ">No points to spend - one more each weapon level</color>");
+                    : dim + "No points to spend - one each weapon level and halfway to the next</color>");
             Color skill = SkillBook.ForGrant(Grant).Color;
             foreach (NodeView v in views)
             {
@@ -232,7 +228,8 @@ namespace PoeClone.UI
                 if (v.Label != null) v.Label.color = taken ? UiKit.Gold : available ? UiKit.TextColor : UiKit.DimText;
             }
             foreach (LinkView l in links)
-                l.Line.color = draft.nodes.Contains(l.Child) ? UiKit.Gold : new Color(0.30f, 0.27f, 0.23f, 1f);
+                l.Line.color = draft.nodes.Contains(l.To) && (l.From == WeaponSkillNode.Root || draft.nodes.Contains(l.From))
+                    ? UiKit.Gold : new Color(0.30f, 0.27f, 0.23f, 1f);
             ShowInfo(hovered ?? (TouchMode.Active ? selected : null));
         }
 
@@ -243,7 +240,7 @@ namespace PoeClone.UI
             tooltip.gameObject.SetActive(view != null);
             infoText.text = TouchMode.Active
                 ? "Tap a node to inspect it; tap again to take it. Drag to look around, pinch to zoom. Reset at Mentor Ilyra in Haven."
-                : "Click to take a node; click a pending end node again to undo it. Drag to look around, scroll to zoom. T closes. Reset at Mentor Ilyra in Haven.";
+                : "Click to take a node; click a pending node again to undo it. Drag to look around, scroll to zoom. T closes. Reset at Mentor Ilyra in Haven.";
             if (view == null || weapon == null || draft == null) return;
 
             string dim = "<color=#" + UiKit.Hex(UiKit.DimText) + ">";
@@ -254,19 +251,21 @@ namespace PoeClone.UI
                 var real = weapon.SkillProgress;
                 text = "<b><color=#" + UiKit.Hex(UiKit.Gold) + ">" + SkillGrants.SkillName(Grant) + "</color></b>\n" +
                     skills.DamageSummary(id, real.level) + "\nCost: " + skills.ManaCost(id).ToString("0.#") + " " + skills.CostResource + "\n" +
-                    dim + real.nodes.Count + "/" + real.level + " points allocated. This weapon owns its progress.\n" +
+                    dim + real.nodes.Count + "/" + real.Points + " points allocated. This weapon owns its progress.\n" +
+                    "Weapon level cannot outgrow your character: level " + WeaponSkillProgress.MaxLevel + " needs character level " + WeaponSkillProgress.CapCharacterLevel + ".\n" +
                     "Reset at Mentor Ilyra in Haven for " + skills.WeaponResetPrice + " gold.</color>";
             }
             else
             {
                 var node = view.Node;
                 bool taken = draft.nodes.Contains(node.Id);
+                var conflict = draft.ExclusiveConflict(Grant, node);
                 string state = weapon.SkillProgress.nodes.Contains(node.Id) ? "Allocated."
                     : taken ? "Pending - confirm to apply."
                     : draft.CanAllocate(Grant, node.Id) ? (TouchMode.Active ? "Tap again to take it." : "Click to take it.")
+                    : conflict != null ? "Cannot be combined with " + conflict.Name + "."
                     : draft.Available <= 0 ? "No points left."
-                    : node.Parent != null && !draft.nodes.Contains(node.Parent) ? "Take the node before it first."
-                    : "Choose one elemental school.";
+                    : "Take a connected node first (" + node.Depth + " points from the origin).";
                 text = "<b><color=#" + UiKit.Hex(UiKit.Gold) + ">" + node.Name + "</color></b>  " + dim +
                     (node.Keystone ? "Keystone" : node.Notable ? "Notable" : "Passive") + "</color>\n" +
                     node.Description + "\n" + dim + state + "</color>";
@@ -363,29 +362,40 @@ namespace PoeClone.UI
             ClampContent();
         }
 
-        private Vector2 Extent()
+        // The tree's bounds, origin included (trees grow upward from it).
+        private Rect Bounds()
         {
-            Vector2 extent = Vector2.zero;
+            Vector2 min = Vector2.zero, max = Vector2.zero;
             foreach (NodeView v in views)
-                if (v.Node != null) extent = Vector2.Max(extent, new Vector2(Mathf.Abs(v.Node.Position.x), Mathf.Abs(v.Node.Position.y)));
-            return extent;
+                if (v.Node != null)
+                {
+                    min = Vector2.Min(min, v.Node.Position);
+                    max = Vector2.Max(max, v.Node.Position);
+                }
+            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
         }
 
         // Keeps some of the tree in the window however far it is dragged.
         private void ClampContent()
         {
-            Vector2 limit = Vector2.Max(Vector2.zero, Extent() * content.localScale.x - viewRect.rect.size * 0.5f + Vector2.one * 90f);
+            Rect bounds = Bounds();
+            float scale = content.localScale.x;
+            Vector2 limit = Vector2.Max(Vector2.zero, bounds.size * 0.5f * scale - viewRect.rect.size * 0.5f + Vector2.one * 90f);
+            Vector2 centre = -bounds.center * scale;
             Vector2 p = content.anchoredPosition;
-            content.anchoredPosition = new Vector2(Mathf.Clamp(p.x, -limit.x, limit.x), Mathf.Clamp(p.y, -limit.y, limit.y));
+            content.anchoredPosition = new Vector2(Mathf.Clamp(p.x, centre.x - limit.x, centre.x + limit.x),
+                Mathf.Clamp(p.y, centre.y - limit.y, centre.y + limit.y));
         }
 
         // Fits the whole tree, with room for the outer names, into the window.
         private void ResetView()
         {
-            Vector2 size = viewRect.rect.size, extent = Extent() + Vector2.one * 70f;
+            Rect bounds = Bounds();
+            Vector2 size = viewRect.rect.size, extent = bounds.size * 0.5f + Vector2.one * 70f;
             float fit = Mathf.Min(size.x / (2f * extent.x), size.y / (2f * extent.y));
-            content.localScale = Vector3.one * Mathf.Clamp(fit, MinZoom, MaxZoom);
-            content.anchoredPosition = Vector2.zero;
+            float scale = Mathf.Clamp(fit, MinZoom, MaxZoom);
+            content.localScale = Vector3.one * scale;
+            content.anchoredPosition = -bounds.center * scale;
         }
 
         private void UpdatePinch()
@@ -473,17 +483,18 @@ namespace PoeClone.UI
             var nodes = WeaponSkillTrees.For(Grant);
             if (nodes == null) { Close(); return; }
             foreach (var node in nodes)
-            {
-                Vector2 from = node.Parent != null ? WeaponSkillTrees.Find(Grant, node.Parent).Position : Vector2.zero, to = node.Position;
-                Image line = UiKit.NewImage("Link", content, Color.gray);
-                line.raycastTarget = false;
-                RectTransform lr = line.rectTransform;
-                lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
-                lr.anchoredPosition = (from + to) * 0.5f;
-                lr.sizeDelta = new Vector2((to - from).magnitude, 4f);
-                lr.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(to.y - from.y, to.x - from.x) * Mathf.Rad2Deg);
-                links.Add(new LinkView { Child = node.Id, Line = line });
-            }
+                foreach (string link in node.Links)
+                {
+                    Vector2 from = link == WeaponSkillNode.Root ? Vector2.zero : WeaponSkillTrees.Find(Grant, link).Position, to = node.Position;
+                    Image line = UiKit.NewImage("Link", content, Color.gray);
+                    line.raycastTarget = false;
+                    RectTransform lr = line.rectTransform;
+                    lr.anchorMin = lr.anchorMax = lr.pivot = new Vector2(0.5f, 0.5f);
+                    lr.anchoredPosition = (from + to) * 0.5f;
+                    lr.sizeDelta = new Vector2((to - from).magnitude, 4f);
+                    lr.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(to.y - from.y, to.x - from.x) * Mathf.Rad2Deg);
+                    links.Add(new LinkView { From = link, To = node.Id, Line = line });
+                }
 
             NodeView origin = AddNode(null, Vector2.zero, 64f);
             var definition = SkillBook.ForGrant(Grant);

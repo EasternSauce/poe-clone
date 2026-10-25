@@ -38,14 +38,17 @@ namespace PoeClone.Skills
             }
         }
         public int WeaponResetPrice => MainWeapon?.SkillProgress != null ? 75 + 50 * MainWeapon.SkillProgress.level * MainWeapon.SkillProgress.level : 0;
+        public int CharacterLevel => stats != null ? stats.Level : 1;
 
-        /// <summary>Allocates a confirmed draft in order; all or nothing.</summary>
+        /// <summary>Allocates a confirmed draft, each node once it connects; all or nothing.</summary>
         public bool AllocateWeaponNodes(ItemData expectedWeapon, System.Collections.Generic.IReadOnlyList<string> ids)
         {
             if (expectedWeapon == null || MainWeapon != expectedWeapon || !expectedWeapon.MainSkillGrant.HasValue || ids.Count == 0) return false;
             var progress = expectedWeapon.SkillProgress.Copy();
-            foreach (string id in ids)
-                if (!progress.Allocate(expectedWeapon.MainSkillGrant.Value, id)) return false;
+            // A refunded draft node can leave later picks connected only through each other.
+            var remaining = new System.Collections.Generic.List<string>(ids);
+            while (remaining.Count > 0)
+                if (remaining.RemoveAll(id => progress.Allocate(expectedWeapon.MainSkillGrant.Value, id)) == 0) return false;
             expectedWeapon.SkillProgress.nodes = progress.nodes;
             cachedTreeCount = -1;
             Minion.Desummon(transform);
@@ -69,15 +72,16 @@ namespace PoeClone.Skills
             ItemData weapon = MainWeapon;
             if (weapon?.SkillProgress == null || stats == null || stats.IsDead || !enabled) return;
             int oldLevel = weapon.SkillProgress.level;
-            if (weapon.SkillProgress.GainExperience(amount))
-            {
-                weapon.SynchronizeSkillLevel();
-                CombatText.Show(transform.position + Vector3.up * 2.5f,
-                    SkillGrants.SkillName(weapon.MainSkillGrant.Value) + " level " + weapon.SkillProgress.level + " · +" + (weapon.SkillProgress.level - oldLevel) + " tree points",
-                    UiKit.Gold, 1.2f);
-                Changed?.Invoke();
-                SaveSystem.SaveCharacterNow();
-            }
+            int points = weapon.SkillProgress.GainExperience(amount, stats.Level);
+            if (points <= 0) return;
+            weapon.SynchronizeSkillLevel();
+            string name = SkillGrants.SkillName(weapon.MainSkillGrant.Value);
+            string plus = " · +" + points + " tree point" + (points > 1 ? "s" : "");
+            CombatText.Show(transform.position + Vector3.up * 2.5f,
+                (weapon.SkillProgress.level > oldLevel ? name + " level " + weapon.SkillProgress.level : name + " halfway to level " + (weapon.SkillProgress.level + 1)) + plus,
+                UiKit.Gold, 1.2f);
+            Changed?.Invoke();
+            SaveSystem.SaveCharacterNow();
         }
     }
 }

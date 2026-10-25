@@ -34,7 +34,9 @@ namespace PoeClone.World
         /// <summary>The bow main skill to roll for this build.</summary>
         public SkillId? BowSkill;
         /// <summary>Weapon tree allocation order; each selected weapon spends its own rank budget.</summary>
-        public string[] WeaponNodes = { "v2_0_0", "v2_0_1", "v2_0_2", "v2_0_3", "v2_0_4", "v2_0_5", "v2_1_0", "v2_1_1", "v2_1_2", "v2_1_3" };
+        public string[] WeaponNodes = {
+            "v3_0_0", "v3_0_1", "v3_0_2", "v3_0_3", "v3_0_4", "v3_0_5", "v3_0_6", "v3_0_7", "v3_0_8", "v3_0_9",
+            "v3_1_0", "v3_1_1", "v3_1_2", "v3_1_3", "v3_1_4", "v3_1_5", "v3_1_6", "v3_1_7", "v3_1_8", "v3_1_9" };
 
         /// <summary>Stat weights for picking rares, relative to <see cref="GauntletLoadout.UnitValue"/>.</summary>
         public Dictionary<StatType, float> Weights = new Dictionary<StatType, float>();
@@ -58,7 +60,7 @@ namespace PoeClone.World
                 sb.Append(string.Join(",", MainHand)).Append('|').Append(string.Join(",", OffHand)).Append('|')
                   .Append(StaffSpell).Append('|').Append(Armour).Append('|').Append(string.Join(",", CoreSkills)).Append('|')
                   .Append(string.Join(",", SupportSkills)).Append('|').Append(string.Join(",", Passives)).Append('|')
-                  .Append(string.Join(",", Uniques)).Append('|').Append("weapon-trees-v2|").Append(string.Join(",", WeaponNodes)).Append('|');
+                  .Append(string.Join(",", Uniques)).Append('|').Append("weapon-trees-v3|").Append(string.Join(",", WeaponNodes)).Append('|');
                 var keys = new List<StatType>(Weights.Keys);
                 keys.Sort();
                 foreach (StatType k in keys)
@@ -201,7 +203,10 @@ namespace PoeClone.World
                 CoreSkills = new[] { StatType.GrantPulverize, StatType.GrantFissure }, SupportSkills = new[] { StatType.GrantWarCry },
                 Weights = Melee(StatType.ArmourPenetration, 0.8f, StatType.MoreMeleeDamage, 2f),
                 Passives = new[] { "m_life_heart", "m8", "m_bloodbath", "m5", "k_unbreakable", "f_feast", "m_life_guard", "f_life_heart" },
-                Uniques = new[] { "Cinderwake", "Bloodroot Cord" }
+                Uniques = new[] { "Cinderwake", "Bloodroot Cord" },
+                // Worldshaker, then Bonecrusher beyond it, then Concussive Blows and Perfect Impact.
+                WeaponNodes = new[] { "p1", "p2", "pm1", "pm2", "pm3", "pm4", "pm5", "pm6", "pm10", "pm12", "pm13", "pm14",
+                    "pr1", "pr2", "pr3", "pm11", "pl1", "pl2", "pl3", "pr4" }
             },
             new GauntletBuild
             {
@@ -287,7 +292,10 @@ namespace PoeClone.World
                 MainHand = new[] { "greatsword", "sword" }, OffHand = new[] { "shield_str" }, Armour = "str",
                 CoreSkills = new[] { StatType.GrantWhirlwind }, SupportSkills = new[] { StatType.GrantWarCry },
                 Weights = Melee(StatType.MoreMeleeDamage, 2f),
-                Passives = new[] { "m8", "m_bloodbath", "f_feast", "m_life_heart", "m5", "f_life_heart" }
+                Passives = new[] { "m8", "m_bloodbath", "f_feast", "m_life_heart", "m5", "f_life_heart" },
+                // Braced Channel first, Gathering Storm, then Maelstrom into Eye of the Storm.
+                WeaponNodes = new[] { "w1", "w2", "wr1", "wr2", "wr3", "wm1", "wm2", "wm3", "wm4", "wm5", "wm6",
+                    "wr7", "wr8", "wr9", "wr10", "wr11", "wr12", "wr13", "wl1", "wl2" }
             },
             new GauntletBuild
             {

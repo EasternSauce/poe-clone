@@ -33,15 +33,15 @@ namespace PoeClone.Skills
 
         private bool whirling;
         private bool whirlAttackHeld;
-        private bool whirlRequiresRelease;
+        private bool channelRequiresRelease;
         private int whirlBlades;
         private float whirlNextBladeGain;
         private float whirlBladeDecayAt;
         private readonly List<GameObject> whirlBladeVisuals = new List<GameObject>();
         private bool WhirlEffect(WeaponSkillEffect effect) => BonusesFor(SkillId.Whirlwind).Get(effect) > 0f;
-        public bool WhirlStunImmune => whirling && WhirlEffect(WeaponSkillEffect.WhirlUnbrokenSpin);
 
         private int whirlLevel;
+        private float whirlStartedAt;
         private float whirlNextMana;
         private float whirlNextHit;
         private Vector3 whirlFacing;
@@ -67,16 +67,8 @@ namespace PoeClone.Skills
             set
             {
                 whirlAttackHeld = value;
-                if (!value) whirlRequiresRelease = false;
+                if (!value) channelRequiresRelease = false;
             }
-        }
-
-        /// <summary>A stagger requires a fresh attack press, rather than restarting from a held button.</summary>
-        public void InterruptWhirlwind()
-        {
-            if (!whirling || WhirlStunImmune) return;
-            whirlRequiresRelease = true;
-            EndWhirlwind();
         }
 
         private void ResetWhirlBlades()
@@ -145,6 +137,7 @@ namespace PoeClone.Skills
         {
             whirling = true;
             whirlLevel = level;
+            whirlStartedAt = Time.time;
             whirlFacing = transform.forward;
             whirlNextMana = Time.time + ChannelTick;
             whirlNextHit = Time.time;
@@ -154,11 +147,13 @@ namespace PoeClone.Skills
             PlaySkillSound(SkillId.Whirlwind, transform.position);
         }
 
-        private void EndWhirlwind()
+        /// <summary><paramref name="released"/>: the player let go (or ran dry), rather than an interruption.</summary>
+        private void EndWhirlwind(bool released)
         {
             if (!whirling)
                 return;
             whirling = false;
+            if (released) TempestRelease(Time.time - whirlStartedAt);
             whirlHitStreaks.Clear();
             whirlPreviousTargets.Clear();
             foreach (Collider[] colliders in whirlIgnored.Values)
@@ -175,7 +170,7 @@ namespace PoeClone.Skills
         {
             if (!free || !AttackHeld || ActiveMeleeSkill != SkillId.Whirlwind)
             {
-                EndWhirlwind();
+                EndWhirlwind(released: free && ActiveMeleeSkill == SkillId.Whirlwind);
                 return;
             }
 
@@ -184,7 +179,7 @@ namespace PoeClone.Skills
                 if (!stats.TrySpendMana(CostOf(SkillId.Whirlwind, ActiveAttackLevel)))
                 {
                     CombatText.Show(transform.position + Vector3.up * 2f, "Not enough " + CostResource, CombatText.ColdColor, 0.8f);
-                    EndWhirlwind();
+                    EndWhirlwind(released: true);
                     return;
                 }
                 whirlNextMana += ChannelTick;
@@ -197,7 +192,8 @@ namespace PoeClone.Skills
             Vector3 whirlSteer = Vector3.ClampMagnitude(WhirlSteer(), 1f);
             if (whirlSteer.sqrMagnitude > 0.01f)
                 whirlFacing = whirlSteer.normalized;
-            controller.SteerChannel(whirlSteer, WhirlEffect(WeaponSkillEffect.WhirlSlipstream) ? 1.2f : 0.7f);
+            controller.SteerChannel(whirlSteer, (WhirlEffect(WeaponSkillEffect.WhirlSlipstream) ? 1.2f : 0.7f) *
+                (1f + BonusesFor(SkillId.Whirlwind).Get(WeaponSkillEffect.ChannelMoveSpeed) / 100f));
             // Counter-clockwise, so the sword arm sweeps forward and the blade leads (a forehand
             // cut); a turn per hit, so a heavy weapon spins heavier.
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + WhirlYawSpeed * Time.deltaTime, 0f);
@@ -214,7 +210,10 @@ namespace PoeClone.Skills
             }
         }
 
-        private float WhirlHitsPerSecond() => WeaponSkillRules.WhirlwindHitsPerSecond(CurrentWeapon(), SkillAttackRate(SkillId.Whirlwind));
+        // Rising Tempo: the spin quickens the longer it is held.
+        private float WhirlHitsPerSecond() => WeaponSkillRules.WhirlwindHitsPerSecond(CurrentWeapon(), SkillAttackRate(SkillId.Whirlwind)) *
+            (1f + Mathf.Min(BonusesFor(SkillId.Whirlwind).Get(WeaponSkillEffect.ChannelRamp),
+                WeaponSkillRules.ChannelRampPerSecond * (whirling ? Time.time - whirlStartedAt : 0f)) / 100f);
 
         // Newly met enemies included: one that spawns mid-spin can't block it either.
         private void IgnoreEnemiesWhileWhirling()
@@ -249,7 +248,10 @@ namespace PoeClone.Skills
         private void WhirlHit(SkillDefinition skill, int level, float reach)
         {
             Vector3 center = transform.position;
-            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level);
+            bool maelstrom = WhirlEffect(WeaponSkillEffect.WhirlMaelstrom);
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(level) * (maelstrom ? WeaponSkillRules.MaelstromDamage : 1f);
+            if (maelstrom) Maelstrom(center, reach);
+            bool eye = WhirlEffect(WeaponSkillEffect.PerfectImpact);
             bool gale = WhirlEffect(WeaponSkillEffect.WhirlGaleCutter);
             float meleeShare = gale ? WeaponSkillRules.WhirlGaleMeleeShare : 1f;
             int blades = whirlBlades; // A newly gained blade starts dealing damage next pulse.
@@ -267,8 +269,11 @@ namespace PoeClone.Skills
                 hits = enemy.Immune || damage <= 0f ? 0 : hits + 1;
                 bool flinch = hits >= WhirlHitsToStagger;
                 whirlHitStreaks[enemy] = flinch ? 0 : hits;
+                Vector3 offset = enemy.transform.position - center;
+                offset.y = 0f;
                 HitEffects.Deal(transform, enemy, damage, true, CombatText.PhysicalColor, melee: true,
                     tree: BonusesFor(skill.Id), flinch: flinch, sourceDamageMultiplier: meleeShare,
+                    hitDamageMultiplier: eye ? WeaponSkillRules.PerfectImpactMultiplier(offset.magnitude, reach) : 1f,
                     onLanded: () => landed = true);
                 for (int blade = 0; blade < blades && !enemy.IsDead; blade++)
                     HitEffects.Deal(transform, enemy, damage, true, CombatText.PhysicalColor, melee: true,
@@ -293,6 +298,39 @@ namespace PoeClone.Skills
                 }
             }
             Record(skill, level, reach, count: blades, points: flights, at: center, facing: aim);
+        }
+
+        // Maelstrom drags the nearby crowd into the spin, short of the player's own body.
+        private static void Maelstrom(Vector3 center, float reach)
+        {
+            float pull = reach * WeaponSkillRules.MaelstromPullReach;
+            foreach (EnemyHealth enemy in EnemyHealth.Active)
+            {
+                if (enemy == null || enemy.IsDead) continue;
+                Vector3 offset = enemy.transform.position - center;
+                offset.y = 0f;
+                if (offset.sqrMagnitude <= pull * pull)
+                    enemy.GetComponent<EnemyController>()?.PullTowards(center, WeaponSkillRules.MaelstromPullDistance, WeaponSkillRules.MaelstromStandOff);
+            }
+        }
+
+        // Tempest Release: letting go after a long enough spin bursts outward with what it built up.
+        private void TempestRelease(float seconds)
+        {
+            var tree = BonusesFor(SkillId.Whirlwind);
+            if (tree.Get(WeaponSkillEffect.ChannelRelease) <= 0f || seconds < WeaponSkillRules.ReleaseMinimumSeconds || stats == null || stats.IsDead)
+                return;
+            SkillDefinition skill = SkillBook.Get(SkillId.Whirlwind);
+            float radius = WhirlReach() * WeaponSkillRules.ReleaseRadiusMultiplier;
+            float damage = WeaponDamage() * skill.WeaponMultiplierAt(whirlLevel) * tree.Get(WeaponSkillEffect.ChannelRelease) / 100f *
+                Mathf.Min(seconds, WeaponSkillRules.ReleaseMaximumSeconds) * (tree.Has(WeaponSkillEffect.WhirlMaelstrom) ? WeaponSkillRules.MaelstromDamage : 1f);
+            Vector3 center = transform.position;
+            SkillEffects.Shockwave(center, radius, skill.Color, 0.45f, type: SkillEffects.DamagePattern(skill));
+            PlayComboImpactSound(SkillId.Whirlwind, true, center);
+            PoeClone.CameraSystem.CameraFollow.Shake(0.14f, 0.18f);
+            bool stun = tree.Has(WeaponSkillEffect.ReleaseStun);
+            foreach (EnemyHealth enemy in EnemiesWithin(center, radius))
+                HitEffects.Deal(transform, enemy, damage, true, CombatText.PhysicalColor, melee: true, tree: tree, stunningHit: stun);
         }
 
         // Towards the cursor, as a share of full speed that grows with its distance. On touch: the

@@ -395,6 +395,19 @@ namespace PoeClone.Enemies
             if (bleeding == null) bleeding = StartCoroutine(BleedTicks());
         }
 
+        /// <summary>Deals every bleed's remaining damage at once, times <paramref name="multiplier"/>, and ends them.</summary>
+        public void Rupture(float multiplier)
+        {
+            if (dead || bleeds.Count == 0) return;
+            float remaining = 0f;
+            foreach (BleedStack stack in bleeds) remaining += stack.PerSecond * stack.Remaining;
+            bleeds.Clear();
+            float dealt = TakeDamageOverTime(remaining * multiplier, DamageType.Physical, ignoreArmour: true);
+            if (dealt > 0f)
+                UI.CombatText.Show(transform.position + Vector3.up * 2.1f * transform.localScale.y,
+                    "Rupture " + Mathf.CeilToInt(dealt), new Color(0.85f, 0.1f, 0.1f), 1f);
+        }
+
         private IEnumerator BleedTicks()
         {
             const float tick = 0.25f;

@@ -502,8 +502,20 @@ namespace PoeClone.Player
 
         public void TakeDamage(float amount) => ApplyDamage(amount, EventRandom.NextSeed());
 
-        public float ComboTakenMultiplier => controller != null && controller.IsComboLocked &&
-            GetComponent<PoeClone.Skills.PlayerSkills>()?.ActiveMeleeSkill != PoeClone.Skills.SkillId.Cleave ? 0.7f : 1f;
+        /// <summary>Damage taken during a melee combo (30% less, except Cleave's own tree reduction) and while channelling.</summary>
+        public float ComboTakenMultiplier
+        {
+            get
+            {
+                var skills = GetComponent<PoeClone.Skills.PlayerSkills>();
+                if (skills == null) return 1f;
+                float taken = skills.ChannelTakenMultiplier;
+                if (controller != null && controller.IsComboLocked)
+                    taken *= skills.ActiveMeleeSkill != PoeClone.Skills.SkillId.Cleave ? 0.7f
+                        : Mathf.Max(0.4f, 1f + skills.WeaponBonuses.Get(WeaponSkillEffect.ComboDamageTaken) / 100f);
+                return taken;
+            }
+        }
 
         private void ApplyDamage(float amount, int rollSeed, bool comboReduced = false)
         {

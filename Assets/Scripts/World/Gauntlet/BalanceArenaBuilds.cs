@@ -116,7 +116,7 @@ namespace PoeClone.World
                         var baseline = level.FirstOrDefault(e => e.id.EndsWith("/base", StringComparison.Ordinal)) ?? level.First();
                         var progress = new WeaponSkillProgress { level = baseline.weaponRank };
                         // Preview a legal developing route before its destination unlocks.
-                        foreach (string id in route.Nodes.Take(baseline.weaponRank))
+                        foreach (string id in route.Nodes.Take(progress.Available))
                             if (!progress.Allocate(skill.Grant, id)) throw new InvalidOperationException("Arena: illegal live route " + route.Name);
                         // Preserve useful sampled travel preferences, then fill from the live tree.
                         // Never add an unselected keystone or silently change the advertised route.
@@ -127,7 +127,7 @@ namespace PoeClone.World
                         }
                         entries.Add(new Entry {
                             id = group.Key + "/" + route.Id, skill = group.Key,
-                            name = route.Nodes.Length > baseline.weaponRank ? "Toward " + route.Name : route.Name,
+                            name = route.Nodes.Length > progress.Points ? "Toward " + route.Name : route.Name,
                             family = baseline.family, level = level.Key, sample = baseline.sample,
                             weaponRank = baseline.weaponRank, passives = string.Join(",", ArenaPassiveBuilds.Plan(skill, level.Key)), gear = baseline.gear,
                             weaponNodes = string.Join(",", progress.nodes)

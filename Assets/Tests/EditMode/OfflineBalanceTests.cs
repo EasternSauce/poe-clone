@@ -35,6 +35,16 @@ namespace PoeClone.Tests
             return item;
         }
 
+        /// <summary>A weapon with the cheapest route to <paramref name="target"/>, optionally stopping just short of it.</summary>
+        private static ItemData RouteWeapon(string baseId, StatType grant, string target, bool includeTarget = true)
+        {
+            var item = ItemGenerator.Generate(new Random(1), baseId, 21, ItemRarity.Normal, grant);
+            item.SkillProgress = new WeaponSkillProgress { level = 10 };
+            foreach (string id in WeaponSkillTrees.PathTo(grant, target))
+                if (includeTarget || id != target) Assert.IsTrue(item.SkillProgress.Allocate(grant, id), id);
+            return item;
+        }
+
         private static (float hit, float dot, float uses) ComboDps(string skill, ItemData weapon, StatSheet sheet, int step = -1)
         {
             var book = Type.GetType("PoeClone.Skills.SkillBook, Assembly-CSharp", true);
@@ -76,50 +86,142 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void SingleTarget_CleaveExplosionChangesOnlyFourthHitAndCadence()
+        public void SingleTarget_CleaveExplosionRedistributesComboDamage()
         {
-            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 5);
+            var weapon = RouteWeapon("rusty_sword", StatType.GrantCleave, "cl6", includeTarget: false);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.ArmourPenetration, 100), null);
-            var plainHit = ComboDps("Cleave", weapon, sheet, step: 0);
-            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_0_5"));
-            float cadence = 1.5f;
-            Assert.AreEqual(plainHit.hit * cadence * (1f + 1.35f + 1f + 5.5f) / 4f,
-                ComboDps("Cleave", weapon, sheet).hit, .001f);
+            var tree = new WeaponSkillBonuses(weapon);
+            Assert.AreEqual(.8f, tree.ComboSetupMultiplier, .0001f, "Gathering Force weakens the setup slashes");
+            float before = ComboDps("Cleave", weapon, sheet).hit;
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "cl6"));
+            float setup = .8f, finisher = tree.ComboDamageMultiplier;
+            float expected = (3f * WeaponSkillRules.CleaveExplosiveSlashDamage * setup + WeaponSkillRules.CleaveExplosionDamage * finisher) /
+                (3f * setup + finisher);
+            Assert.AreEqual(expected, ComboDps("Cleave", weapon, sheet).hit / before, .05f);
+        }
+
+        // ------------------------------------------------------------------ 20-point tree rules
+
+        private static IEnumerable<StatType> TreeGrants() =>
+            Enum.GetValues(typeof(StatType)).Cast<StatType>().Distinct().Where(g => WeaponSkillTrees.For(g) != null);
+
+        [Test]
+        public void WeaponTrees_SpaceNotablesAndKeystonesWithTravelNodes()
+        {
+            foreach (StatType grant in TreeGrants())
+            {
+                var nodes = WeaponSkillTrees.For(grant);
+                Assert.GreaterOrEqual(nodes.Count, 24, grant + " needs more nodes than its 20 points");
+                foreach (var node in nodes)
+                {
+                    Assert.Greater(node.Depth, 0, grant + "/" + node.Id + " is unreachable");
+                    var neighbours = WeaponSkillTrees.Neighbours(grant, node.Id).Where(id => id != WeaponSkillNode.Root)
+                        .Select(id => WeaponSkillTrees.Find(grant, id)).ToArray();
+                    if (node.Notable)
+                    {
+                        Assert.GreaterOrEqual(node.Depth, 3, grant + "/" + node.Id + ": two travel points before every notable");
+                        Assert.IsFalse(neighbours.Any(n => n.Keystone), grant + "/" + node.Id + " touches a keystone");
+                    }
+                    if (node.Keystone)
+                        Assert.IsFalse(neighbours.Any(n => n.Notable || n.Keystone), grant + "/" + node.Id + " touches a strong node");
+                    if (node.Depth <= 2) Assert.IsFalse(node.Notable || node.Keystone, grant + "/" + node.Id);
+                }
+            }
         }
 
         [Test]
-        public void Cleave_KeystonesHaveTwoTravelNodesAfterNotablesAndCannotBeCombined()
+        public void WeaponProgress_GrantsTwentyPointsAndHalfwayPoints()
         {
-            var nodes = WeaponSkillTrees.For(StatType.GrantCleave);
-            Assert.AreEqual(19, nodes.Count);
-            foreach (var keystone in nodes.Where(n => n.Keystone))
-            {
-                var parent = WeaponSkillTrees.Find(StatType.GrantCleave, keystone.Parent);
-                Assert.IsFalse(parent.Notable);
-                parent = WeaponSkillTrees.Find(StatType.GrantCleave, parent.Parent);
-                Assert.IsFalse(parent.Notable);
-                parent = WeaponSkillTrees.Find(StatType.GrantCleave, parent.Parent);
-                Assert.IsTrue(parent.Notable);
-            }
-            foreach (int first in new[] { 0, 1 })
+            var progress = new WeaponSkillProgress { level = 1 };
+            Assert.AreEqual(1, progress.Points);
+            progress.experience = progress.RequiredExperience / 2;
+            Assert.AreEqual(2, progress.Points);
+            progress = new WeaponSkillProgress { level = 4 };
+            Assert.AreEqual(7, progress.Points);
+            progress = new WeaponSkillProgress { level = 10 };
+            Assert.AreEqual(20, progress.Points);
+            var fresh = new WeaponSkillProgress { level = 1 };
+            Assert.AreEqual(1, fresh.GainExperience(fresh.RequiredExperience / 2, 34), "Halfway through a level earns a point");
+        }
+
+        [Test]
+        public void WeaponProgress_CannotOutgrowTheCharacter()
+        {
+            Assert.AreEqual(0f, WeaponSkillProgress.ProgressCap(1));
+            Assert.AreEqual(9f, WeaponSkillProgress.ProgressCap(34), .0001f);
+            var progress = new WeaponSkillProgress { level = 1 };
+            Assert.AreEqual(0, progress.GainExperience(100000, 1), "A level 1 character holds level 1 skills");
+            Assert.AreEqual(0, progress.experience);
+            progress.GainExperience(1000000, 10);
+            Assert.AreEqual(WeaponSkillProgress.ProgressCap(10), progress.Progress, .001f);
+            Assert.AreEqual(3, progress.level);
+            Assert.IsTrue(progress.AtCharacterCap(10));
+            int experience = progress.experience;
+            progress.GainExperience(1000, 10);
+            Assert.AreEqual(experience, progress.experience, "Further experience waits for the next character level");
+            Assert.AreEqual(10, progress.CharacterLevelEquivalent);
+            Assert.AreEqual(34, new WeaponSkillProgress { level = 10 }.CharacterLevelEquivalent);
+            Assert.AreEqual(1, new WeaponSkillProgress { level = 1 }.CharacterLevelEquivalent);
+        }
+
+        [Test]
+        public void WeaponRequirement_RisesToTheSkillsCharacterLevel()
+        {
+            var weapon = ItemGenerator.Generate(new Random(1), "rusty_sword", 1, ItemRarity.Normal, StatType.GrantCleave);
+            int basis = ItemGenerator.RequirementsOf("rusty_sword", null).Level;
+            weapon.SkillProgress = new WeaponSkillProgress { level = 1 };
+            Assert.AreEqual(Math.Max(basis, 1), weapon.Requirements.Level);
+            weapon.SkillProgress = new WeaponSkillProgress { level = 10 };
+            Assert.AreEqual(34, weapon.Requirements.Level);
+        }
+
+        [Test]
+        public void CraftedTrees_FormsAndPatienceAreExclusive()
+        {
+            void Exclusive(StatType grant, string a, string b)
             {
                 var progress = new WeaponSkillProgress { level = 10 };
-                for (int i = 0; i < 6; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + first + "_" + i));
-                for (int i = 0; i < 4; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + (1 - first) + "_" + i));
-                Assert.IsFalse(progress.Allocate(StatType.GrantCleave, "v2_" + (1 - first) + "_4"));
+                foreach (string id in WeaponSkillTrees.PathTo(grant, a)) Assert.IsTrue(progress.Allocate(grant, id), id);
+                var path = WeaponSkillTrees.PathTo(grant, b);
+                foreach (string id in path.Take(path.Count - 1)) progress.Allocate(grant, id);
+                Assert.IsFalse(progress.Allocate(grant, b), a + " must exclude " + b);
             }
-            Assert.IsFalse(nodes.SelectMany(n => n.Bonuses).Any(b => b.Effect == WeaponSkillEffect.MoreDamage ||
-                b.Effect == WeaponSkillEffect.Area || b.Effect == WeaponSkillEffect.ComboArea || b.Effect == WeaponSkillEffect.ComboKnockback));
+            Exclusive(StatType.GrantCleave, "cl6", "cr6");
+            Exclusive(StatType.GrantPulverize, "pm6", "pm9");
+            Exclusive(StatType.GrantPulverize, "pr6", "pm6");
+            Exclusive(StatType.GrantPulverize, "pr6", "pl6");
+        }
+
+        // Nodes reachable from the origin without passing through one node.
+        private static HashSet<string> ReachableWithout(StatType grant, string blocked)
+        {
+            var seen = new HashSet<string>();
+            var frontier = new Queue<string>(new[] { WeaponSkillNode.Root });
+            while (frontier.Count > 0)
+                foreach (string next in WeaponSkillTrees.Neighbours(grant, frontier.Dequeue()))
+                    if (next != blocked && seen.Add(next)) frontier.Enqueue(next);
+            return seen;
+        }
+
+        [Test]
+        public void CraftedTrees_GateTheirKeystonesBehindTheIntendedNodes()
+        {
+            Assert.IsFalse(ReachableWithout(StatType.GrantCleave, "cl3").Contains("cl6"), "Gathering Force is mandatory for Explosive Finale");
+            Assert.IsFalse(ReachableWithout(StatType.GrantPulverize, "pr6").Contains("pr9"), "Braced Channel lies beyond Cataclysm");
+            Assert.IsFalse(ReachableWithout(StatType.GrantPulverize, "pr6").Contains("pr12"), "Unbroken Channel lies beyond Cataclysm");
+            Assert.AreEqual("Braced Channel", WeaponSkillTrees.Find(StatType.GrantPulverize, "pr9").Name);
+            Assert.AreEqual("Braced Channel", WeaponSkillTrees.Find(StatType.GrantWhirlwind, "wr3").Name, "Channelling notables are shared");
+            Assert.Greater(WeaponSkillTrees.PathTo(StatType.GrantCleave, "cr15").Count, 10, "Rupture is a distant goal");
         }
 
         [Test]
         public void Cleave_OldAllocationsRefundWithoutLosingWeaponLevel()
         {
-            var progress = new WeaponSkillProgress { version = 2, level = 10, nodes = new List<string> { "v2_0_0", "combo_0" } };
+            var progress = new WeaponSkillProgress { version = 10, level = 10, nodes = new List<string> { "v2_0_0", "combo_0" } };
             progress.Sanitize(StatType.GrantCleave);
             Assert.AreEqual(10, progress.level);
-            Assert.AreEqual(10, progress.Available);
-            Assert.AreEqual(3, progress.version);
+            Assert.AreEqual(20, progress.Available);
+            Assert.AreEqual(11, progress.version);
         }
 
         [TestCase(0f)]
@@ -127,11 +229,10 @@ namespace PoeClone.Tests
         [TestCase(200f)]
         public void Cleave_ExplosionDamageRewardsItsLongerCommitment(float attackSpeed)
         {
-            var explosion = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 6);
-            var agile = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_1_", 6);
+            var explosion = RouteWeapon("rusty_sword", StatType.GrantCleave, "cl6");
+            var travel = RouteWeapon("rusty_sword", StatType.GrantCleave, "cl6", includeTarget: false);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30).Set(StatType.AttackSpeed, attackSpeed), null);
-            float ratio = SingleTarget("Cleave", explosion, sheet) / SingleTarget("Cleave", agile, sheet);
-            Assert.That(ratio, Is.InRange(1.2f, 1.85f), "Landing the slow finisher should reward its greater commitment");
+            Assert.Greater(SingleTarget("Cleave", explosion, sheet), SingleTarget("Cleave", travel, sheet), "Landing the slow finisher should reward its greater commitment");
             Assert.AreEqual(2f, WeaponSkillRules.ComboFollowupSpeed(StatType.GrantCleave, doubleSlash: true));
             Assert.AreEqual(2, WeaponSkillRules.ComboLength(StatType.GrantCleave, true));
         }
@@ -165,20 +266,20 @@ namespace PoeClone.Tests
         [Test]
         public void SingleTarget_MageRallyIsTwentyPercentMoreAfterRepeatedSummons()
         {
-            var weapon = DamageWeapon("bone_sceptre", StatType.GrantSkeletonMages, "v2_0_", 2);
+            var weapon = DamageWeapon("bone_sceptre", StatType.GrantSkeletonMages, "v3_0_", 4);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.CastSpeed, 50), null);
             float before = SingleTarget("SkeletonMages", weapon, sheet);
-            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantSkeletonMages, "v2_0_2"));
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantSkeletonMages, "v3_0_4"));
             Assert.AreEqual(before * 1.2f, SingleTarget("SkeletonMages", weapon, sheet), .001f);
         }
 
-        [TestCase("SpiritWolves", "bone_sceptre", StatType.GrantSpiritWolves, "v2_0_", 10f)]
+        [TestCase("SpiritWolves", "bone_sceptre", StatType.GrantSpiritWolves, "v3_0_", 10f)]
         public void SingleTarget_CullingSkipsLifeOnlyForNonBossEstimates(string skill, string baseId, StatType grant, string prefix, float threshold)
         {
-            var weapon = DamageWeapon(baseId, grant, prefix, 5);
+            var weapon = DamageWeapon(baseId, grant, prefix, 9);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = SingleTarget(skill, weapon, sheet);
-            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, prefix + 5));
+            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, prefix + 9));
             Assert.AreEqual(before, SingleTarget(skill, weapon, sheet), .001f, "This execute does not affect bosses");
             Assert.AreEqual(before / (1 - threshold / 100), SingleTarget(skill, weapon, sheet, true), .001f);
         }
@@ -186,10 +287,12 @@ namespace PoeClone.Tests
         [Test]
         public void SingleTarget_OpeningDamageDoesNotInflateSustainedDamage()
         {
-            var weapon = DamageWeapon("rusty_sword", StatType.GrantCleave, "v2_0_", 0);
+            // Opening Edge (full life) and Butcher (low life) are both situational.
+            var weapon = RouteWeapon("rusty_sword", StatType.GrantCleave, "c2");
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = SingleTarget("Cleave", weapon, sheet);
-            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_2"));
+            foreach (string id in new[] { "cm1", "cm2", "cm3", "cm4" })
+                Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantCleave, id));
             Assert.AreEqual(before, SingleTarget("Cleave", weapon, sheet), .001f);
         }
 
@@ -276,33 +379,15 @@ namespace PoeClone.Tests
             }
         }
 
-        [TestCase(0, false)]
-        [TestCase(0, true)]
-        [TestCase(1, false)]
-        [TestCase(1, true)]
-        public void Cleave_ComboVariantsCanTakeEitherOpeningEdgeEnding(int variant, bool echo)
-        {
-            var progress = new WeaponSkillProgress { level = 10 };
-            for (int i = 0; i < 6; i++) Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_" + variant + "_" + i));
-            foreach (int i in echo ? new[] { 2, 6, 7, 8 } : new[] { 2, 3, 4, 5 })
-                Assert.IsTrue(progress.Allocate(StatType.GrantCleave, "v2_2_" + i));
-            Assert.AreEqual(0, progress.Available);
-        }
-
         [Test]
-        public void Cleave_HeadsmanExecutesBossesAndEchoHasComparableSustainedBenefit()
+        public void Cleave_TwentyPointsReachAKeystoneAndItsSupportOrTwoKeystones()
         {
-            var headsman = DamageWeapon("rusty_sword", StatType.GrantCleave, "", 0);
-            var echo = DamageWeapon("rusty_sword", StatType.GrantCleave, "", 0);
-            foreach (int i in new[] { 2, 3, 4 }) Assert.IsTrue(headsman.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_" + i));
-            foreach (int i in new[] { 2, 6, 7 }) Assert.IsTrue(echo.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_" + i));
-            var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
-            float baseline = SingleTarget("Cleave", headsman, sheet);
-            Assert.IsTrue(headsman.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_5"));
-            Assert.IsTrue(echo.SkillProgress.Allocate(StatType.GrantCleave, "v2_2_8"));
-            Assert.AreEqual(20f, new WeaponSkillBonuses(headsman).CullPercent(boss: true));
-            Assert.AreEqual(baseline * 1.25f, SingleTarget("Cleave", headsman, sheet), .001f);
-            Assert.AreEqual(SingleTarget("Cleave", headsman, sheet), SingleTarget("Cleave", echo, sheet), .001f);
+            const StatType grant = StatType.GrantCleave;
+            var progress = new WeaponSkillProgress { level = 10 };
+            foreach (string id in WeaponSkillTrees.PathTo(grant, "cl9").Concat(WeaponSkillTrees.PathTo(grant, "cm7")))
+                if (!progress.nodes.Contains(id)) Assert.IsTrue(progress.Allocate(grant, id), id);
+            Assert.GreaterOrEqual(progress.Available, 0);
+            Assert.IsTrue(progress.nodes.Contains("cl6") && progress.nodes.Contains("cm7"));
         }
 
         [Test]
@@ -322,7 +407,7 @@ namespace PoeClone.Tests
                 string[] nodes = (string[])type.GetField("requiredNodes").GetValue(archetype);
                 int budget = (int)type.GetField("minimumWeaponPoints").GetValue(archetype);
                 Assert.AreEqual(nodes.Length, budget);
-                Assert.LessOrEqual(budget, 10);
+                Assert.LessOrEqual(budget, 20);
                 if (nodes.Length == 0) continue;
                 StatType grant = (StatType)Enum.Parse(typeof(StatType), "Grant" + skill);
                 var progress = new WeaponSkillProgress { level = 10 };
@@ -354,50 +439,29 @@ namespace PoeClone.Tests
         }
 
         [Test]
-        public void Pulverize_FourBranchesHaveTwoSmallNodesBeforeEveryNotable()
+        public void CraftedTrees_GrowUpwardFromOneTrunk()
         {
-            foreach (var grant in new[] { StatType.GrantPulverize, StatType.GrantCleave })
+            foreach (var grant in new[] { StatType.GrantPulverize, StatType.GrantCleave, StatType.GrantWhirlwind })
             {
                 var nodes = WeaponSkillTrees.For(grant);
-                Assert.AreEqual(20, nodes.Count);
-                Assert.AreEqual(4, nodes.Count(n => n.Keystone));
-                for (int lane = 0; lane < 4; lane++)
-                {
-                    var path = nodes.Where(n => n.Id.StartsWith("v2_" + lane + "_")).OrderBy(n => n.Depth).ToArray();
-                    Assert.AreEqual(lane < 2 ? 6 : 4, path.Length);
-                    Assert.IsNull(path[0].Parent);
-                    Assert.IsFalse(path[0].Notable || path[1].Notable);
-                    Assert.IsTrue(path[2].Notable);
-                    Assert.IsTrue(path.Last().Keystone);
-                    Assert.IsFalse(path.Any(n => n.Id.StartsWith("combo_")));
-                }
+                Assert.AreEqual(1, WeaponSkillTrees.Neighbours(grant, WeaponSkillNode.Root).Count, grant + " starts from one trunk");
+                Assert.IsTrue(nodes.All(n => n.Position.y > 0f), grant + " grows in one direction");
+                Assert.GreaterOrEqual(nodes.Count(n => n.Keystone), 4);
+                Assert.IsFalse(nodes.Any(n => n.Id.StartsWith("combo_")));
             }
-            foreach (int longLane in new[] { 0, 1 })
-                foreach (int shortLane in new[] { 2, 3 })
-                {
-                    var progress = new WeaponSkillProgress { level = 10 };
-                    foreach (int lane in new[] { longLane, shortLane })
-                        for (int i = 0; i < (lane < 2 ? 6 : 4); i++)
-                            Assert.IsTrue(progress.Allocate(StatType.GrantPulverize, "v2_" + lane + "_" + i));
-                    Assert.AreEqual(0, progress.Available);
-                }
-            var limited = new WeaponSkillProgress { level = 10 };
-            for (int i = 0; i < 6; i++) Assert.IsTrue(limited.Allocate(StatType.GrantPulverize, "v2_0_" + i));
-            for (int i = 0; i < 4; i++) Assert.IsTrue(limited.Allocate(StatType.GrantPulverize, "v2_1_" + i));
-            Assert.IsFalse(limited.Allocate(StatType.GrantPulverize, "v2_1_4"));
         }
 
         [Test]
         public void Pulverize_ReworkRefundsOldAllocationsWithoutLosingProgress()
         {
-            var progress = new WeaponSkillProgress { version = 5, level = 7, experience = 123,
+            var progress = new WeaponSkillProgress { version = 10, level = 7, experience = 123,
                 nodes = new List<string> { "v2_0_0", "v2_0_1", "v2_0_2" } };
             progress.Sanitize(StatType.GrantPulverize);
-            Assert.AreEqual(7, progress.version);
+            Assert.AreEqual(11, progress.version);
             Assert.AreEqual(7, progress.level);
             Assert.AreEqual(123, progress.experience);
-            Assert.AreEqual(7, progress.Available);
-            Assert.IsTrue(progress.Allocate(StatType.GrantPulverize, "v2_3_0"));
+            Assert.AreEqual(13, progress.Available);
+            Assert.IsTrue(progress.Allocate(StatType.GrantPulverize, "p1"));
             progress.Sanitize(StatType.GrantPulverize);
             Assert.AreEqual(1, progress.nodes.Count, "Updated saves keep their allocations");
         }
@@ -421,12 +485,12 @@ namespace PoeClone.Tests
                 "Moving recovery into the opener preserves sustained pair DPS");
             Assert.Greater(WeaponSkillRules.ComboSustainedSpeed(grant, twinHammer: true), WeaponSkillRules.ComboSustainedSpeed(grant));
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
-            foreach (int lane in new[] { 0, 1 })
+            foreach (string keystone in new[] { "pm6", "pm9", "pr6" })
             {
-                var weapon = DamageWeapon("iron_mace", grant, "v2_" + lane + "_", 5);
+                var weapon = RouteWeapon("iron_mace", grant, keystone, includeTarget: false);
                 float before = ComboDps("Pulverize", weapon, sheet).hit;
-                Assert.IsTrue(weapon.SkillProgress.Allocate(grant, "v2_" + lane + "_5"));
-                Assert.Greater(ComboDps("Pulverize", weapon, sheet).hit, before);
+                Assert.IsTrue(weapon.SkillProgress.Allocate(grant, keystone));
+                Assert.Greater(ComboDps("Pulverize", weapon, sheet).hit, before, keystone);
             }
         }
 
@@ -479,13 +543,13 @@ namespace PoeClone.Tests
             Assert.AreEqual(1f, WeaponSkillRules.PerfectImpactMultiplier(0f, 0f));
             Assert.AreEqual(1.3f, WeaponSkillRules.PerfectImpactMultiplier(2.7f, 5.4f));
             const StatType grant = StatType.GrantPulverize;
-            var weapon = DamageWeapon("iron_mace", grant, "v2_3_", 3);
+            var weapon = RouteWeapon("iron_mace", grant, "pl3", includeTarget: false);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = ComboDps("Pulverize", weapon, sheet).hit;
-            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, "v2_3_3"));
+            Assert.IsTrue(weapon.SkillProgress.Allocate(grant, "pl3"));
             Assert.AreEqual(before * 1.3f, ComboDps("Pulverize", weapon, sheet).hit, .001f);
-            Assert.AreEqual("Bonecrusher", WeaponSkillTrees.Find(grant, "v2_2_3").Name);
-            Assert.AreEqual("Perfect Impact", WeaponSkillTrees.Find(grant, "v2_3_3").Name);
+            Assert.AreEqual("Bonecrusher", WeaponSkillTrees.Find(grant, "pm14").Name);
+            Assert.AreEqual("Perfect Impact", WeaponSkillTrees.Find(grant, "pl3").Name);
         }
 
         [Test]
@@ -517,10 +581,10 @@ namespace PoeClone.Tests
                 Assert.AreEqual(0f, direction.y, .0001f);
             }
             // The on-kill specialization contributes no fictitious sustained boss DPS.
-            var weapon = DamageWeapon("iron_mace", StatType.GrantPulverize, "v2_2_", 3);
+            var weapon = RouteWeapon("iron_mace", StatType.GrantPulverize, "pm14", includeTarget: false);
             var sheet = StatSheet.Build(new BaseStats { Level = 21 }.Set(StatType.PhysicalDamage, 30), null);
             float before = ComboDps("Pulverize", weapon, sheet).hit;
-            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantPulverize, "v2_2_3"));
+            Assert.IsTrue(weapon.SkillProgress.Allocate(StatType.GrantPulverize, "pm14"));
             Assert.AreEqual(before, ComboDps("Pulverize", weapon, sheet).hit, .001f);
         }
 
@@ -553,16 +617,16 @@ namespace PoeClone.Tests
 
         [TestCase(5, false)]
         [TestCase(6, true)]
-        public void CloudburstKeepsItsSixPointApproachAndExtraArrowsWithADamageTradeoff(int rank, bool canFinish)
+        public void CloudburstKeepsItsTenPointApproachAndExtraArrowsWithADamageTradeoff(int rank, bool canFinish)
         {
             const StatType grant = StatType.GrantRainOfArrows;
             ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
             bow.SkillProgress = new WeaponSkillProgress { level = rank };
-            for (int i = 0; i < 5; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_" + i));
+            for (int i = 0; i < 9; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v3_0_" + i));
             var before = new WeaponSkillBonuses(bow);
             Assert.AreEqual(3, before.ExtraProjectiles);
             Assert.AreEqual(1f, before.MoreDamageMultiplier);
-            Assert.AreEqual(canFinish, bow.SkillProgress.Allocate(grant, "v2_0_5"));
+            Assert.AreEqual(canFinish, bow.SkillProgress.Allocate(grant, "v3_0_9"));
             var after = new WeaponSkillBonuses(bow);
             Assert.AreEqual(canFinish ? 7 : 3, after.ExtraProjectiles);
             Assert.AreEqual(canFinish ? .65f : 1f, after.MoreDamageMultiplier, .0001f);
@@ -576,11 +640,11 @@ namespace PoeClone.Tests
         {
             const StatType grant = StatType.GrantBurningArrow;
             ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
-            bow.SkillProgress = new WeaponSkillProgress { level = 4 };
-            for (int i = 0; i < 4; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_" + lane + "_" + i));
+            bow.SkillProgress = new WeaponSkillProgress { level = 3 };
+            for (int i = 0; i < 5; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v3_" + lane + "_" + i));
             var tree = new WeaponSkillBonuses(bow);
             float notable = lane == 0 ? 1.2f : 1f;
-            Assert.AreEqual((float)Math.Pow(1.07, 3) * notable, tree.MoreDamageMultiplier, .0001f);
+            Assert.AreEqual((float)Math.Pow(1.035, 4) * notable, tree.MoreDamageMultiplier, .0001f);
             Assert.AreEqual(0f, tree.Get(WeaponSkillEffect.Cost), "Damage redistribution must not change mana costs");
             Assert.IsFalse(bow.SkillProgress.nodes.Any(id => WeaponSkillTrees.Find(grant, id).Keystone));
         }
@@ -590,9 +654,9 @@ namespace PoeClone.Tests
         {
             const StatType grant = StatType.GrantBurningArrow;
             ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
-            bow.SkillProgress = new WeaponSkillProgress { level = 8 };
-            foreach (string id in new[] { "v2_0_0", "v2_0_1", "v2_0_2", "v2_0_3", "v2_0_4", "v2_0_5", "v2_0_6", "v2_0_7" })
-                Assert.IsTrue(bow.SkillProgress.Allocate(grant, id));
+            bow.SkillProgress = new WeaponSkillProgress { level = 7 };
+            foreach (string id in Enumerable.Range(0, 10).Select(i => "v3_0_" + i).Concat(new[] { "v3_0_s0", "v3_0_s1", "v3_0_s2" }))
+                Assert.IsTrue(bow.SkillProgress.Allocate(grant, id), id);
             var tree = new WeaponSkillBonuses(bow);
             float previousMultiplier = 1.2f * 1.45f * 1.25f;
             Assert.That(tree.MoreDamageMultiplier / previousMultiplier, Is.InRange(.98f, 1.05f));
@@ -600,18 +664,18 @@ namespace PoeClone.Tests
             Assert.AreEqual(120f, tree.Get(WeaponSkillEffect.Duration));
         }
 
-        [TestCase(3, 55f, 30f)]
-        [TestCase(6, 90f, 60f)]
-        public void VenomArrowPoisonInvestmentRequiresItsConnectedNotable(int rank, float expectedPoison, float expectedDuration)
+        [TestCase(3, 5, 55f, 30f)]
+        [TestCase(6, 10, 90f, 60f)]
+        public void VenomArrowPoisonInvestmentRequiresItsConnectedNotable(int rank, int nodes, float expectedPoison, float expectedDuration)
         {
             const StatType grant = StatType.GrantVenomArrow;
             ItemData bow = ItemGenerator.Generate(new Random(1), "short_bow", 1, ItemRarity.Normal, grant);
             bow.SkillProgress = new WeaponSkillProgress { level = rank };
-            Assert.IsFalse(bow.SkillProgress.Allocate(grant, "v2_0_2"));
-            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_0"));
-            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_1"));
+            Assert.IsFalse(bow.SkillProgress.Allocate(grant, "v3_0_4"));
+            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v3_0_0"));
+            Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v3_0_1"));
             Assert.AreEqual(0f, new WeaponSkillBonuses(bow).Get(WeaponSkillEffect.Poison));
-            for (int i = 2; i < rank; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v2_0_" + i));
+            for (int i = 2; i < nodes; i++) Assert.IsTrue(bow.SkillProgress.Allocate(grant, "v3_0_" + i));
             var tree = new WeaponSkillBonuses(bow);
             Assert.AreEqual(expectedPoison, tree.Get(WeaponSkillEffect.Poison));
             Assert.AreEqual(expectedDuration, tree.Get(WeaponSkillEffect.Duration));
@@ -803,12 +867,12 @@ namespace PoeClone.Tests
             var item = new ItemData("test_sceptre", "Sceptre", ItemType.Weapon, 2, 3, UnityEngine.Color.white,
                 new[] { new StatModifier(StatType.GrantRaiseSkeletons, 10) }, weaponType: WeaponType.Sceptre);
             item.SkillProgress = new WeaponSkillProgress { level = 10 };
-            for (int i = 0; i <= 5; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v2_0_" + i));
+            for (int i = 0; i <= 9; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v3_0_" + i));
             var army = new WeaponSkillBonuses(item);
             Assert.AreEqual(5, cap.Invoke(null, new object[] { warrior, army }));
 
             item.SkillProgress.nodes.Clear();
-            for (int i = 0; i <= 5; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v2_1_" + i));
+            for (int i = 0; i <= 9; i++) Assert.IsTrue(item.SkillProgress.Allocate(StatType.GrantRaiseSkeletons, "v3_1_" + i));
             var champion = new WeaponSkillBonuses(item);
             Assert.AreEqual(1, cap.Invoke(null, new object[] { warrior, champion }));
             Assert.AreEqual(5, cap.Invoke(null, new object[] { warrior, army }), "an existing army keeps its snapshot");

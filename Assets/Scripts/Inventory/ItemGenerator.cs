@@ -788,9 +788,17 @@ namespace PoeClone.Inventory
 
         public static string BaseNameOf(string baseId) => Find(baseId)?.Name;
 
-        /// <summary>Requirements come from the saved base ID, never from the item's own bonuses or ilvl.</summary>
-        public static ItemRequirements RequirementsOf(ItemData item) => item == null ? default
-            : RequirementsOf(item.Id, item.Rarity == ItemRarity.Unique ? item.Name : null);
+        /// <summary>Requirements come from the saved base ID, never from the item's own bonuses or ilvl.
+        /// A weapon skill raises the level to its character-level equivalent, so a developed
+        /// skill weapon cannot be carried by a lower character.</summary>
+        public static ItemRequirements RequirementsOf(ItemData item)
+        {
+            if (item == null) return default;
+            ItemRequirements basis = RequirementsOf(item.Id, item.Rarity == ItemRarity.Unique ? item.Name : null);
+            int skill = item.SkillProgress?.CharacterLevelEquivalent ?? 0;
+            return skill <= basis.Level ? basis
+                : new ItemRequirements(skill, basis.Strength, basis.Dexterity, basis.Intelligence);
+        }
 
         /// <summary>Requirements of a base, raised to the unique's level when <paramref name="uniqueName"/> is given.</summary>
         public static ItemRequirements RequirementsOf(string baseId, string uniqueName)

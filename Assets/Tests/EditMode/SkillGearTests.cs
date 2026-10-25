@@ -54,18 +54,18 @@ namespace PoeClone.Tests
         public void SavedMageSchools_RespectPointBudget_AndKeepFirstSchool(int first, int second)
         {
             var saved = new WeaponSkillProgress { level = 10 };
-            for (int i = 0; i <= 5; i++) saved.nodes.Add($"v2_{first}_{i}");
-            for (int i = 0; i <= 5; i++) saved.nodes.Add($"v2_{second}_{i}");
+            for (int i = 0; i <= 9; i++) saved.nodes.Add($"v3_{first}_{i}");
+            for (int i = 0; i <= 9; i++) saved.nodes.Add($"v3_{second}_{i}");
 
-            // Only one complete school fits the ten-point budget. Preserve the first
-            // school and as much legal travel toward the second as the budget permits.
+            // Each school ends in an elemental conversion and only one can be held. Preserve the
+            // first school and all legal travel toward the second.
             saved.Sanitize(StatType.GrantSkeletonMages);
 
-            Assert.Contains($"v2_{first}_5", saved.nodes);
-            Assert.IsFalse(saved.nodes.Contains($"v2_{second}_4"));
-            Assert.IsFalse(saved.nodes.Contains($"v2_{second}_5"));
-            Assert.AreEqual(10, saved.nodes.Count);
-            Assert.AreEqual(0, saved.Available);
+            Assert.Contains($"v3_{first}_9", saved.nodes);
+            Assert.Contains($"v3_{second}_8", saved.nodes);
+            Assert.IsFalse(saved.nodes.Contains($"v3_{second}_9"));
+            Assert.AreEqual(19, saved.nodes.Count);
+            Assert.AreEqual(1, saved.Available);
         }
 
         [Test]
@@ -74,21 +74,21 @@ namespace PoeClone.Tests
             var progress = new WeaponSkillProgress
             {
                 level = 10,
-                nodes = new List<string> { "unknown", "v2_0_0", "v2_0_0", "v2_0_2", "v2_0_3", "v2_1_0" }
+                nodes = new List<string> { "unknown", "v3_0_0", "v3_0_0", "v3_0_2", "v3_0_3", "v3_1_0" }
             };
 
             progress.Sanitize(StatType.GrantSkeletonMages);
 
-            CollectionAssert.AreEqual(new[] { "v2_0_0", "v2_1_0" }, progress.nodes);
-            Assert.AreEqual(8, progress.Available);
+            CollectionAssert.AreEqual(new[] { "v3_0_0", "v3_1_0" }, progress.nodes);
+            Assert.AreEqual(18, progress.Available);
         }
 
         [Test]
         public void SavedWeaponTree_ValidAllocationRoundTripsUnchanged()
         {
             var progress = new WeaponSkillProgress { level = 10, experience = 0 };
-            for (int i = 0; i <= 5; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v2_0_{i}"));
-            for (int i = 0; i <= 3; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v2_1_{i}"));
+            for (int i = 0; i <= 9; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v3_0_{i}"));
+            for (int i = 0; i <= 3; i++) Assert.IsTrue(progress.Allocate(StatType.GrantSkeletonMages, $"v3_1_{i}"));
             string json = UnityEngine.JsonUtility.ToJson(progress);
             var restored = UnityEngine.JsonUtility.FromJson<WeaponSkillProgress>(json);
 

@@ -23,7 +23,7 @@ namespace PoeClone.World
             skill.Id == SkillId.BurningArrow ? DamageType.Fire : DamageType.Physical : SkillEffects.DamagePattern(skill);
         public static float Estimate(SkillDefinition skill, ItemData weapon, StatSheet sheet, WeaponSkillBonuses tree, out float hitDps, out float dotDps, out float uses, bool includeNonBossCull = false)
         {
-            int steps = Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant, tree.Get(E.CleaveDoubleSlash) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f));
+            int steps = Cataclysm(skill, tree) ? 1 : Mathf.Max(1, WeaponSkillRules.ComboLength(skill.Grant, tree.Get(E.CleaveDoubleSlash) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f));
             hitDps = dotDps = uses = 0f;
             // Average complete combos with each specialization's damage and cadence.
             // Repeat complete successful combos, including the normal interval after each finisher.
@@ -44,12 +44,18 @@ namespace PoeClone.World
                 SlotRules.BaseAttacksPerSecond(weapon.WeaponType) * speed * (skill.Bow ? PlayerSkills.BowSpeed(skill.Id) : PlayerSkills.MeleeSpeed(skill.Id));
             if (skill.Channelled) uses = WeaponSkillRules.WhirlwindHitsPerSecond(weapon.WeaponType, speed);
             if (skill.Id == SkillId.PiercingShot) uses = 1 / PiercingInterval(speed, tree.Get(E.ChargeTime));
-            if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
+            if (skill.Channelled) uses *= 1 + tree.Get(E.ChannelRamp) / 100; // a sustained spin is fully ramped
+            bool cataclysm = Cataclysm(skill, tree);
+            // Cataclysm: fully charged slams, each followed by its recovery.
+            if (cataclysm)
+                uses /= WeaponSkillRules.CataclysmChargeIntervals * Mathf.Max(.2f, 1 + tree.Get(E.ChargeTime) / 100) + WeaponSkillRules.CataclysmRecoveryIntervals;
+            else if (comboStep > 0 && WeaponSkillRules.ComboLength(skill.Grant) > 0)
                 uses *= WeaponSkillRules.ComboSustainedSpeed(skill.Grant, doubleSlash: tree.Get(E.CleaveDoubleSlash) > 0f, twinHammer: tree.Get(E.PulverizeTwinHammer) > 0f);
             float baseHit = skill.MeleeAttack || skill.Bow ? sheet.Total(StatType.PhysicalDamage) * skill.WeaponMultiplierAt(1) : skill.DamageForCharacter(sheet.Level);
             bool doubleSlash = skill.Id == SkillId.Cleave && tree.Get(E.CleaveDoubleSlash) > 0f;
-            float combo = WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier,
-                tree.Get(E.CleaveExplosion) > 0f, doubleSlash, tree.Get(E.PulverizeWorldshaker) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f);
+            float combo = cataclysm ? WeaponSkillRules.CataclysmFullDamage : WeaponSkillRules.ComboHitMultiplier(skill.Grant, comboStep, tree.ComboDamageMultiplier,
+                tree.Get(E.CleaveExplosion) > 0f, doubleSlash, tree.Get(E.PulverizeWorldshaker) > 0f, tree.Get(E.PulverizeTwinHammer) > 0f, tree.ComboSetupMultiplier);
+            if (skill.Id == SkillId.Whirlwind && tree.Has(E.WhirlMaelstrom)) combo *= WeaponSkillRules.MaelstromDamage;
             baseHit *= combo;
             var element = WeaponSkillHit.Element(tree, BaseElement(skill));
             bool attack = skill.MeleeAttack || skill.Bow;
@@ -101,7 +107,7 @@ namespace PoeClone.World
             float curse = skill.Summon ? 0 : ChanceUptime(sheet.Total(StatType.CurseOnHit), rate * hits, 4);
             float taken = (1 + .25f * shock) * (1 + .15f * curse);
             // The stationary benchmark assumes the target is in the bright centre; on-kill shards are excluded.
-            float perfect = skill.Id == SkillId.Pulverize && tree.Get(E.PulverizePerfectImpact) > 0f ? 1.3f : 1f;
+            float perfect = (skill.Id == SkillId.Pulverize || skill.Id == SkillId.Whirlwind) && tree.Has(E.PerfectImpact) ? 1.3f : 1f;
             float dealt = AgainstEnemy(baseHit * multiplier * taken * perfect, element, sheet.Level, sheet, tree, skill.Summon);
             if (skill.Id == SkillId.Whirlwind)
             {
@@ -109,7 +115,7 @@ namespace PoeClone.World
                 bool gale = tree.Get(E.WhirlGaleCutter) > 0f;
                 float meleeShare = gale ? WeaponSkillRules.WhirlGaleMeleeShare : 1f;
                 int blades = tree.Get(E.WhirlGatheringStorm) > 0f ? WeaponSkillRules.WhirlMaxBlades : 0;
-                float fullHit = baseHit * multiplier * taken;
+                float fullHit = baseHit * multiplier * taken * perfect;
                 dealt = AgainstEnemy(fullHit * meleeShare, element, sheet.Level, sheet, tree, false);
                 if (gale)
                     dealt += 3f * AgainstEnemy(fullHit * WeaponSkillRules.WhirlGaleProjectileShare, element, sheet.Level, sheet, tree, false);
@@ -122,6 +128,8 @@ namespace PoeClone.World
             // Bleeding stores the tree's percentage of each final hit; armour and damage modifiers
             // have already applied, and each hit contributes an independent stack.
             dotDps = skill.Id == SkillId.Cleave ? hitDps * tree.Get(E.CleaveBleed) / 100f : 0f;
+            // Rupture deals the unexpired part of each bleed at once, 50% increased: roughly half of it.
+            if (tree.Has(E.CleaveRupture)) dotDps *= 1 + (WeaponSkillRules.RuptureMultiplier - 1) * .5f;
             float poison = tree.Get(E.Poison) / 100;
             float cloud = tree.Get(E.Cloud) / 100;
             float duration = Mathf.Max(1, Mathf.Round(6 * tree.DurationMultiplier)) / 6;
@@ -160,6 +168,7 @@ namespace PoeClone.World
             }
             return Mathf.Max(0, hitDps + dotDps);
         }
+        private static bool Cataclysm(SkillDefinition skill, WeaponSkillBonuses tree) => skill.Id == SkillId.Pulverize && tree.Has(E.PulverizeCataclysm);
         public static float ChanceUptime(float chancePercent, float rate, float duration) =>
             1 - Mathf.Pow(1 - Mathf.Clamp01(chancePercent / 100), Mathf.Max(0, rate * duration));
         private static StatType DamageStat(DamageType type) => type == DamageType.Fire ? StatType.FireDamage : type == DamageType.Cold ? StatType.ColdDamage :

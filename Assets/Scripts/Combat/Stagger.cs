@@ -26,12 +26,12 @@ namespace PoeClone.Combat
         /// <summary>Staggers so far. Only ever increases, so a periodic observer (spectator replication) can't miss one.</summary>
         public int TriggerCount { get; private set; }
 
-        private bool IgnoreChannelStagger => GetComponent<PoeClone.Skills.PlayerSkills>()?.WhirlStunImmune ?? false;
+        private bool IgnoreChannelStagger => GetComponent<PoeClone.Skills.PlayerSkills>()?.ChannelStunImmune ?? false;
 
         public void Trigger()
         {
             if (IgnoreChannelStagger) return;
-            GetComponent<PoeClone.Skills.PlayerSkills>()?.InterruptWhirlwind();
+            GetComponent<PoeClone.Skills.PlayerSkills>()?.InterruptChannel();
             TriggerCount++;
             timer = 0f;
             IsStaggered = true;

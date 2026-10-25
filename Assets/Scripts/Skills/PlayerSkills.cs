@@ -187,9 +187,12 @@ namespace PoeClone.Skills
             meleeCleaveAccent = false;
             meleeComboDamage = 1f;
             CancelPendingCast();
-            EndWhirlwind();
+            EndWhirlwind(released: false);
+            CancelCataclysm();
+            cataclysmRadius = 1f;
+            cataclysmImpact = false;
             ResetWhirlBlades();
-            whirlRequiresRelease = false;
+            channelRequiresRelease = false;
             StopAllCoroutines();
             meleeAction = null;
             if (controller != null)
@@ -370,6 +373,9 @@ namespace PoeClone.Skills
             bool free = !UiKit.IsTypingInTextField() && !PlayerController.IsUiFocused();
             if (IsWhirling)
                 UpdateWhirlwind(free);
+            if (cataclysmCharging)
+                UpdateCataclysm(free);
+            UpdateMeasuredCue();
             Keyboard keyboard = Keyboard.current;
             if (pressed < 0 && keyboard != null && free)
             {

@@ -15,22 +15,28 @@ namespace PoeClone.Inventory
         HalfMinions, MinionSize, RainSpread, RainSalvos, FireOrbit, ChargeDamage,
         ChargeTime, ArmourPenetration, LegacyDamageVsLowLife, PackHunt, MinionRegen,
         NoFork, FirstStrike, GolemAftershock, SummonsPerCast, MageCastSpeedAfterSummon,
-        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, BossCull, CleaveBleed,
+        ComboDamage, ComboArea, ComboKnockback, CleaveExplosion, CleaveDoubleSlash, LegacyBossCull, CleaveBleed,
         PulverizeWorldshaker, PulverizeTwinHammer,
         // Retain retired effect IDs so later values stay stable.
         LegacyArmourShred, LegacyPulverizeWindupDefence, LegacyPulverizeUnstoppable,
-        PulverizeBonecrusher, PulverizePerfectImpact,
-        WhirlGaleCutter, WhirlUnbrokenSpin, WhirlGatheringStorm, WhirlSlipstream
+        PulverizeBonecrusher, PerfectImpact,
+        WhirlGaleCutter, ChannelUnbroken, WhirlGatheringStorm, WhirlSlipstream,
+        ComboSetupDamage, MeasuredStrike, MeasuredRest, MeasuredStun, ChannelDamageTaken, ChannelMoveSpeed, ChannelRamp,
+        PulverizeCataclysm, CleaveRupture, Overkill, OverkillHeal, ExecuteDamage, DamageVsStaggered, ComboDamageTaken,
+        WhirlMaelstrom, ChannelRelease, ReleaseStun, FinisherStun
     }
 
     [Serializable]
     public sealed class WeaponSkillProgress
     {
-        public int version = 10;
+        public const int MaxLevel = 10;
+        public int version = 11;
         public int level = 1;
         public int experience;
         public List<string> nodes = new List<string>();
-        public int Available => Mathf.Max(0, level - nodes.Count);
+        /// <summary>One point on reaching each level and one halfway through it; maximum level completes the last pair (20).</summary>
+        public int Points => level >= MaxLevel ? 2 * MaxLevel : 2 * level - 1 + (2 * experience >= RequiredExperience ? 1 : 0);
+        public int Available => Mathf.Max(0, Points - nodes.Count);
         public int RequiredExperience => 250 * level * level;
 
         public WeaponSkillProgress Copy() => new WeaponSkillProgress
@@ -41,11 +47,10 @@ namespace PoeClone.Inventory
 
         public void Sanitize(StatType grant)
         {
-            // The new topology and effects cannot safely reinterpret old allocations.
-            int requiredVersion = grant == StatType.GrantWhirlwind ? 10 : grant == StatType.GrantPulverize || grant == StatType.GrantCleave ? 9 : 2;
-            if (version < requiredVersion) { nodes = new List<string>(); version = requiredVersion; }
-            level = Mathf.Clamp(level, 1, 10);
-            experience = level == 10 ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
+            // The 20-point topology cannot safely reinterpret old allocations.
+            if (version < 11) { nodes = new List<string>(); version = 11; }
+            level = Mathf.Clamp(level, 1, MaxLevel);
+            experience = level == MaxLevel ? 0 : Mathf.Clamp(experience, 0, RequiredExperience - 1);
             var saved = nodes;
             nodes = new List<string>();
             if (saved != null)
@@ -53,18 +58,47 @@ namespace PoeClone.Inventory
                     Allocate(grant, id);
         }
 
+        /// <summary>Connected to the skill origin or to an allocated neighbour.</summary>
+        public bool IsReachable(StatType grant, WeaponSkillNode node)
+        {
+            if (node.Links.Length == 0) return true;
+            foreach (string link in node.Links)
+                if (link == WeaponSkillNode.Root || nodes.Contains(link)) return true;
+            return false;
+        }
+
+        /// <summary>An allocated node sharing an exclusive group with this one, or null.</summary>
+        public WeaponSkillNode ExclusiveConflict(StatType grant, WeaponSkillNode node)
+        {
+            if (node.Exclusive.Length == 0) return null;
+            foreach (string owned in nodes)
+            {
+                var previous = WeaponSkillTrees.Find(grant, owned);
+                if (previous != null && previous != node && previous.ExcludesWith(node)) return previous;
+            }
+            return null;
+        }
+
         public bool CanAllocate(StatType grant, string id)
         {
             var node = WeaponSkillTrees.Find(grant, id);
-            if (node == null || Available <= 0 || nodes.Contains(id) || (node.Parent != null && !nodes.Contains(node.Parent))) return false;
-            // Full elemental conversions are alternatives, never silently overridden by another school.
-            bool converts = Array.Exists(node.Bonuses, b => b.Effect == WeaponSkillEffect.Fire || b.Effect == WeaponSkillEffect.Cold || b.Effect == WeaponSkillEffect.Lightning);
-            if (converts) foreach (string owned in nodes)
+            return node != null && Available > 0 && !nodes.Contains(id) && IsReachable(grant, node) && ExclusiveConflict(grant, node) == null;
+        }
+
+        /// <summary>Whether removing this node keeps every other allocation connected to the origin.</summary>
+        public bool CanRemove(StatType grant, string id)
+        {
+            if (!nodes.Contains(id)) return false;
+            var connected = new HashSet<string>();
+            var frontier = new Queue<string>();
+            frontier.Enqueue(WeaponSkillNode.Root);
+            while (frontier.Count > 0)
             {
-                var previous = WeaponSkillTrees.Find(grant, owned);
-                if (previous != null && Array.Exists(previous.Bonuses, b => b.Effect == WeaponSkillEffect.Fire || b.Effect == WeaponSkillEffect.Cold || b.Effect == WeaponSkillEffect.Lightning)) return false;
+                string at = frontier.Dequeue();
+                foreach (string next in WeaponSkillTrees.Neighbours(grant, at))
+                    if (next != id && nodes.Contains(next) && connected.Add(next)) frontier.Enqueue(next);
             }
-            return true;
+            return connected.Count == nodes.Count - 1;
         }
         public bool Allocate(StatType grant, string id)
         {
@@ -73,19 +107,54 @@ namespace PoeClone.Inventory
             return true;
         }
 
-        public bool GainExperience(int amount)
+        /// <summary>Character level at which a weapon skill may reach its maximum level.</summary>
+        public const int CapCharacterLevel = 34;
+
+        /// <summary>Levels gained so far as a continuous value: 0 at a fresh level 1, 9 at level 10.</summary>
+        public float Progress => level >= MaxLevel ? MaxLevel - 1 : level - 1 + (float)experience / RequiredExperience;
+
+        /// <summary>The furthest progress a character level allows, rising evenly from level 1 to <see cref="CapCharacterLevel"/>.</summary>
+        public static float ProgressCap(int characterLevel) =>
+            Mathf.Clamp01((characterLevel - 1f) / (CapCharacterLevel - 1f)) * (MaxLevel - 1);
+
+        /// <summary>The lowest character level whose cap allows this progress.</summary>
+        public int CharacterLevelEquivalent => level >= MaxLevel ? CapCharacterLevel :
+            Mathf.CeilToInt(1f + Progress * (CapCharacterLevel - 1f) / (MaxLevel - 1) - 0.0001f);
+
+        /// <summary>The furthest level and experience a character level allows (experience rounded down).</summary>
+        public static void CapAt(int characterLevel, out int capLevel, out int capExperience)
         {
-            if (amount <= 0 || level >= 10) return false;
+            float cap = ProgressCap(characterLevel);
+            capLevel = Mathf.Min(MaxLevel, 1 + Mathf.FloorToInt(cap + 0.0001f));
+            capExperience = capLevel >= MaxLevel ? 0 : Mathf.FloorToInt((cap - (capLevel - 1)) * 250 * capLevel * capLevel);
+        }
+
+        public bool AtCharacterCap(int characterLevel)
+        {
+            CapAt(characterLevel, out int capLevel, out int capExperience);
+            return level < MaxLevel && (level > capLevel || level == capLevel && experience >= capExperience);
+        }
+
+        /// <summary>Adds experience up to the character's cap; returns the tree points it earned (levels and halfway marks).</summary>
+        public int GainExperience(int amount, int characterLevel)
+        {
+            // Weapons found above the cap keep their level but stop growing.
+            if (amount <= 0 || level >= MaxLevel || AtCharacterCap(characterLevel)) return 0;
+            CapAt(characterLevel, out int capLevel, out int capExperience);
+            int before = Points;
             experience = (int)Math.Min(int.MaxValue, (long)experience + amount);
-            bool leveled = false;
-            while (level < 10 && experience >= RequiredExperience)
+            while (level < MaxLevel && experience >= RequiredExperience)
             {
                 experience -= RequiredExperience;
                 level++;
-                leveled = true;
             }
-            if (level == 10) experience = 0;
-            return leveled;
+            if (level > capLevel || level == capLevel && experience > capExperience)
+            {
+                level = capLevel;
+                experience = capExperience;
+            }
+            if (level == MaxLevel) experience = 0;
+            return Points - before;
         }
     }
 
@@ -98,18 +167,34 @@ namespace PoeClone.Inventory
 
     public sealed class WeaponSkillNode
     {
-        public string Id, Parent, Name;
+        /// <summary>The skill origin, as a link target.</summary>
+        public const string Root = "root";
+        public string Id, Name;
+        /// <summary>Neighbours towards the origin (Root for the first nodes); allocation needs any one of them.</summary>
+        public string[] Links = Array.Empty<string>();
+        /// <summary>Nodes sharing a group are alternatives, such as combo forms or elemental conversions.</summary>
+        public string[] Exclusive = Array.Empty<string>();
         public StatType Grant;
+        /// <summary>Fewest points needed to reach this node, itself included.</summary>
         public int Depth;
         public bool Notable, Keystone;
         public Vector2 Position;
         public WeaponSkillBonus[] Bonuses;
+        /// <summary>Rules text after the bonus lines (how a keystone's mechanic plays).</summary>
+        public string Note;
+        public bool ExcludesWith(WeaponSkillNode other)
+        {
+            foreach (string group in Exclusive)
+                if (Array.IndexOf(other.Exclusive, group) >= 0) return true;
+            return false;
+        }
         public string Description
         {
             get
             {
                 var lines = new List<string>();
                 foreach (WeaponSkillBonus b in Bonuses) lines.Add(WeaponSkillTrees.Describe(b, Grant));
+                if (Note != null) lines.Add(Note);
                 return string.Join("\n", lines);
             }
         }
@@ -122,10 +207,17 @@ namespace PoeClone.Inventory
         private readonly float[] values = new float[EffectCount];
         private float moreDamage = 1f;
         private float comboMoreDamage = 1f;
+        private float comboSetupMoreDamage = 1f;
         public float Get(WeaponSkillEffect effect) => values[(int)effect];
+        public bool Has(WeaponSkillEffect effect) => values[(int)effect] > 0f;
         public float MoreDamageMultiplier => moreDamage;
         public float ComboDamageMultiplier => comboMoreDamage;
-        public float CullPercent(bool boss) => Mathf.Max(Get(WeaponSkillEffect.BossCull), boss ? 0f : Get(WeaponSkillEffect.Cull));
+        /// <summary>More or less damage for combo hits before the finisher.</summary>
+        public float ComboSetupMultiplier => comboSetupMoreDamage;
+        public float CullPercent(bool boss) => boss ? 0f : Get(WeaponSkillEffect.Cull);
+        /// <summary>Damage taken while channelling, never below 40%.</summary>
+        public float ChannelTakenMultiplier => Mathf.Max(0.4f, 1f + Get(WeaponSkillEffect.ChannelDamageTaken) / 100f);
+        public float MeasuredRestSeconds => WeaponSkillRules.MeasuredRest * Mathf.Max(0.2f, 1f + Get(WeaponSkillEffect.MeasuredRest) / 100f);
         public float AreaMultiplier => DefenceMath.RadiusMultiplier(Get(WeaponSkillEffect.Area));
         public float RangeMultiplier => Mathf.Max(0.3f, 1f + Get(WeaponSkillEffect.Range) / 100f);
         public float ProjectileSpeedMultiplier => Mathf.Max(0.25f, 1f + Get(WeaponSkillEffect.ProjectileSpeed) / 100f);
@@ -144,6 +236,7 @@ namespace PoeClone.Inventory
                     values[(int)b.Effect] += b.Value;
                     if (b.Effect == WeaponSkillEffect.MoreDamage) moreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
                     if (b.Effect == WeaponSkillEffect.ComboDamage) comboMoreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
+                    if (b.Effect == WeaponSkillEffect.ComboSetupDamage) comboSetupMoreDamage *= Mathf.Max(0f, 1f + b.Value / 100f);
                 }
             }
         }
@@ -189,6 +282,30 @@ namespace PoeClone.Inventory
         public static float PerfectImpactMultiplier(float distance, float radius) =>
             radius > 0f && distance >= 0f && distance <= radius * 0.5f ? 1.3f : 1f;
 
+        // Measured: seconds of deliberate rest after the next attack is available.
+        public const float MeasuredRest = 0.5f;
+        // Cataclysm: a channelled slam. Full charge takes this many normal attack intervals.
+        public const float CataclysmChargeIntervals = 1.5f;
+        public const float CataclysmRecoveryIntervals = 0.5f;
+        public const float CataclysmTapDamage = 0.6f;
+        public const float CataclysmFullDamage = 4.5f;
+        public const float CataclysmFullRadius = 1.4f;
+        public const float CataclysmCostMultiplier = 2f;
+        public static float CataclysmDamage(float charge) => Mathf.Lerp(CataclysmTapDamage, CataclysmFullDamage, Mathf.Clamp01(charge));
+        public static float CataclysmRadius(float charge) => Mathf.Lerp(1f, CataclysmFullRadius, Mathf.Clamp01(charge));
+        public const float RuptureMultiplier = 1.5f;
+        public const float ExecuteThreshold = 0.35f;
+        public const float OverkillRadius = 3f;
+        // Whirlwind channelling: spin-rate ramp per second, Maelstrom pull, Tempest Release.
+        public const float ChannelRampPerSecond = 5f;
+        public const float MaelstromPullReach = 2f;
+        public const float MaelstromPullDistance = 0.35f;
+        public const float MaelstromStandOff = 0.8f;
+        public const float MaelstromDamage = 0.8f;
+        public const float ReleaseMinimumSeconds = 1f;
+        public const float ReleaseMaximumSeconds = 4f;
+        public const float ReleaseRadiusMultiplier = 2f;
+
         /// <summary>Four target-biased shards with angular spread, plus two free-scattering shards.</summary>
         public static Vector3[] BonecrusherDirections(Vector3 origin, IReadOnlyList<Vector3> targets, int seed)
         {
@@ -221,24 +338,26 @@ namespace PoeClone.Inventory
             return length > 0 ? length / (ComboRecoveryMultiplier(grant, twinHammer) * (1f + (length - 1f) * linkInterval)) : 1f;
         }
 
-        /// <summary>Damage of one completed combo step, shared by gameplay and DPS estimates.</summary>
-        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f, bool explosiveCleave = false, bool doubleSlash = false, bool worldshaker = false, bool twinHammer = false)
+        /// <summary>Damage of one completed combo step, shared by gameplay (which passes the tree's
+        /// finisher and setup multipliers separately) and DPS estimates.</summary>
+        public static float ComboHitMultiplier(StatType grant, int step, float finisherMore = 1f, bool explosiveCleave = false, bool doubleSlash = false, bool worldshaker = false, bool twinHammer = false, float setupMore = 1f)
         {
             int length = ComboLength(grant, doubleSlash, twinHammer);
             if (length == 0 || step <= 0) return 1f;
+            bool finisher = step % length == 0;
+            return BaseComboHit(grant, finisher, explosiveCleave, doubleSlash, worldshaker, twinHammer) * (finisher ? finisherMore : setupMore);
+        }
+
+        private static float BaseComboHit(StatType grant, bool finisher, bool explosiveCleave, bool doubleSlash, bool worldshaker, bool twinHammer)
+        {
             // Each Twin Rhythm part contains two separately delivered cuts.
-            if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (step % length == 0 ? 1.1f : 1f);
+            if (grant == StatType.GrantCleave && doubleSlash) return CleaveDoubleSlashDamage * (finisher ? 1.1f : 1f);
             if (grant == StatType.GrantPulverize)
-                return twinHammer ? PulverizeTwinHammerDamage : worldshaker && step % length == 0 ? PulverizeWorldshakerDamage : 1f;
+                return twinHammer ? PulverizeTwinHammerDamage : worldshaker && finisher ? PulverizeWorldshakerDamage : 1f;
             // Explosive Finale spreads its damage evenly across slashes, with a 50% stronger finisher.
             if (grant == StatType.GrantCleave)
-            {
-                if (step % length == 0) return (explosiveCleave ? CleaveExplosionDamage : 1f) * finisherMore;
-                return explosiveCleave ? CleaveExplosiveSlashDamage : 1f;
-            }
-            if (step % length == 0)
-                return 1.75f * finisherMore;
-            return 1f;
+                return finisher ? (explosiveCleave ? CleaveExplosionDamage : 1f) : explosiveCleave ? CleaveExplosiveSlashDamage : 1f;
+            return finisher ? 1.75f : 1f;
         }
 
         /// <summary>Distinct attacks per combo; channelled and non-melee skills have no combo.</summary>
@@ -328,8 +447,8 @@ namespace PoeClone.Inventory
                 result.Add(m);
             }
             if (pool.Length > 0)
-                result.Add(main.HasValue ? new StatModifier(main.Value.Stat, Mathf.Clamp(main.Value.Value, 1, 10), main.Value.Tier)
-                    : new StatModifier(pool[0], Mathf.Clamp(legacyLevel, 1, 10)));
+                result.Add(main.HasValue ? new StatModifier(main.Value.Stat, Mathf.Clamp(main.Value.Value, 1, WeaponSkillProgress.MaxLevel), main.Value.Tier)
+                    : new StatModifier(pool[0], Mathf.Clamp(legacyLevel, 1, WeaponSkillProgress.MaxLevel)));
             return result;
         }
     }

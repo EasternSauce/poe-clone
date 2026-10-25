@@ -60,8 +60,7 @@ namespace PoeClone.Player
             StatSheet sheet = stats != null && inventory != null && !stats.IsDead ? inventory.Stats : null;
             EnemyController ai = enemy.GetComponent<EnemyController>();
             bool wasChilled = ai != null && ai.IsChilled;
-            float skillMore = !secondary && tree != null ? tree.MoreDamageMultiplier *
-                (enemy.CurrentHealth >= enemy.MaxHealth * 0.999f ? 1f + tree.Get(WeaponSkillEffect.FirstStrike) / 100f : 1f) : 1f;
+            float skillMore = !secondary && tree != null ? tree.MoreDamageMultiplier * WeaponSkillHit.ConditionalMore(enemy, tree) : 1f;
             if (!secondary && tree != null)
             {
                 type = WeaponSkillHit.Element(tree, type);
@@ -126,12 +125,14 @@ namespace PoeClone.Player
             damage *= hitDamageMultiplier;
             float bonecrusherSpeed = !secondary && tree != null && tree.Get(WeaponSkillEffect.PulverizeBonecrusher) > 0f
                 ? tree.ProjectileSpeedMultiplier : 0f;
+            float lifeBefore = enemy.CurrentHealth;
             damage = enemy.TakeDamage(damage, type, armourPenetration, elementalPenetration, throughExposedHead,
                 flinch: flinch, hitOrigin: hitOrigin ?? (attacker != null ? (Vector3?)attacker.position : null), rollSeed: rollSeed, impactSound: impactSound, bonecrusherSpeed: bonecrusherSpeed, stunningHit: stunningHit, pullingHit: pullingHit);
             // A warded hit cannot apply ailments, cull, or grant on-hit recovery.
             if (damage <= 0f) return;
             onLanded?.Invoke();
-            if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee);
+            if (!secondary) WeaponSkillHit.Apply(attacker, enemy, damage, tree, type, wasChilled, melee: melee,
+                overkill: enemy.IsDead ? damage - lifeBefore : 0f);
             string number = Mathf.Max(1, Mathf.RoundToInt(damage)).ToString();
             CombatText.Show(displayAt ?? (at + Vector3.up * 1.6f * scale), crit ? number + "!" : number, crit ? CritColor : color, crit ? 1.35f : 1f);
 

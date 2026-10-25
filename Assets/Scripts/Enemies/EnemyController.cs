@@ -122,12 +122,12 @@ namespace PoeClone.Enemies
         }
 
         /// <summary>Draw enemies inward without forcing a stagger or pulling through the attacker.</summary>
-        public void PullTowards(Vector3 point, float distance)
+        public void PullTowards(Vector3 point, float distance, float standOff = 1.5f)
         {
             if (health == null || health.IsDead || EnemyKinds.Get(health.KindIndex).IsBoss) return;
             Vector3 to = point - transform.position;
             to.y = 0f;
-            float travel = Mathf.Min(distance, Mathf.Max(0f, to.magnitude - 1.5f));
+            float travel = Mathf.Min(distance, Mathf.Max(0f, to.magnitude - standOff));
             if (travel <= 0f) return;
             knockbackDirection = to.normalized;
             knockbackLeft = travel;
