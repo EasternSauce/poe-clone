@@ -132,7 +132,7 @@ namespace PoeClone.Tests
         // Travel points carry plain "increased" stats; conditional, "more", finisher and
         // keystone-specific bonuses belong to notables and keystones.
         private static readonly WeaponSkillEffect[] BasicEffects = {
-            WeaponSkillEffect.Damage, WeaponSkillEffect.Area, WeaponSkillEffect.Speed, WeaponSkillEffect.MinionLife
+            WeaponSkillEffect.Damage, WeaponSkillEffect.Speed, WeaponSkillEffect.MinionLife
         };
 
         [Test]
@@ -645,7 +645,8 @@ namespace PoeClone.Tests
             var after = new WeaponSkillBonuses(bow);
             Assert.AreEqual(canFinish ? 7 : 3, after.ExtraProjectiles);
             Assert.AreEqual(canFinish ? .65f : 1f, after.MoreDamageMultiplier, .0001f);
-            Assert.AreEqual(before.Get(WeaponSkillEffect.Area), after.Get(WeaponSkillEffect.Area));
+            // Arrowfall's area left its travel points for the notable and keystone.
+            Assert.AreEqual(before.Get(WeaponSkillEffect.Area) + (canFinish ? 24f : 0f), after.Get(WeaponSkillEffect.Area), .0001f);
         }
 
         [TestCase(0)]

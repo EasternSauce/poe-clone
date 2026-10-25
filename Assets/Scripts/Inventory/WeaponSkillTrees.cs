@@ -154,8 +154,22 @@ namespace PoeClone.Inventory
             return lanes <= 1 ? 90f : 90f + spread / 2f - lane * spread / (lanes - 1);
         }
 
+        // The damage type a tree skill's hits deal before conversion (matches SkillDefinition.DamageElement).
+        private static string DamageTypeName(StatType grant)
+        {
+            switch (grant)
+            {
+                case StatType.GrantFireBolt:
+                case StatType.GrantBurningArrow: return "fire";
+                case StatType.GrantIceShard: return "cold";
+                case StatType.GrantChainLightning: return "lightning";
+                case StatType.GrantVenomSpout: return "poison";
+                default: return "physical";
+            }
+        }
+
         // Travel points never carry these; a route's exotic stat rides on its notable and keystones instead.
-        private static readonly E[] Exotic = { E.Range, E.ProjectileSpeed, E.Duration, E.ArmourPenetration, E.LifeOnHit, E.MinionMoveSpeed };
+        private static readonly E[] Exotic = { E.Area, E.Range, E.ProjectileSpeed, E.Duration, E.ArmourPenetration, E.LifeOnHit, E.MinionMoveSpeed };
 
         // Adds the exotic share of `travelPoints` placeholder travel points (each worth half the route's stat) to a strong node.
         private static WeaponSkillBonus[] WithExotic(WeaponSkillBonus[] bonuses, WeaponSkillBonus[] exotic, int travelPoints)
@@ -218,10 +232,10 @@ namespace PoeClone.Inventory
 
         private static void AddComboLane(TreeBuilder tree, Vector2 direction)
         {
-            // Finisher bonuses live on the notable and keystone; travel points stay basic.
-            string[] names = { "Decisive Blow", "Decisive Blow", "Sweeping Finish", "Sweeping Finish", "Driving Impact", "Building Finale", "Building Finale", "Grand Finale" };
+            // Finisher and area bonuses live on the notable and keystone; travel points give damage.
+            string[] names = { "Decisive Blow", "Decisive Blow", "Steady Swing", "Steady Swing", "Driving Impact", "Building Finale", "Building Finale", "Grand Finale" };
             WeaponSkillBonus[][] bonuses = {
-                M(B(E.Damage, 5)), M(B(E.Damage, 5)), M(B(E.Area, 5)), M(B(E.Area, 5)),
+                M(B(E.Damage, 5)), M(B(E.Damage, 5)), M(B(E.Damage, 5)), M(B(E.Damage, 5)),
                 M(B(E.ComboKnockback, 1.8f), B(E.ComboDamage, 15), B(E.ComboArea, 25)), M(B(E.Damage, 5)), M(B(E.Damage, 5)),
                 M(B(E.ComboDamage, 30), B(E.ComboArea, 35))
             };
@@ -328,7 +342,7 @@ namespace PoeClone.Inventory
         // ------------------------------------------------------------------ authored melee trees
         // Left, centre and right boughs leave a shared two-point trunk. Every notable sits at least
         // three points from the origin, and travel points always separate notables from keystones.
-        // Travel points only carry basic stats (increased damage, area, attack speed); cost, conditional,
+        // Travel points only carry basic stats (increased damage, attack speed); area, cost, conditional,
         // finisher and keystone-specific bonuses belong to notables and keystones.
 
         private static void BuildCleave()
@@ -341,11 +355,11 @@ namespace PoeClone.Inventory
             t.S("cl1", "Heavy Swing", -70, 205, "c2", B(E.Damage, 6));
             t.S("cl2", "Heavy Swing", -135, 260, "cl1", B(E.Damage, 6));
             t.N("cl3", "Gathering Force", -190, 325, "cl2", B(E.ComboSetupDamage, -20), B(E.ComboDamage, 50));
-            t.S("cl4", "Wide Arc", -225, 395, "cl3", B(E.Area, 6));
-            t.S("cl5", "Wide Arc", -245, 465, "cl4", B(E.Area, 6));
+            t.S("cl4", "Heavy Arc", -225, 395, "cl3", B(E.Damage, 6));
+            t.S("cl5", "Heavy Arc", -245, 465, "cl4", B(E.Damage, 6));
             t.K("cl6", "Explosive Finale", -255, 545, "cl5", Form, "Cannot be combined with Twin Rhythm", B(E.CleaveExplosion, 1));
-            t.S("cl7", "Wide Arc", -320, 605, "cl6", B(E.Area, 6));
-            t.S("cl8", "Wide Arc", -360, 675, "cl7", B(E.Area, 6));
+            t.S("cl7", "Heavy Arc", -320, 605, "cl6", B(E.Damage, 6));
+            t.S("cl8", "Heavy Arc", -360, 675, "cl7", B(E.Damage, 6));
             t.N("cl9", "Driving Finish", -380, 755, "cl8", B(E.ComboKnockback, 2f), B(E.ComboArea, 25));
             t.S("cl10", "Tempered Edge", -195, 615, "cl6", B(E.Damage, 6));
             t.S("cl11", "Tempered Edge", -160, 690, "cl10", B(E.Damage, 6));
@@ -355,9 +369,9 @@ namespace PoeClone.Inventory
             t.S("cm1", "Keen Edge", 0, 215, "c2", B(E.Damage, 6));
             t.S("cm2", "Keen Edge", 0, 285, "cm1", B(E.Damage, 6));
             t.N("cm3", "Butcher", 0, 360, "cm2", B(E.ExecuteDamage, 50));
-            t.S("cm4", "Sweeping Steel", 0, 430, "cm3", B(E.Area, 5));
-            t.S("cm5", "Sweeping Steel", 0, 500, "cm4", B(E.Area, 5));
-            t.S("cm6", "Sweeping Steel", 0, 570, "cm5", B(E.Area, 5));
+            t.S("cm4", "Keen Steel", 0, 430, "cm3", B(E.Damage, 5));
+            t.S("cm5", "Keen Steel", 0, 500, "cm4", B(E.Damage, 5));
+            t.S("cm6", "Keen Steel", 0, 570, "cm5", B(E.Damage, 5));
             t.K("cm7", "Carnage", 0, 660, "cm6", null,
                 "Bursts never chain or trigger on-kill effects", B(E.Overkill, 100));
             t.S("cm8", "Butcher's Strength", 0, 735, "cm7", B(E.Damage, 6));
@@ -393,8 +407,8 @@ namespace PoeClone.Inventory
             t.S("pl1", "Steady Blows", -70, 205, "p2", B(E.Damage, 6));
             t.S("pl2", "Steady Blows", -135, 260, "pl1", B(E.Damage, 6));
             t.N("pl3", "Perfect Impact", -190, 325, "pl2", B(E.PerfectImpact, 1));
-            t.S("pl4", "Broad Impact", -225, 395, "pl3", B(E.Area, 6));
-            t.S("pl5", "Broad Impact", -245, 465, "pl4", B(E.Area, 6));
+            t.S("pl4", "Heavy Impact", -225, 395, "pl3", B(E.Damage, 6));
+            t.S("pl5", "Heavy Impact", -245, 465, "pl4", B(E.Damage, 6));
             t.K("pl6", "Measured Blows", -255, 545, "pl5", Patience,
                 "A combo opener is Measured after resting " + WeaponSkillRules.MeasuredRest.ToString("0.#") + " seconds once your next attack is ready\n" +
                 "A gold pulse at your feet shows a Measured attack is ready; Measured slams flash gold\nCannot be combined with Cataclysm",
@@ -402,22 +416,22 @@ namespace PoeClone.Inventory
             t.S("pl7", "Patience", -320, 605, "pl6", B(E.Damage, 6));
             t.S("pl8", "Patience", -360, 675, "pl7", B(E.Damage, 6));
             t.N("pl9", "Crushing Patience", -380, 755, "pl8", B(E.MeasuredStun, 1), B(E.MeasuredStrike, 20));
-            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.Area, 6));
-            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.Area, 6));
+            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.Damage, 6));
+            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.Damage, 6));
             t.N("pl12", "Unhurried", -235, 770, "pl11", B(E.MeasuredRest, -40));
 
             // Centre: the combo's finisher, its two alternative forms, and Bonecrusher above them.
             t.S("pm1", "Heavy Head", 0, 215, "p2", B(E.Damage, 6));
             t.S("pm2", "Heavy Head", 0, 285, "pm1", B(E.Damage, 6));
             t.N("pm3", "Seismic Finish", 0, 360, "pm2", B(E.ComboArea, 25), B(E.ComboKnockback, 1.5f), B(E.ComboDamage, 15));
-            t.S("pm4", "Rolling Force", -55, 430, "pm3", B(E.Area, 6));
-            t.S("pm5", "Rolling Force", -80, 500, "pm4", B(E.Area, 6));
+            t.S("pm4", "Rolling Force", -55, 430, "pm3", B(E.Damage, 6));
+            t.S("pm5", "Rolling Force", -80, 500, "pm4", B(E.Damage, 6));
             t.K("pm6", "Worldshaker", -90, 580, "pm5", Form, "Cannot be combined with Twin Hammer or Cataclysm", B(E.PulverizeWorldshaker, 1));
             t.S("pm7", "Driving Rhythm", 55, 430, "pm3", B(E.Damage, 6));
             t.S("pm8", "Driving Rhythm", 80, 500, "pm7", B(E.Damage, 6));
             t.K("pm9", "Twin Hammer", 90, 580, "pm8", Form, "Cannot be combined with Worldshaker or Cataclysm", B(E.PulverizeTwinHammer, 1));
-            t.S("pm10", "Bone Splinter", -55, 660, "pm6", B(E.Area, 5));
-            t.S("pm11", "Bone Splinter", 55, 660, "pm9", B(E.Area, 5));
+            t.S("pm10", "Bone Splinter", -55, 660, "pm6", B(E.Damage, 5));
+            t.S("pm11", "Bone Splinter", 55, 660, "pm9", B(E.Damage, 5));
             t.S("pm12", "Bone Splinter", 0, 730, "pm10,pm11,pl11", B(E.Damage, 6));
             t.S("pm13", "Bone Splinter", 0, 800, "pm12", B(E.Damage, 6));
             t.K("pm14", "Bonecrusher", 0, 885, "pm13", null, null, B(E.PulverizeBonecrusher, 1));
@@ -426,12 +440,12 @@ namespace PoeClone.Inventory
             t.S("pr1", "Heavy Grip", 70, 205, "p2", B(E.Damage, 6));
             t.S("pr2", "Heavy Grip", 135, 260, "pr1", B(E.Damage, 6));
             t.N("pr3", "Concussive Blows", 190, 325, "pr2", B(E.DamageVsStaggered, 40));
-            t.S("pr4", "Gathering Strength", 225, 395, "pr3", B(E.Area, 6));
-            t.S("pr5", "Gathering Strength", 245, 465, "pr4", B(E.Area, 6));
+            t.S("pr4", "Gathering Strength", 225, 395, "pr3", B(E.Damage, 6));
+            t.S("pr5", "Gathering Strength", 245, 465, "pr4", B(E.Damage, 6));
             t.K("pr6", "Cataclysm", 255, 545, "pr5", FormAndPatience,
                 "Cannot be combined with Worldshaker, Twin Hammer or Measured Blows", B(E.PulverizeCataclysm, 1));
-            t.S("pr7", "Deep Breath", 320, 605, "pr6", B(E.Area, 6));
-            t.S("pr8", "Deep Breath", 360, 675, "pr7", B(E.Area, 6));
+            t.S("pr7", "Deep Breath", 320, 605, "pr6", B(E.Damage, 6));
+            t.S("pr8", "Deep Breath", 360, 675, "pr7", B(E.Damage, 6));
             t.N("pr9", "Braced Channel", 380, 755, "pr8", B(E.ChannelDamageTaken, -30));
             t.S("pr10", "Firm Grip", 195, 615, "pr6", B(E.Damage, 6));
             t.S("pr11", "Firm Grip", 160, 690, "pr10", B(E.Damage, 6));
@@ -480,8 +494,8 @@ namespace PoeClone.Inventory
             t.S("wr1", "Iron Edge", 70, 205, "w2", B(E.Damage, 6));
             t.S("wr2", "Iron Edge", 135, 260, "wr1", B(E.Damage, 6));
             t.N("wr3", "Braced Channel", 190, 325, "wr2", B(E.ChannelDamageTaken, -30));
-            t.S("wr4", "Wide Spin", 175, 400, "wr3", B(E.Area, 6));
-            t.S("wr5", "Wide Spin", 160, 470, "wr4", B(E.Area, 6));
+            t.S("wr4", "Cutting Spin", 175, 400, "wr3", B(E.Damage, 6));
+            t.S("wr5", "Cutting Spin", 160, 470, "wr4", B(E.Damage, 6));
             t.K("wr6", "Slipstream", 150, 550, "wr5", null, null, B(E.WhirlSlipstream, 1));
             t.S("wr14", "Rooted Will", 205, 625, "wr6", B(E.Damage, 6));
             t.S("wr15", "Rooted Will", 225, 700, "wr14", B(E.Damage, 6));
@@ -490,8 +504,8 @@ namespace PoeClone.Inventory
             t.S("wr8", "Pull of the Storm", 305, 450, "wr7", B(E.Speed, 3));
             t.S("wr9", "Pull of the Storm", 330, 525, "wr8", B(E.Speed, 3));
             t.K("wr10", "Maelstrom", 345, 610, "wr9", null, null, B(E.WhirlMaelstrom, 1));
-            t.S("wr11", "Tightening Gyre", 380, 685, "wr10", B(E.Area, 6));
-            t.S("wr12", "Tightening Gyre", 395, 760, "wr11", B(E.Area, 6));
+            t.S("wr11", "Tightening Gyre", 380, 685, "wr10", B(E.Damage, 6));
+            t.S("wr12", "Tightening Gyre", 395, 760, "wr11", B(E.Damage, 6));
             t.N("wr13", "Eye of the Storm", 405, 845, "wr12", B(E.PerfectImpact, 1));
             t.Register();
         }
@@ -504,6 +518,8 @@ namespace PoeClone.Inventory
             bool minion = SkillGrants.IsSummon(grant);
             bool attack = minion || SkillGrants.IsBowSkill(grant) || System.Array.IndexOf(SkillGrants.MeleeSkills, grant) >= 0;
             string damage = minion ? "minion damage" : "damage";
+            // Increased skill damage scales the skill's own damage type, and keeps doing so after conversion.
+            string increased = minion ? "minion damage" : DamageTypeName(grant) + " damage";
             switch (b.Effect)
             {
                 case E.WhirlGaleCutter: return "Melee pulses that land launch 3 straight, piercing blades towards your aim (one volley per pulse)\nMelee deals 40% of normal damage; each projectile deals 20%\nAll three projectiles can hit the same enemy; spectral hits cannot trigger volleys";
@@ -517,7 +533,7 @@ namespace PoeClone.Inventory
                 case E.ChannelDamageTaken: return Percent(b.Value, "damage taken while channelling");
                 case E.ChannelMoveSpeed: return Percent(b.Value, "movement speed while channelling");
                 case E.ChannelRamp: return "While channelling, Whirlwind spins " + WeaponSkillRules.ChannelRampPerSecond.ToString("0.#") + "% faster each second, up to " + b.Value.ToString("0.#") + "%";
-                case E.Damage: return Percent(b.Value, damage);
+                case E.Damage: return Percent(b.Value, increased);
                 case E.MoreDamage: return More(b.Value, damage);
                 case E.PulverizeWorldshaker: return "Replaces the third slam with Worldshaker\nDeals 300% of normal hit damage with 35% greater radius and a 40% longer windup\nStuns non-boss enemies hit for 2 seconds";
                 case E.PulverizeTwinHammer: return "Replaces Pulverize with two alternating slams, each dealing 130% of normal hit damage\nDeliberate windup before the first slam, followed by a rapid second slam\n50% shorter recovery between pairs";
@@ -578,7 +594,7 @@ namespace PoeClone.Inventory
                 case E.Fire: return "Converts all damage to fire damage";
                 case E.Cold: return "Converts all damage to cold damage";
                 case E.Lightning: return "Converts all damage to lightning damage";
-                case E.DamageVsChilled: return Percent(b.Value, damage + " against chilled enemies");
+                case E.DamageVsChilled: return Percent(b.Value, increased + " against chilled enemies");
                 case E.FirstStrike: return More(b.Value, damage + " against enemies at full life");
                 case E.Cost: return Percent(b.Value, "resource cost");
                 case E.NoFork: return "Projectiles cannot fork";
