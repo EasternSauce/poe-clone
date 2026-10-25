@@ -303,7 +303,7 @@ namespace PoeClone.Inventory
         // ------------------------------------------------------------------ authored melee trees
         // Left, centre and right boughs leave a shared two-point trunk. Every notable sits at least
         // three points from the origin, and travel points always separate notables from keystones.
-        // Travel points only carry basic stats (increased damage, area, attack speed, cost); conditional,
+        // Travel points only carry basic stats (increased damage, area, attack speed); cost, conditional,
         // finisher and keystone-specific bonuses belong to notables and keystones.
 
         private static void BuildCleave()
@@ -322,8 +322,8 @@ namespace PoeClone.Inventory
             t.S("cl7", "Wide Arc", -320, 605, "cl6", B(E.Area, 6));
             t.S("cl8", "Wide Arc", -360, 675, "cl7", B(E.Area, 6));
             t.N("cl9", "Driving Finish", -380, 755, "cl8", B(E.ComboKnockback, 2f), B(E.ComboArea, 25));
-            t.S("cl10", "Economy of Motion", -195, 615, "cl6", B(E.Cost, -6));
-            t.S("cl11", "Economy of Motion", -160, 690, "cl10", B(E.Cost, -6));
+            t.S("cl10", "Tempered Edge", -195, 615, "cl6", B(E.Damage, 6));
+            t.S("cl11", "Tempered Edge", -160, 690, "cl10", B(E.Damage, 6));
             t.N("cl12", "Ringing Blow", -150, 770, "cl11", B(E.FinisherStun, 1));
 
             // Centre: finishing off the wounded, then Carnage spreads each kill into the pack.
@@ -346,8 +346,8 @@ namespace PoeClone.Inventory
             t.S("cr4", "Flowing Cuts", 170, 400, "cr3", B(E.Damage, 6));
             t.S("cr5", "Flowing Cuts", 150, 470, "cr4", B(E.Damage, 6));
             t.K("cr6", "Twin Rhythm", 135, 550, "cr5", Form, "Cannot be combined with Explosive Finale", B(E.CleaveDoubleSlash, 1));
-            t.S("cr7", "Steady Rhythm", 175, 625, "cr6", B(E.Cost, -6));
-            t.S("cr8", "Steady Rhythm", 195, 700, "cr7", B(E.Cost, -6));
+            t.S("cr7", "Steady Rhythm", 175, 625, "cr6", B(E.Damage, 6));
+            t.S("cr8", "Steady Rhythm", 195, 700, "cr7", B(E.Damage, 6));
             t.N("cr9", "Iron Rhythm", 205, 780, "cr8", B(E.ComboDamageTaken, -25));
             t.S("cr10", "Deep Cuts", 260, 385, "cr3", B(E.Damage, 6));
             t.S("cr11", "Deep Cuts", 305, 450, "cr10", B(E.Damage, 6));
@@ -377,8 +377,8 @@ namespace PoeClone.Inventory
             t.S("pl7", "Patience", -320, 605, "pl6", B(E.Damage, 6));
             t.S("pl8", "Patience", -360, 675, "pl7", B(E.Damage, 6));
             t.N("pl9", "Crushing Patience", -380, 755, "pl8", B(E.MeasuredStun, 1), B(E.MeasuredStrike, 20));
-            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.Cost, -6));
-            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.Cost, -6));
+            t.S("pl10", "Calm Breath", -195, 615, "pl6", B(E.Area, 6));
+            t.S("pl11", "Calm Breath", -160, 690, "pl10", B(E.Area, 6));
             t.N("pl12", "Unhurried", -235, 770, "pl11", B(E.MeasuredRest, -40));
 
             // Centre: the combo's finisher, its two alternative forms, and Bonecrusher above them.
@@ -405,8 +405,8 @@ namespace PoeClone.Inventory
             t.S("pr5", "Gathering Strength", 245, 465, "pr4", B(E.Area, 6));
             t.K("pr6", "Cataclysm", 255, 545, "pr5", FormAndPatience,
                 "Cannot be combined with Worldshaker, Twin Hammer or Measured Blows", B(E.PulverizeCataclysm, 1));
-            t.S("pr7", "Deep Breath", 320, 605, "pr6", B(E.Cost, -6));
-            t.S("pr8", "Deep Breath", 360, 675, "pr7", B(E.Cost, -6));
+            t.S("pr7", "Deep Breath", 320, 605, "pr6", B(E.Area, 6));
+            t.S("pr8", "Deep Breath", 360, 675, "pr7", B(E.Area, 6));
             t.N("pr9", "Braced Channel", 380, 755, "pr8", B(E.ChannelDamageTaken, -30));
             t.S("pr10", "Firm Grip", 195, 615, "pr6", B(E.Damage, 6));
             t.S("pr11", "Firm Grip", 160, 690, "pr10", B(E.Damage, 6));
@@ -430,8 +430,8 @@ namespace PoeClone.Inventory
             t.S("wl7", "Sharp Gale", -320, 605, "wl6", B(E.Damage, 6));
             t.S("wl8", "Sharp Gale", -360, 675, "wl7", B(E.Damage, 6));
             t.N("wl9", "Howling Gale", -380, 755, "wl8", B(E.Range, 50));
-            t.S("wl10", "Light Feet", -195, 615, "wl6", B(E.Cost, -5));
-            t.S("wl11", "Light Feet", -150, 685, "wl10,wm8", B(E.Cost, -5));
+            t.S("wl10", "Light Feet", -195, 615, "wl6", B(E.Speed, 3));
+            t.S("wl11", "Light Feet", -150, 685, "wl10,wm8", B(E.Speed, 3));
             t.N("wl12", "Fleet Spin", -215, 765, "wl11", B(E.ChannelMoveSpeed, 25));
 
             // Centre: endurance, Gathering Storm, then Tempest Release far above.

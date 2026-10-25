@@ -132,7 +132,7 @@ namespace PoeClone.Tests
         // Travel points carry plain "increased" stats; conditional, "more", finisher and
         // keystone-specific bonuses belong to notables and keystones.
         private static readonly WeaponSkillEffect[] BasicEffects = {
-            WeaponSkillEffect.Damage, WeaponSkillEffect.Area, WeaponSkillEffect.Speed, WeaponSkillEffect.Cost,
+            WeaponSkillEffect.Damage, WeaponSkillEffect.Area, WeaponSkillEffect.Speed,
             WeaponSkillEffect.Range, WeaponSkillEffect.ProjectileSpeed, WeaponSkillEffect.Duration, WeaponSkillEffect.ArmourPenetration,
             WeaponSkillEffect.MinionLife, WeaponSkillEffect.MinionMoveSpeed, WeaponSkillEffect.LifeOnHit
         };
